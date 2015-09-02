@@ -2,6 +2,7 @@ package org.ipfs;
 
 import java.io.*;
 import java.net.*;
+import java.util.*;
 
 public class IPFS
 {
@@ -49,10 +50,12 @@ public class IPFS
         bitswap
     }
     
-    public static Hash add(String host, int port, String name, byte[] body) throws IOException {
-        URL target = new URL("http", host, port, "/api/v0/add?encoding=json&progress=true&r=true&stream-channels=true");
-        byte[] res = post(target, body);
-        return new Hash(new String(res));
+    public static Object add(String host, int port, File f) throws IOException {
+        Multipart m = new Multipart("http://"+host+":"+port+"/api/v0/add?stream-channels=true", "UTF-8");
+        m.addFilePart("file", f);
+        List<String> res = m.finish();
+        System.out.println(res);
+        return null;//JSONParser.parse(res);
     }
 
     public static Object ls(String host, int port, Hash hash) throws IOException {
@@ -82,8 +85,10 @@ public class IPFS
         return resp.toByteArray();
     }
 
-    public static byte[] post(URL target, byte[] body) throws IOException {
+    public static byte[] post(URL target, byte[] body, Map<String, String> headers) throws IOException {
         HttpURLConnection conn = (HttpURLConnection) target.openConnection();
+        for (String key: headers.keySet())
+            conn.setRequestProperty(key, headers.get(key));
         conn.setDoOutput(true);
         conn.setRequestMethod("POST");
         OutputStream out = conn.getOutputStream();
@@ -101,8 +106,9 @@ public class IPFS
     }
 
     public static void main(String[] a) throws Exception {
-//        System.out.println(add("127.0.0.1", 5001, "hello.txt", "hello".getBytes()));
+        System.out.println(add("127.0.0.1", 5001, new File("hello.txt")));
         System.out.println(ls("127.0.0.1", 5001, new Hash("QmZULkCELmmk5XNfCgTnCyFgAVxBRBXyDHGGMVoLFLiXEN")));
         System.out.println(cat("127.0.0.1", 5001, new Hash("QmZULkCELmmk5XNfCgTnCyFgAVxBRBXyDHGGMVoLFLiXEN")));
+        System.out.println(cat("127.0.0.1", 5001, new Hash("QmPJLkUykuWech5YJiaJhBVrc44kQPu1EpMK3KKfygvrbi")));
     }
 }
