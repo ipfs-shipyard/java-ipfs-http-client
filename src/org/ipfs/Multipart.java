@@ -39,7 +39,7 @@ public class Multipart {
         writer.flush();
     }
 
-    public void addFilePart(String fieldName, File uploadFile) throws IOException {
+    public void addFilePart(String fieldName, NamedStreamable uploadFile) throws IOException {
         String fileName = uploadFile.getName();
         writer.append("--" + boundary).append(LINE_FEED);
         writer.append("Content-Disposition: file; name=\"" + fieldName + "\"; filename=\"" + fileName + "\"").append(LINE_FEED);
@@ -48,7 +48,7 @@ public class Multipart {
         writer.append(LINE_FEED);
         writer.flush();
 
-        FileInputStream inputStream = new FileInputStream(uploadFile);
+        InputStream inputStream = uploadFile.getInputStream();
         byte[] buffer = new byte[4096];
         int r;
         while ((r = inputStream.read(buffer)) != -1)

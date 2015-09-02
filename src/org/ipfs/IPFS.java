@@ -50,7 +50,7 @@ public class IPFS
         bitswap
     }
     
-    public static Object add(String host, int port, File f) throws IOException {
+    public static Object add(String host, int port, NamedStreamable f) throws IOException {
         Multipart m = new Multipart("http://"+host+":"+port+"/api/v0/add?stream-channels=true", "UTF-8");
         m.addFilePart("file", f);
         List<String> res = m.finish();
@@ -106,7 +106,7 @@ public class IPFS
     }
 
     public static void main(String[] a) throws Exception {
-        System.out.println(add("127.0.0.1", 5001, new File("hello.txt")));
+        System.out.println(add("127.0.0.1", 5001, new NamedStreamable.ByteArrayWrapper("hello.txt", "G'day world!".getBytes())));
         System.out.println(ls("127.0.0.1", 5001, new Hash("QmZULkCELmmk5XNfCgTnCyFgAVxBRBXyDHGGMVoLFLiXEN")));
         System.out.println(cat("127.0.0.1", 5001, new Hash("QmZULkCELmmk5XNfCgTnCyFgAVxBRBXyDHGGMVoLFLiXEN")));
         System.out.println(cat("127.0.0.1", 5001, new Hash("QmPJLkUykuWech5YJiaJhBVrc44kQPu1EpMK3KKfygvrbi")));
