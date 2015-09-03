@@ -65,11 +65,11 @@ public class Multipart {
         writer.flush();
     }
 
-    public List<String> finish() throws IOException {
-        List<String> response = new ArrayList<>();
+    public String finish() throws IOException {
+        StringBuilder b = new StringBuilder();
 
         writer.append(LINE_FEED).flush();
-        writer.append("--" + boundary + "--").append(LINE_FEED);
+        writer.append("--" + boundary + "--");//.append(LINE_FEED);
         writer.close();
 
         int status = httpConn.getResponseCode();
@@ -78,7 +78,7 @@ public class Multipart {
                     httpConn.getInputStream()));
             String line;
             while ((line = reader.readLine()) != null) {
-                response.add(line);
+                b.append(line);
             }
             reader.close();
             httpConn.disconnect();
@@ -86,6 +86,6 @@ public class Multipart {
             throw new IOException("Server returned status: " + status);
         }
 
-        return response;
+        return b.toString();
     }
 }

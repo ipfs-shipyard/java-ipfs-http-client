@@ -50,12 +50,13 @@ public class IPFS
         bitswap
     }
     
-    public static Object add(String host, int port, NamedStreamable f) throws IOException {
+    public static Object add(String host, int port, List<NamedStreamable> files) throws IOException {
         Multipart m = new Multipart("http://"+host+":"+port+"/api/v0/add?stream-channels=true", "UTF-8");
-        m.addFilePart("file", f);
-        List<String> res = m.finish();
+        for (NamedStreamable f: files)
+            m.addFilePart("file", f);
+        String res = m.finish();
         System.out.println(res);
-        return null;//JSONParser.parse(res);
+        return JSONParser.parse(res);
     }
 
     public static Object ls(String host, int port, Hash hash) throws IOException {
@@ -106,7 +107,9 @@ public class IPFS
     }
 
     public static void main(String[] a) throws Exception {
-        System.out.println(add("127.0.0.1", 5001, new NamedStreamable.ByteArrayWrapper("hello.txt", "G'day world!".getBytes())));
+        NamedStreamable.ByteArrayWrapper file1 = new NamedStreamable.ByteArrayWrapper("hello.txt", "G'day world!".getBytes());
+        NamedStreamable.ByteArrayWrapper file2 = new NamedStreamable.ByteArrayWrapper("Gday.txt", "G'day universe!".getBytes());
+        System.out.println(add("127.0.0.1", 5001, Arrays.asList(file1, file2)));
         System.out.println(ls("127.0.0.1", 5001, new Hash("QmZULkCELmmk5XNfCgTnCyFgAVxBRBXyDHGGMVoLFLiXEN")));
         System.out.println(cat("127.0.0.1", 5001, new Hash("QmZULkCELmmk5XNfCgTnCyFgAVxBRBXyDHGGMVoLFLiXEN")));
         System.out.println(cat("127.0.0.1", 5001, new Hash("QmPJLkUykuWech5YJiaJhBVrc44kQPu1EpMK3KKfygvrbi")));
