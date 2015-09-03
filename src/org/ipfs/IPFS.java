@@ -109,7 +109,11 @@ public class IPFS
     public static void main(String[] a) throws Exception {
         NamedStreamable.ByteArrayWrapper file1 = new NamedStreamable.ByteArrayWrapper("hello.txt", "G'day world!".getBytes());
         NamedStreamable.ByteArrayWrapper file2 = new NamedStreamable.ByteArrayWrapper("Gday.txt", "G'day universe!".getBytes());
-        System.out.println(add("127.0.0.1", 5001, Arrays.asList(file1, file2)));
+        byte[] largerData = new byte[100*1024*1024];
+        new Random(1).nextBytes(largerData);
+        NamedStreamable.ByteArrayWrapper larger = new NamedStreamable.ByteArrayWrapper("nontrivial.txt", largerData);
+
+        System.out.println(add("127.0.0.1", 5001, Arrays.asList(file1, file2, larger)));
         System.out.println(ls("127.0.0.1", 5001, new Hash("QmZULkCELmmk5XNfCgTnCyFgAVxBRBXyDHGGMVoLFLiXEN")));
         System.out.println(cat("127.0.0.1", 5001, new Hash("QmZULkCELmmk5XNfCgTnCyFgAVxBRBXyDHGGMVoLFLiXEN")));
         System.out.println(cat("127.0.0.1", 5001, new Hash("QmPJLkUykuWech5YJiaJhBVrc44kQPu1EpMK3KKfygvrbi")));

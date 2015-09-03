@@ -69,7 +69,7 @@ public class Multipart {
         StringBuilder b = new StringBuilder();
 
         writer.append(LINE_FEED).flush();
-        writer.append("--" + boundary + "--");//.append(LINE_FEED);
+        writer.append("--" + boundary + "--").append(LINE_FEED);
         writer.close();
 
         int status = httpConn.getResponseCode();
