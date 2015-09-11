@@ -68,7 +68,6 @@ public class Multipart {
     public String finish() throws IOException {
         StringBuilder b = new StringBuilder();
 
-        writer.append(LINE_FEED).flush();
         writer.append("--" + boundary + "--").append(LINE_FEED);
         writer.close();
 

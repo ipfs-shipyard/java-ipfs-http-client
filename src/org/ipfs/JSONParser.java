@@ -268,6 +268,17 @@ public class JSONParser
         return parse(json, new int[1]);
     }
 
+    public static List<Object> parseStream(String json)
+    {
+        if (json == null)
+            return null;
+        int[] pos = new int[1];
+        List<Object> res = new ArrayList<>();
+        while (pos[0] < json.length())
+            res.add(parse(json, pos));
+        return res;
+    }
+
     private static void escapeString(String s, StringBuffer buf)
     {
         buf.append('"');
