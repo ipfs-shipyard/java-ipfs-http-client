@@ -59,6 +59,27 @@ public class IPFS
         return JSONParser.parseStream(res).stream().map(x -> (Map<String, Object>)x).collect(Collectors.toList());
     }
 
+    public static Object pinAdd(String host, int port, Hash hash) throws IOException {
+        URL target = new URL("http", host, port, "/api/v0/pin/add?stream-channels=true&arg=" + hash.toString());
+        byte[] res = get(target);
+        System.out.println(new String(res));
+        return JSONParser.parse(new String(res));
+    }
+
+    public static Object pinLs(String host, int port) throws IOException {
+        URL target = new URL("http", host, port, "/api/v0/pin/ls");
+        byte[] res = get(target);
+        System.out.println(new String(res));
+        return JSONParser.parse(new String(res));
+    }
+
+    public static Object pinRm(String host, int port, Hash hash) throws IOException {
+        URL target = new URL("http", host, port, "/api/v0/pin/rm?stream-channels=true&arg=" + hash.toString());
+        byte[] res = get(target);
+        System.out.println(new String(res));
+        return JSONParser.parse(new String(res));
+    }
+
     public static Object ls(String host, int port, Hash hash) throws IOException {
         URL target = new URL("http", host, port, "/api/v0/ls/" + hash.toString());
         byte[] res = get(target);
@@ -74,6 +95,7 @@ public class IPFS
     public static byte[] get(URL target) throws IOException {
         HttpURLConnection conn = (HttpURLConnection) target.openConnection();
         conn.setRequestMethod("GET");
+        conn.setRequestProperty("Content-Type", "application/json");
 
         InputStream in = conn.getInputStream();
         ByteArrayOutputStream resp = new ByteArrayOutputStream();
@@ -117,9 +139,12 @@ public class IPFS
         System.out.println(addResult);
         for (int i=0; i < addResult.size(); i++) {
             Map m = (Map) addResult.get(i);
-            Object lsResult = ls("127.0.0.1", 5001, new Hash((String) m.get("Hash")));
+            Hash hash = new Hash((String) m.get("Hash"));
+            Object pinLsResult = pinLs("127.0.0.1", 5001);
+            Object pinAddResult = pinAdd("127.0.0.1", 5001, hash);
+            Object lsResult = ls("127.0.0.1", 5001, hash);
             System.out.println(lsResult);
-            byte[] catResult = cat("127.0.0.1", 5001, new Hash((String) m.get("Hash")));
+            byte[] catResult = cat("127.0.0.1", 5001, hash);
             if (!new String(catResult).equals(new String(inputFiles.get(i).getContents())))
                 throw new IllegalStateException("Different contents!");
             System.out.println(catResult);
