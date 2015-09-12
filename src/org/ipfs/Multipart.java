@@ -15,7 +15,7 @@ public class Multipart {
     public Multipart(String requestURL, String charset) throws IOException {
         this.charset = charset;
 
-        boundary = "nvs1v6w6v6qx5hfr88ydgt4u1ieh4cxr";
+        boundary = createBoundary();
 
         URL url = new URL(requestURL);
         httpConn = (HttpURLConnection) url.openConnection();
@@ -26,6 +26,15 @@ public class Multipart {
         httpConn.setRequestProperty("User-Agent", "Java IPFS CLient");
         out = httpConn.getOutputStream();
         writer = new PrintWriter(new OutputStreamWriter(out, charset), true);
+    }
+
+    public static String createBoundary() {
+        Random r = new Random();
+        String allowed = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        StringBuilder b = new StringBuilder();
+        for (int i=0; i < 32; i++)
+            b.append(allowed.charAt(r.nextInt(allowed.length())));
+        return b.toString();
     }
 
     public void addFormField(String name, String value) {

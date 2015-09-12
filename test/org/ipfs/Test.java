@@ -5,13 +5,14 @@ import java.util.*;
 public class Test {
 
     public static void main(String[] a) throws Exception {
-        NamedStreamable.ByteArrayWrapper file1 = new NamedStreamable.ByteArrayWrapper("hello.txt", "G'day world!".getBytes());
-        NamedStreamable.ByteArrayWrapper file2 = new NamedStreamable.ByteArrayWrapper("Gday.txt", "G'day universe!".getBytes());
+        NamedStreamable.ByteArrayWrapper file1 = new NamedStreamable.ByteArrayWrapper("hello.txt", "G'day world! IPFS rocks!".getBytes());
+        NamedStreamable.ByteArrayWrapper file2 = new NamedStreamable.ByteArrayWrapper("Gday.txt", "G'day universe! IPFS rocks!".getBytes());
         byte[] largerData = new byte[100*1024*1024];
         new Random(1).nextBytes(largerData);
         NamedStreamable.ByteArrayWrapper larger = new NamedStreamable.ByteArrayWrapper("nontrivial.txt", largerData);
 
         List<NamedStreamable> inputFiles = Arrays.asList(file1, file2);
+
         IPFS ipfs = new IPFS("127.0.0.1", 5001);
         List<Map<String, Object>> addResult = ipfs.add(inputFiles);
         System.out.println(addResult);
@@ -25,7 +26,7 @@ public class Test {
                 throw new IllegalStateException("Different contents!");
             System.out.println("File contents: " + new String(catResult));
 
-            Object pinAddResult = ipfs.pinAdd(hash);
+//            Object pinAddResult = ipfs.pinAdd(hash);
             Object pinLsResult = ipfs.pinLs();
             Object pinRmResult = ipfs.pinRm(hash);
         }
