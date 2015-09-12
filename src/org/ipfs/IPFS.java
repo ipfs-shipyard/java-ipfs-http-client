@@ -50,8 +50,16 @@ public class IPFS
         version,
         bitswap
     }
-    
-    public static List<Map<String, Object>> add(String host, int port, List<NamedStreamable> files) throws IOException {
+
+    public final String host;
+    public final int port;
+
+    public IPFS(String host, int port) {
+        this.host = host;
+        this.port = port;
+    }
+
+    public List<Map<String, Object>> add(List<NamedStreamable> files) throws IOException {
         Multipart m = new Multipart("http://"+host+":"+port+"/api/v0/add?stream-channels=true", "UTF-8");
         for (NamedStreamable f: files)
             m.addFilePart("file", f);
@@ -59,35 +67,31 @@ public class IPFS
         return JSONParser.parseStream(res).stream().map(x -> (Map<String, Object>)x).collect(Collectors.toList());
     }
 
-    public static Object pinAdd(String host, int port, Hash hash) throws IOException {
+    public Object pinAdd(Hash hash) throws IOException {
         URL target = new URL("http", host, port, "/api/v0/pin/add?stream-channels=true&arg=" + hash.toString());
         byte[] res = get(target);
-        System.out.println(new String(res));
         return JSONParser.parse(new String(res));
     }
 
-    public static Object pinLs(String host, int port) throws IOException {
-        URL target = new URL("http", host, port, "/api/v0/pin/ls");
+    public Object pinLs() throws IOException {
+        URL target = new URL("http", host, port, "/api/v0/pin/ls?stream-channels=true");
         byte[] res = get(target);
-        System.out.println(new String(res));
         return JSONParser.parse(new String(res));
     }
 
-    public static Object pinRm(String host, int port, Hash hash) throws IOException {
+    public Object pinRm(Hash hash) throws IOException {
         URL target = new URL("http", host, port, "/api/v0/pin/rm?stream-channels=true&arg=" + hash.toString());
         byte[] res = get(target);
-        System.out.println(new String(res));
         return JSONParser.parse(new String(res));
     }
 
-    public static Object ls(String host, int port, Hash hash) throws IOException {
+    public Object ls(Hash hash) throws IOException {
         URL target = new URL("http", host, port, "/api/v0/ls/" + hash.toString());
         byte[] res = get(target);
-        System.out.println(new String(res));
         return JSONParser.parse(new String(res));
     }
 
-    public static byte[] cat(String host, int port, Hash hash) throws IOException {
+    public byte[] cat(Hash hash) throws IOException {
         URL target = new URL("http", host, port, "/api/v0/cat/" + hash.toString());
         return get(target);
     }
@@ -125,29 +129,5 @@ public class IPFS
         while ((r=in.read(buf)) >= 0)
             resp.write(buf, 0, r);
         return resp.toByteArray();
-    }
-
-    public static void main(String[] a) throws Exception {
-        NamedStreamable.ByteArrayWrapper file1 = new NamedStreamable.ByteArrayWrapper("hello.txt", "G'day world!".getBytes());
-        NamedStreamable.ByteArrayWrapper file2 = new NamedStreamable.ByteArrayWrapper("Gday.txt", "G'day universe!".getBytes());
-        byte[] largerData = new byte[100*1024*1024];
-        new Random(1).nextBytes(largerData);
-        NamedStreamable.ByteArrayWrapper larger = new NamedStreamable.ByteArrayWrapper("nontrivial.txt", largerData);
-
-        List<NamedStreamable> inputFiles = Arrays.asList(file1, file2);
-        List<Map<String, Object>> addResult = add("127.0.0.1", 5001, inputFiles);
-        System.out.println(addResult);
-        for (int i=0; i < addResult.size(); i++) {
-            Map m = (Map) addResult.get(i);
-            Hash hash = new Hash((String) m.get("Hash"));
-            Object pinLsResult = pinLs("127.0.0.1", 5001);
-            Object pinAddResult = pinAdd("127.0.0.1", 5001, hash);
-            Object lsResult = ls("127.0.0.1", 5001, hash);
-            System.out.println(lsResult);
-            byte[] catResult = cat("127.0.0.1", 5001, hash);
-            if (!new String(catResult).equals(new String(inputFiles.get(i).getContents())))
-                throw new IllegalStateException("Different contents!");
-            System.out.println(catResult);
-        }
     }
 }
