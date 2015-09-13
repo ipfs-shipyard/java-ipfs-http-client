@@ -52,7 +52,7 @@ public class IPFS
         for (NamedStreamable f: files)
             m.addFilePart("file", f);
         String res = m.finish();
-        return JSONParser.parseStream(res).stream().map(x -> Hash.fromJSON((Map<String, Object>)x)).collect(Collectors.toList());
+        return JSONParser.parseStream(res).stream().map(x -> Hash.fromJSON((Map<String, Object>) x)).collect(Collectors.toList());
     }
 
     public Object pinAdd(Hash hash) throws IOException {
@@ -67,16 +67,18 @@ public class IPFS
         return JSONParser.parse(new String(res));
     }
 
-    public Object pinRm(Hash hash) throws IOException {
-        URL target = new URL("http", host, port, "/api/v0/pin/rm?stream-channels=true&arg=" + hash.hash);
+    public List<Hash> pinRm(Hash hash, boolean recursive) throws IOException {
+        URL target = new URL("http", host, port, "/api/v0/pin/rm?stream-channels=true&r="+recursive+"&arg=" + hash.hash);
         byte[] res = get(target);
-        return JSONParser.parse(new String(res));
+        Map json = (Map)JSONParser.parse(new String(res));
+        return ((List<Object>)json.get("Pinned")).stream().map(x -> new Hash((String)x)).collect(Collectors.toList());
     }
 
-    public Object ls(Hash hash) throws IOException {
+    public List<MerkleNode> ls(Hash hash) throws IOException {
         URL target = new URL("http", host, port, "/api/v0/ls/" + hash.hash);
-        byte[] res = get(target);
-        return JSONParser.parse(new String(res));
+        byte[] raw = get(target);
+        Map res = (Map) JSONParser.parse(new String(raw));
+        return ((List<Object>)res.get("Objects")).stream().map(x -> MerkleNode.fromJSON((Map) x)).collect(Collectors.toList());
     }
 
     public byte[] cat(Hash hash) throws IOException {

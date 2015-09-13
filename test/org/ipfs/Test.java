@@ -12,7 +12,18 @@ public class Test {
             List<NamedStreamable> inputFiles = Arrays.asList(file1);
             IPFS ipfs = new IPFS("127.0.0.1", 5001);
             List<Hash> addResult = ipfs.add(inputFiles);
-            System.out.println(addResult);
+            Hash hash = addResult.get(0);
+            List<MerkleNode> lsResult = ipfs.ls(hash);
+            if (lsResult.size() != 1)
+                throw new IllegalStateException("Incorrect number of objects in ls!");
+            if (!lsResult.get(0).hash.equals(hash))
+                throw new IllegalStateException("Object not returned in ls!");
+            byte[] catResult = ipfs.cat(hash);
+            if (!new String(catResult).equals(new String(file1.getContents())))
+                throw new IllegalStateException("Different contents!");
+            List<Hash> pinRm = ipfs.pinRm(hash, true);
+            if (!pinRm.get(0).equals(hash))
+                throw new IllegalStateException("Didn't remove file!");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -41,7 +52,7 @@ public class Test {
 
 //            Object pinAddResult = ipfs.pinAdd(hash);
             Object pinLsResult = ipfs.pinLs();
-            Object pinRmResult = ipfs.pinRm(hash);
+            Object pinRmResult = ipfs.pinRm(hash, true);
         }
     }
 }

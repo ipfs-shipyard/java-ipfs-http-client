@@ -21,12 +21,12 @@ public class Hash {
         if (!(b instanceof Hash))
             return false;
         Hash other = (Hash) b;
-        return hash.equals(other.hash) && name.equals(other.name);
+        return hash.equals(other.hash); // ignore name hash says it all
     }
 
     @Override
     public int hashCode() {
-        return hash.hashCode() ^ name.hashCode();
+        return hash.hashCode();
     }
 
     public static Hash fromJSON(Map json) {
