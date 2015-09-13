@@ -8,18 +8,6 @@ import java.util.stream.*;
 public class IPFS
 {
 
-    public static class Hash {
-        private final String hash;
-
-        public Hash(String hash) {
-            this.hash = hash;
-        }
-
-        public String toString() {
-            return hash;
-        }
-    }
-
     public enum Command {
         add,
         block,
@@ -59,16 +47,16 @@ public class IPFS
         this.port = port;
     }
 
-    public List<Map<String, Object>> add(List<NamedStreamable> files) throws IOException {
+    public List<Hash> add(List<NamedStreamable> files) throws IOException {
         Multipart m = new Multipart("http://"+host+":"+port+"/api/v0/add?stream-channels=true", "UTF-8");
         for (NamedStreamable f: files)
             m.addFilePart("file", f);
         String res = m.finish();
-        return JSONParser.parseStream(res).stream().map(x -> (Map<String, Object>)x).collect(Collectors.toList());
+        return JSONParser.parseStream(res).stream().map(x -> Hash.fromJSON((Map<String, Object>)x)).collect(Collectors.toList());
     }
 
     public Object pinAdd(Hash hash) throws IOException {
-        URL target = new URL("http", host, port, "/api/v0/pin/add?stream-channels=true&arg=" + hash.toString());
+        URL target = new URL("http", host, port, "/api/v0/pin/add?stream-channels=true&arg=" + hash.hash);
         byte[] res = get(target);
         return JSONParser.parse(new String(res));
     }
@@ -80,19 +68,19 @@ public class IPFS
     }
 
     public Object pinRm(Hash hash) throws IOException {
-        URL target = new URL("http", host, port, "/api/v0/pin/rm?stream-channels=true&arg=" + hash.toString());
+        URL target = new URL("http", host, port, "/api/v0/pin/rm?stream-channels=true&arg=" + hash.hash);
         byte[] res = get(target);
         return JSONParser.parse(new String(res));
     }
 
     public Object ls(Hash hash) throws IOException {
-        URL target = new URL("http", host, port, "/api/v0/ls/" + hash.toString());
+        URL target = new URL("http", host, port, "/api/v0/ls/" + hash.hash);
         byte[] res = get(target);
         return JSONParser.parse(new String(res));
     }
 
     public byte[] cat(Hash hash) throws IOException {
-        URL target = new URL("http", host, port, "/api/v0/cat/" + hash.toString());
+        URL target = new URL("http", host, port, "/api/v0/cat/" + hash.hash);
         return get(target);
     }
 
