@@ -4,17 +4,17 @@ import java.util.*;
 import java.util.stream.*;
 
 public class MerkleNode {
-    public final Hash hash;
-    public final List<Hash> links;
+    public final MerkleObject merkleObject;
+    public final List<MerkleObject> links;
 
-    public MerkleNode(Hash hash, List<Hash> links) {
-        this.hash = hash;
+    public MerkleNode(MerkleObject merkleObject, List<MerkleObject> links) {
+        this.merkleObject = merkleObject;
         this.links = links;
     }
 
     public static MerkleNode fromJSON(Map json) {
-        Hash hash = new Hash((String)json.get("Hash"));
-        List<Hash> links = ((List<Object>)json.get("Links")).stream().map(x -> new Hash((String)x)).collect(Collectors.toList());
-        return new MerkleNode(hash, links);
+        MerkleObject merkleObject = new MerkleObject((String)json.get("Hash"));
+        List<MerkleObject> links = ((List<Object>)json.get("Links")).stream().map(x -> MerkleObject.fromJSON(x)).collect(Collectors.toList());
+        return new MerkleNode(merkleObject, links);
     }
 }
