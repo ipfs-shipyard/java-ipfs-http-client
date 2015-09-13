@@ -5,6 +5,8 @@ import java.util.*;
 
 public class Test {
 
+    IPFS ipfs = new IPFS("127.0.0.1", 5001);
+
     @org.junit.Test
     public void singleFileTest() {
         NamedStreamable.ByteArrayWrapper file = new NamedStreamable.ByteArrayWrapper("hello.txt", "G'day world! IPFS rocks!".getBytes());
@@ -22,7 +24,6 @@ public class Test {
     public void fileTest(NamedStreamable file) {
         try {
             List<NamedStreamable> inputFiles = Arrays.asList(file);
-            IPFS ipfs = new IPFS("127.0.0.1", 5001);
             List<MerkleObject> addResult = ipfs.add(inputFiles);
             MerkleObject merkleObject = addResult.get(0);
             List<MerkleNode> lsResult = ipfs.ls(merkleObject);
@@ -36,6 +37,7 @@ public class Test {
             List<MerkleObject> pinRm = ipfs.pinRm(merkleObject, true);
             if (!pinRm.get(0).equals(merkleObject))
                 throw new IllegalStateException("Didn't remove file!");
+            Object gc = ipfs.gc();
         } catch (IOException e) {
             e.printStackTrace();
         }

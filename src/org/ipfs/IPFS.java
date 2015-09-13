@@ -47,6 +47,12 @@ public class IPFS
         this.port = port;
     }
 
+    public Object gc() throws IOException {
+        URL target = new URL("http", host, port, "/api/v0/repo/gc");
+        byte[] res = get(target);
+        return JSONParser.parse(new String(res));
+    }
+
     public List<MerkleObject> add(List<NamedStreamable> files) throws IOException {
         Multipart m = new Multipart("http://"+host+":"+port+"/api/v0/add?stream-channels=true", "UTF-8");
         for (NamedStreamable f: files)
