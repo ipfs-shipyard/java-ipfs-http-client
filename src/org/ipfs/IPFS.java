@@ -5,8 +5,7 @@ import java.net.*;
 import java.util.*;
 import java.util.stream.*;
 
-public class IPFS
-{
+public class IPFS {
 
     public enum Command {
         add,
@@ -41,55 +40,80 @@ public class IPFS
 
     public final String host;
     public final int port;
+    private final String version;
+    public final Pin pin = new Pin();
+    public final Repo repo = new Repo();
+    public final IPFSObject object = new IPFSObject();
 
     public IPFS(String host, int port) {
+        this(host, port, "/api/v0/");
+    }
+
+    public IPFS(String host, int port, String version) {
         this.host = host;
         this.port = port;
+        this.version = version;
     }
 
-    public Object gc() throws IOException {
-        URL target = new URL("http", host, port, "/api/v0/repo/gc");
-        byte[] res = get(target);
-        return JSONParser.parse(new String(res));
-    }
-
-    public List<MerkleObject> add(List<NamedStreamable> files) throws IOException {
-        Multipart m = new Multipart("http://"+host+":"+port+"/api/v0/add?stream-channels=true", "UTF-8");
-        for (NamedStreamable f: files)
+    public List<MerkleNode> add(List<NamedStreamable> files) throws IOException {
+        Multipart m = new Multipart("http://" + host + ":" + port + version+"add?stream-channels=true", "UTF-8");
+        for (NamedStreamable f : files)
             m.addFilePart("file", f);
         String res = m.finish();
-        return JSONParser.parseStream(res).stream().map(x -> MerkleObject.fromJSON((Map<String, Object>) x)).collect(Collectors.toList());
+        return JSONParser.parseStream(res).stream().map(x -> MerkleNode.fromJSON((Map<String, Object>) x)).collect(Collectors.toList());
     }
 
-    public Object pinAdd(MerkleObject merkleObject) throws IOException {
-        URL target = new URL("http", host, port, "/api/v0/pin/add?stream-channels=true&arg=" + merkleObject.hash);
-        byte[] res = get(target);
-        return JSONParser.parse(new String(res));
-    }
-
-    public Object pinLs() throws IOException {
-        URL target = new URL("http", host, port, "/api/v0/pin/ls?stream-channels=true");
-        byte[] res = get(target);
-        return JSONParser.parse(new String(res));
-    }
-
-    public List<MerkleObject> pinRm(MerkleObject merkleObject, boolean recursive) throws IOException {
-        URL target = new URL("http", host, port, "/api/v0/pin/rm?stream-channels=true&r="+recursive+"&arg=" + merkleObject.hash);
-        byte[] res = get(target);
-        Map json = (Map)JSONParser.parse(new String(res));
-        return ((List<Object>)json.get("Pinned")).stream().map(x -> new MerkleObject((String) x)).collect(Collectors.toList());
-    }
-
-    public List<MerkleNode> ls(MerkleObject merkleObject) throws IOException {
-        URL target = new URL("http", host, port, "/api/v0/ls/" + merkleObject.hash);
+    public List<MerkleNode> ls(MerkleNode merkleObject) throws IOException {
+        URL target = new URL("http", host, port, version + "ls/" + merkleObject.hash);
         byte[] raw = get(target);
         Map res = (Map) JSONParser.parse(new String(raw));
-        return ((List<Object>)res.get("Objects")).stream().map(x -> MerkleNode.fromJSON((Map) x)).collect(Collectors.toList());
+        return ((List<Object>) res.get("Objects")).stream().map(x -> MerkleNode.fromJSON((Map) x)).collect(Collectors.toList());
     }
 
-    public byte[] cat(MerkleObject merkleObject) throws IOException {
-        URL target = new URL("http", host, port, "/api/v0/cat/" + merkleObject.hash);
+    public byte[] cat(MerkleNode merkleObject) throws IOException {
+        URL target = new URL("http", host, port, version + "cat/" + merkleObject.hash);
         return get(target);
+    }
+
+    // level 2 commands
+
+    class Pin {
+        public Object add(MerkleNode merkleObject) throws IOException {
+            URL target = new URL("http", host, port, version + "pin/add?stream-channels=true&arg=" + merkleObject.hash);
+            byte[] res = get(target);
+            return JSONParser.parse(new String(res));
+        }
+
+        public Object ls() throws IOException {
+            URL target = new URL("http", host, port, version + "pin/ls?stream-channels=true");
+            byte[] res = get(target);
+            return JSONParser.parse(new String(res));
+        }
+
+        public List<MerkleNode> rm(MerkleNode merkleObject, boolean recursive) throws IOException {
+            URL target = new URL("http", host, port, version + "pin/rm?stream-channels=true&r=" + recursive + "&arg=" + merkleObject.hash);
+            byte[] res = get(target);
+            Map json = (Map) JSONParser.parse(new String(res));
+            return ((List<Object>) json.get("Pinned")).stream().map(x -> new MerkleNode((String) x)).collect(Collectors.toList());
+        }
+    }
+
+    class Repo {
+        public Object gc() throws IOException {
+            URL target = new URL("http", host, port, version + "repo/gc");
+            byte[] res = get(target);
+            return JSONParser.parse(new String(res));
+        }
+    }
+
+    class IPFSObject {
+        public MerkleNode get(MerkleNode merkleObject) throws IOException {
+            URL target = new URL("http", host, port, version + "object/get?stream-channels=true&arg=" + merkleObject.hash);
+            byte[] res = IPFS.get(target);
+            Map json = (Map)JSONParser.parse(new String(res));
+            json.put("Hash", merkleObject.hash);
+            return MerkleNode.fromJSON(json);
+        }
     }
 
     public static byte[] get(URL target) throws IOException {

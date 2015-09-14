@@ -24,20 +24,31 @@ public class Test {
     public void fileTest(NamedStreamable file) {
         try {
             List<NamedStreamable> inputFiles = Arrays.asList(file);
-            List<MerkleObject> addResult = ipfs.add(inputFiles);
-            MerkleObject merkleObject = addResult.get(0);
+            List<MerkleNode> addResult = ipfs.add(inputFiles);
+            MerkleNode merkleObject = addResult.get(0);
             List<MerkleNode> lsResult = ipfs.ls(merkleObject);
             if (lsResult.size() != 1)
                 throw new IllegalStateException("Incorrect number of objects in ls!");
-            if (!lsResult.get(0).merkleObject.equals(merkleObject))
+            if (!lsResult.get(0).equals(merkleObject))
                 throw new IllegalStateException("Object not returned in ls!");
             byte[] catResult = ipfs.cat(merkleObject);
             if (!Arrays.equals(catResult, file.getContents()))
                 throw new IllegalStateException("Different contents!");
-            List<MerkleObject> pinRm = ipfs.pinRm(merkleObject, true);
+            List<MerkleNode> pinRm = ipfs.pin.rm(merkleObject, true);
             if (!pinRm.get(0).equals(merkleObject))
                 throw new IllegalStateException("Didn't remove file!");
-            Object gc = ipfs.gc();
+            Object gc = ipfs.repo.gc();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @org.junit.Test
+    public void objectTest() {
+        try {
+            MerkleNode pointer = new MerkleNode("QmPZ9gcCEpqKTo6aq61g2nXGUhM4iCL3ewB6LDXZCtioEB");
+            MerkleNode object = ipfs.object.get(pointer);
+            System.out.println(object);
         } catch (IOException e) {
             e.printStackTrace();
         }
