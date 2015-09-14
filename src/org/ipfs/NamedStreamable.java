@@ -1,12 +1,13 @@
 package org.ipfs;
 
 import java.io.*;
+import java.util.*;
 
 public interface NamedStreamable
 {
     InputStream getInputStream() throws IOException;
 
-    String getName();
+    Optional<String> getName();
 
     default byte[] getContents() throws IOException {
         InputStream in = getInputStream();
@@ -29,16 +30,24 @@ public interface NamedStreamable
             return new FileInputStream(source);
         }
 
-        public String getName() {
-            return source.getName();
+        public Optional<String> getName() {
+            return Optional.of(source.getName());
         }
     }
 
     class ByteArrayWrapper implements NamedStreamable {
-        private final String name;
+        private final Optional<String> name;
         private final byte[] data;
 
+        public ByteArrayWrapper(byte[] data) {
+            this(Optional.empty(), data);
+        }
+
         public ByteArrayWrapper(String name, byte[] data) {
+            this(Optional.of(name), data);
+        }
+
+        public ByteArrayWrapper(Optional<String> name, byte[] data) {
             this.name = name;
             this.data = data;
         }
@@ -47,7 +56,7 @@ public interface NamedStreamable
             return new ByteArrayInputStream(data);
         }
 
-        public String getName() {
+        public Optional<String> getName() {
             return name;
         }
     }

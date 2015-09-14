@@ -49,9 +49,12 @@ public class Multipart {
     }
 
     public void addFilePart(String fieldName, NamedStreamable uploadFile) throws IOException {
-        String fileName = uploadFile.getName();
+        Optional<String> fileName = uploadFile.getName();
         writer.append("--" + boundary).append(LINE_FEED);
-        writer.append("Content-Disposition: file; name=\"" + fieldName + "\"; filename=\"" + fileName + "\"").append(LINE_FEED);
+        if (!fileName.isPresent())
+            writer.append("Content-Disposition: file; name=\"" + fieldName + "\";").append(LINE_FEED);
+        else
+            writer.append("Content-Disposition: file; name=\"" + fieldName + "\"; filename=\"" + fileName.get() + "\"").append(LINE_FEED);
         writer.append("Content-Type: application/octet-stream").append(LINE_FEED);
         writer.append("Content-Transfer-Encoding: binary").append(LINE_FEED);
         writer.append(LINE_FEED);

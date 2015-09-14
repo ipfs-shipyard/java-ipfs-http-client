@@ -96,10 +96,31 @@ public class IPFS {
     }
 
     class IPFSObject {
+        public List<MerkleNode> put(List<byte[]> data) throws IOException {
+            Multipart m = new Multipart("http://" + host + ":" + port + version+"add?stream-channels=true", "UTF-8");
+            for (byte[] f : data)
+                m.addFilePart("file", new NamedStreamable.ByteArrayWrapper(f));
+            String res = m.finish();
+            return JSONParser.parseStream(res).stream().map(x -> MerkleNode.fromJSON((Map<String, Object>) x)).collect(Collectors.toList());
+        }
+
         public MerkleNode get(MerkleNode merkleObject) throws IOException {
             Map json = (Map)retrieveAndParse("object/get?stream-channels=true&arg=" + merkleObject.hash);
             json.put("Hash", merkleObject.hash);
             return MerkleNode.fromJSON(json);
+        }
+
+        public MerkleNode links(MerkleNode merkleObject) throws IOException {
+            Map json = (Map)retrieveAndParse("object/links?stream-channels=true&arg=" + merkleObject.hash);
+            return MerkleNode.fromJSON(json);
+        }
+
+        public Map<String, Object> stat(MerkleNode merkleObject) throws IOException {
+            return (Map)retrieveAndParse("object/stat?stream-channels=true&arg=" + merkleObject.hash);
+        }
+
+        public byte[] data(MerkleNode merkleObject) throws IOException {
+            return retrieve("object/data?stream-channels=true&arg=" + merkleObject.hash);
         }
     }
 
@@ -111,6 +132,12 @@ public class IPFS {
     public byte[] retrieve(String path) throws IOException {
         URL target = new URL("http", host, port, version + path);
         return IPFS.get(target);
+    }
+
+    public Object retrieveAndParsePost(String path, byte[] body) throws IOException {
+        URL target = new URL("http", host, port, version + path);
+        byte[] res = post(target, body, Collections.EMPTY_MAP);
+        return JSONParser.parse(new String(res));
     }
 
     public static byte[] get(URL target) throws IOException {
@@ -134,6 +161,7 @@ public class IPFS {
             conn.setRequestProperty(key, headers.get(key));
         conn.setDoOutput(true);
         conn.setRequestMethod("POST");
+        conn.setRequestProperty("Content-Type", "application/json");
         OutputStream out = conn.getOutputStream();
         out.write(body);
         out.flush();
