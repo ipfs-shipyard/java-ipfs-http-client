@@ -8,10 +8,8 @@ import java.util.stream.*;
 public class IPFS {
 
     public enum Command {
-        add,
-        block,
+        // TODO
         bootstrap,
-        cat,
         commands,
         config,
         dht,
@@ -20,17 +18,12 @@ public class IPFS {
         get,
         id,
         log,
-        ls,
         mount,
         name,
-        object,
-        pin,
         ping,
         refs,
-        repo,
         resolve,
         stats,
-        swarm,
         tour,
         file,
         update,
@@ -45,6 +38,8 @@ public class IPFS {
     public final Repo repo = new Repo();
     public final IPFSObject object = new IPFSObject();
     public final Swarm swarm = new Swarm();
+    public final Block block = new Block();
+    public final Diag diag = new Diag();
 
     public IPFS(String host, int port) {
         this(host, port, "/api/v0/");
@@ -75,6 +70,8 @@ public class IPFS {
 
     // level 2 commands
 
+    /* Pinning an object ensure a local copy of it is kept.
+     */
     class Pin {
         public Object add(MerkleNode merkleObject) throws IOException {
             return retrieveAndParse("pin/add?stream-channels=true&arg=" + merkleObject.hash);
@@ -90,15 +87,35 @@ public class IPFS {
         }
     }
 
+    /* 'ipfs repo' is a plumbing command used to manipulate the repo.
+     */
     class Repo {
         public Object gc() throws IOException {
             return retrieveAndParse("repo/gc");
         }
     }
 
+    /* 'ipfs block' is a plumbing command used to manipulate raw ipfs blocks.
+     */
+    class Block {
+        public byte[] get(MerkleNode merkleObject) throws IOException {
+            return retrieve("block/get?stream-channels=true&arg=" + merkleObject.hash);
+        }
+
+        public List<MerkleNode> put(List<byte[]> data) throws IOException {
+            Multipart m = new Multipart("http://" + host + ":" + port + version+"block/put?stream-channels=true", "UTF-8");
+            for (byte[] f : data)
+                m.addFilePart("file", new NamedStreamable.ByteArrayWrapper(f));
+            String res = m.finish();
+            return JSONParser.parseStream(res).stream().map(x -> MerkleNode.fromJSON((Map<String, Object>) x)).collect(Collectors.toList());
+        }
+    }
+
+    /* 'ipfs object' is a plumbing command used to manipulate DAG objects directly.
+     */
     class IPFSObject {
         public List<MerkleNode> put(List<byte[]> data) throws IOException {
-            Multipart m = new Multipart("http://" + host + ":" + port + version+"add?stream-channels=true", "UTF-8");
+            Multipart m = new Multipart("http://" + host + ":" + port + version+"object/put?stream-channels=true", "UTF-8");
             for (byte[] f : data)
                 m.addFilePart("file", new NamedStreamable.ByteArrayWrapper(f));
             String res = m.finish();
@@ -127,10 +144,25 @@ public class IPFS {
         // TODO new, patch
     }
 
+    /*  ipfs swarm is a tool to manipulate the network swarm. The swarm is the
+        component that opens, listens for, and maintains connections to other
+        ipfs peers in the internet.
+     */
     class Swarm {
         public List<NodeAddress> peers() throws IOException {
-            Map m = (Map)retrieveAndParse("swarm/peers?stream-channels=true&arg=");
+            Map m = (Map)retrieveAndParse("swarm/peers?stream-channels=true");
             return ((List<Object>)m.get("Strings")).stream().map(x -> new NodeAddress((String)x)).collect(Collectors.toList());
+        }
+
+        public Map<String, Object> addrs() throws IOException {
+            Map m = (Map)retrieveAndParse("swarm/addrs?stream-channels=true");
+            return (Map<String, Object>)m.get("Addrs");
+        }
+    }
+
+    class Diag {
+        public String net() throws IOException {
+            return new String(retrieve("diag/net?stream-channels=true"));
         }
     }
 

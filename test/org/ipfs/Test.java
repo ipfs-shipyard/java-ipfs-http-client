@@ -13,7 +13,7 @@ public class Test {
         fileTest(file);
     }
 
-    @org.junit.Test
+//    @org.junit.Test
     public void largeFileTest() {
         byte[] largerData = new byte[100*1024*1024];
         new Random(1).nextBytes(largerData);
@@ -54,6 +54,17 @@ public class Test {
             Map stat = ipfs.object.stat(pointer);
             System.out.println(object);
         } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @org.junit.Test
+    public void blockTest() {
+        try {
+            MerkleNode pointer = new MerkleNode("QmPZ9gcCEpqKTo6aq61g2nXGUhM4iCL3ewB6LDXZCtioEB");
+            byte[] object = ipfs.block.get(pointer);
+            List<MerkleNode> newPointer = ipfs.block.put(Arrays.asList("Some random data...".getBytes()));
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -62,7 +73,19 @@ public class Test {
     public void swarmTest() {
         try {
             List<NodeAddress> peers = ipfs.swarm.peers();
+            Map<String, Object> addrs = ipfs.swarm.addrs();
+
             System.out.println(peers);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @org.junit.Test
+    public void diagTest() {
+        try {
+            String net = ipfs.diag.net();
+            System.out.println(net);
         } catch (IOException e) {
             e.printStackTrace();
         }

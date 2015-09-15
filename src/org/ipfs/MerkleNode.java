@@ -46,6 +46,8 @@ public class MerkleNode {
             return new MerkleNode((String)rawjson);
         Map json = (Map)rawjson;
         String hash = (String)json.get("Hash");
+        if (hash == null)
+            hash = (String)json.get("Key");
         Optional<String> name = json.containsKey("Name") ? Optional.of((String)json.get("Name")): Optional.empty();
         Optional<Integer> size = json.containsKey("Size") ? Optional.<Integer>empty().of((Integer) json.get("Size")): Optional.<Integer>empty().empty();
         Optional<Integer> type = json.containsKey("Type") ? Optional.<Integer>empty().of((Integer) json.get("Type")): Optional.<Integer>empty().empty();
