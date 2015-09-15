@@ -44,6 +44,7 @@ public class IPFS {
     public final Pin pin = new Pin();
     public final Repo repo = new Repo();
     public final IPFSObject object = new IPFSObject();
+    public final Swarm swarm = new Swarm();
 
     public IPFS(String host, int port) {
         this(host, port, "/api/v0/");
@@ -121,6 +122,15 @@ public class IPFS {
 
         public byte[] data(MerkleNode merkleObject) throws IOException {
             return retrieve("object/data?stream-channels=true&arg=" + merkleObject.hash);
+        }
+
+        // TODO new, patch
+    }
+
+    class Swarm {
+        public List<NodeAddress> peers() throws IOException {
+            Map m = (Map)retrieveAndParse("swarm/peers?stream-channels=true&arg=");
+            return ((List<Object>)m.get("Strings")).stream().map(x -> new NodeAddress((String)x)).collect(Collectors.toList());
         }
     }
 

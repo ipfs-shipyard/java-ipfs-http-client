@@ -57,4 +57,14 @@ public class Test {
             e.printStackTrace();
         }
     }
+
+    @org.junit.Test
+    public void swarmTest() {
+        try {
+            List<NodeAddress> peers = ipfs.swarm.peers();
+            System.out.println(peers);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }
