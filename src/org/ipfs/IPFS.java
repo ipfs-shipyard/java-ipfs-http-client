@@ -10,7 +10,6 @@ public class IPFS {
     public enum Command {
         // TODO
         bootstrap,
-        commands,
         config,
         dht,
         diag,
@@ -40,6 +39,7 @@ public class IPFS {
     public final Swarm swarm = new Swarm();
     public final Block block = new Block();
     public final Diag diag = new Diag();
+    public final Name name = new Name();
 
     public IPFS(String host, int port) {
         this(host, port, "/api/v0/");
@@ -111,7 +111,7 @@ public class IPFS {
         }
     }
 
-    /* 'ipfs object' is a plumbing command used to manipulate DAG objects directly.
+    /* 'ipfs object' is a plumbing command used to manipulate DAG objects directly. {Object} is a subset of {Block}
      */
     class IPFSObject {
         public List<MerkleNode> put(List<byte[]> data) throws IOException {
@@ -144,6 +144,15 @@ public class IPFS {
         // TODO new, patch
     }
 
+    class Name {
+        // publish
+
+        // resolve
+    }
+
+
+    // Network commands
+
     /*  ipfs swarm is a tool to manipulate the network swarm. The swarm is the
         component that opens, listens for, and maintains connections to other
         ipfs peers in the internet.
@@ -166,23 +175,37 @@ public class IPFS {
         }
     }
 
-    public Object retrieveAndParse(String path) throws IOException {
+    public Map ping(String target) throws IOException {
+        return (Map)retrieveAndParse("ping/"+target.toString());
+    }
+
+    // Tools
+    public String version() throws IOException {
+        Map m = (Map)retrieveAndParse("version");
+        return (String)m.get("Version");
+    }
+
+    public Map commands() throws IOException {
+        return (Map)retrieveAndParse("commands");
+    }
+
+    private Object retrieveAndParse(String path) throws IOException {
         byte[] res = retrieve(path);
         return JSONParser.parse(new String(res));
     }
 
-    public byte[] retrieve(String path) throws IOException {
+    private byte[] retrieve(String path) throws IOException {
         URL target = new URL("http", host, port, version + path);
         return IPFS.get(target);
     }
 
-    public Object retrieveAndParsePost(String path, byte[] body) throws IOException {
+    private Object retrieveAndParsePost(String path, byte[] body) throws IOException {
         URL target = new URL("http", host, port, version + path);
         byte[] res = post(target, body, Collections.EMPTY_MAP);
         return JSONParser.parse(new String(res));
     }
 
-    public static byte[] get(URL target) throws IOException {
+    private static byte[] get(URL target) throws IOException {
         HttpURLConnection conn = (HttpURLConnection) target.openConnection();
         conn.setRequestMethod("GET");
         conn.setRequestProperty("Content-Type", "application/json");
@@ -197,7 +220,7 @@ public class IPFS {
         return resp.toByteArray();
     }
 
-    public static byte[] post(URL target, byte[] body, Map<String, String> headers) throws IOException {
+    private static byte[] post(URL target, byte[] body, Map<String, String> headers) throws IOException {
         HttpURLConnection conn = (HttpURLConnection) target.openConnection();
         for (String key: headers.keySet())
             conn.setRequestProperty(key, headers.get(key));

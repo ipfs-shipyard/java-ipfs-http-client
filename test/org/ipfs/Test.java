@@ -39,7 +39,7 @@ public class Test {
                 throw new IllegalStateException("Didn't remove file!");
             Object gc = ipfs.repo.gc();
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 
@@ -65,7 +65,7 @@ public class Test {
             byte[] object = ipfs.block.get(pointer);
             List<MerkleNode> newPointer = ipfs.block.put(Arrays.asList("Some random data...".getBytes()));
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 
@@ -74,10 +74,13 @@ public class Test {
         try {
             List<NodeAddress> peers = ipfs.swarm.peers();
             Map<String, Object> addrs = ipfs.swarm.addrs();
-
+            if (addrs.size() > 0) {
+                Map ping = ipfs.ping(addrs.keySet().stream().findAny().get());
+                System.out.println(ping);
+            }
             System.out.println(peers);
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 
@@ -87,7 +90,19 @@ public class Test {
             String net = ipfs.diag.net();
             System.out.println(net);
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+    }
+
+    @org.junit.Test
+    public void toolsTest() {
+        try {
+            String version = ipfs.version();
+            System.out.println(version);
+            Map commands = ipfs.commands();
+            System.out.println(commands);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }
