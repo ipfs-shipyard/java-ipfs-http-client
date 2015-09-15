@@ -9,24 +9,19 @@ public class IPFS {
 
     public enum Command {
         // TODO
-        bootstrap,
         config,
         dht,
         diag,
         dns,
         get,
-        id,
-        log,
         mount,
         name,
-        ping,
         refs,
         resolve,
         stats,
         tour,
         file,
         update,
-        version,
         bitswap
     }
 
@@ -153,6 +148,10 @@ public class IPFS {
 
     // Network commands
 
+    public Map bootstrap() throws IOException {
+        return (Map)retrieveAndParse("bootstrap/");
+    }
+
     /*  ipfs swarm is a tool to manipulate the network swarm. The swarm is the
         component that opens, listens for, and maintains connections to other
         ipfs peers in the internet.
@@ -179,6 +178,10 @@ public class IPFS {
         return (Map)retrieveAndParse("ping/"+target.toString());
     }
 
+    public Map id(String target) throws IOException {
+        return (Map)retrieveAndParse("id/"+target.toString());
+    }
+
     // Tools
     public String version() throws IOException {
         Map m = (Map)retrieveAndParse("version");
@@ -187,6 +190,10 @@ public class IPFS {
 
     public Map commands() throws IOException {
         return (Map)retrieveAndParse("commands");
+    }
+
+    public Map log() throws IOException {
+        return (Map)retrieveAndParse("log/tail");
     }
 
     private Object retrieveAndParse(String path) throws IOException {

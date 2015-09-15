@@ -72,12 +72,14 @@ public class Test {
     @org.junit.Test
     public void swarmTest() {
         try {
-            List<NodeAddress> peers = ipfs.swarm.peers();
+            Map bootstrap = ipfs.bootstrap();
             Map<String, Object> addrs = ipfs.swarm.addrs();
             if (addrs.size() > 0) {
+                Map id = ipfs.id(addrs.keySet().stream().findAny().get());
                 Map ping = ipfs.ping(addrs.keySet().stream().findAny().get());
                 System.out.println(ping);
             }
+            List<NodeAddress> peers = ipfs.swarm.peers();
             System.out.println(peers);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -87,6 +89,7 @@ public class Test {
     @org.junit.Test
     public void diagTest() {
         try {
+            Object log = ipfs.log();
             String net = ipfs.diag.net();
             System.out.println(net);
         } catch (IOException e) {
