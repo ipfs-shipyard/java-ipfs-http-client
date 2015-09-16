@@ -55,4 +55,23 @@ public class MerkleNode {
         Optional<byte[]> data = json.containsKey("Data") ? Optional.of(((String)json.get("Data")).getBytes()): Optional.empty();
         return new MerkleNode(hash, name, size, type, links, data);
     }
+
+    public Object toJSON() {
+        Map res = new TreeMap<>();
+        res.put("Hash", hash);
+        res.put("Links", links.stream().map(x -> x.hash).collect(Collectors.toList()));
+        if (data.isPresent())
+            res.put("Data", data.get());
+        if (name.isPresent())
+            res.put("Name", name.get());
+        if (size.isPresent())
+            res.put("Size", size.get());
+        if (type.isPresent())
+            res.put("Type", type.get());
+        return res;
+    }
+
+    public String toJSONString() {
+        return JSONParser.toString(toJSON());
+    }
 }

@@ -60,9 +60,9 @@ public class Test {
     @org.junit.Test
     public void objectTest() {
         try {
-            List<MerkleNode> newPointer = ipfs.object.put(Arrays.asList("Some random data".getBytes()));
             MerkleNode pointer = new MerkleNode("QmPZ9gcCEpqKTo6aq61g2nXGUhM4iCL3ewB6LDXZCtioEB");
             MerkleNode object = ipfs.object.get(pointer);
+            List<MerkleNode> newPointer = ipfs.object.put(Arrays.asList(object.toJSONString().getBytes()));
             MerkleNode links = ipfs.object.links(pointer);
             byte[] data = ipfs.object.data(pointer);
             Map stat = ipfs.object.stat(pointer);
