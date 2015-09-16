@@ -33,6 +33,7 @@ public class IPFS {
     public final Block block = new Block();
     public final Diag diag = new Diag();
     public final Config config = new Config();
+    public final Refs refs = new Refs();
     public final Name name = new Name();
 
     public IPFS(String host, int port) {
@@ -62,7 +63,17 @@ public class IPFS {
         return retrieve("cat/" + merkleObject.hash);
     }
 
+    public Map refs(String hash, boolean recursive) throws IOException {
+        Map res = (Map) retrieveAndParse("refs?arg=" + hash +"&r="+recursive);
+        return res;
+    }
+
     // level 2 commands
+    class Refs {
+        public List<String> local() throws IOException {
+            return Arrays.asList(new String(retrieve("refs/local")).split("\n"));
+        }
+    }
 
     /* Pinning an object ensure a local copy of it is kept.
      */

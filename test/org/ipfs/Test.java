@@ -44,6 +44,20 @@ public class Test {
     }
 
     @org.junit.Test
+    public void refsTest() {
+        try {
+            List<String> local = ipfs.refs.local();
+            for (String ref: local) {
+                Object refs = ipfs.refs(ref, false);
+                if (refs != null)
+                    System.out.println(refs);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @org.junit.Test
     public void objectTest() {
         try {
             List<MerkleNode> newPointer = ipfs.object.put(Arrays.asList("Some random data".getBytes()));
