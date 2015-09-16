@@ -211,8 +211,10 @@ public class IPFS {
             return (Map)retrieveAndParse("config/show");
         }
 
-        public Map replace(String configFileName) throws IOException {
-            return (Map)retrieveAndParse("config/replace?arg=" + configFileName);
+        public void replace(NamedStreamable file) throws IOException {
+            Multipart m = new Multipart("http://" + host + ":" + port + version+"config/replace?stream-channels=true", "UTF-8");
+            m.addFilePart("file", file);
+            String res = m.finish();
         }
 
         public String get(String key) throws IOException {

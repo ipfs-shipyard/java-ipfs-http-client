@@ -106,12 +106,7 @@ public class Test {
             Map config = ipfs.config.show();
             String val = ipfs.config.get("Datastore.Path");
             Map setResult = ipfs.config.set("Datastore.Path", val);
-            File conf = new File("conf");
-            FileOutputStream fout = new FileOutputStream(conf);
-            fout.write(JSONParser.toString(config).getBytes());
-            fout.flush();
-            fout.close();
-            Map configReplace = ipfs.config.replace(conf.getAbsolutePath());
+            ipfs.config.replace(new NamedStreamable.ByteArrayWrapper(JSONParser.toString(config).getBytes()));
             Object log = ipfs.log();
             String net = ipfs.diag.net();
             System.out.println(net);
