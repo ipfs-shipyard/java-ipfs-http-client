@@ -9,9 +9,7 @@ public class IPFS {
 
     public enum Command {
         // TODO
-        config,
         dht,
-        diag,
         dns,
         get,
         mount,
@@ -34,6 +32,7 @@ public class IPFS {
     public final Swarm swarm = new Swarm();
     public final Block block = new Block();
     public final Diag diag = new Diag();
+    public final Config config = new Config();
     public final Name name = new Name();
 
     public IPFS(String host, int port) {
@@ -194,6 +193,25 @@ public class IPFS {
 
     public Map log() throws IOException {
         return (Map)retrieveAndParse("log/tail");
+    }
+
+    class Config {
+        public Map show() throws IOException {
+            return (Map)retrieveAndParse("config/show");
+        }
+
+        public Map replace(String configFileName) throws IOException {
+            return (Map)retrieveAndParse("config/replace?arg=" + configFileName);
+        }
+
+        public String get(String key) throws IOException {
+            Map m = (Map)retrieveAndParse("config?arg="+key);
+            return (String)m.get("Value");
+        }
+
+        public Map set(String key, String value) throws IOException {
+            return (Map)retrieveAndParse("config?arg="+key+"&arg="+value);
+        }
     }
 
     private Object retrieveAndParse(String path) throws IOException {
