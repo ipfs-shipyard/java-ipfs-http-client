@@ -11,7 +11,6 @@ public class IPFS {
         // TODO
         dht,
         dns,
-        get,
         mount,
         name,
         resolve,
@@ -33,6 +32,7 @@ public class IPFS {
     public final Diag diag = new Diag();
     public final Config config = new Config();
     public final Refs refs = new Refs();
+    public final Update update = new Update();
     public final Name name = new Name();
 
     public IPFS(String host, int port) {
@@ -153,9 +153,9 @@ public class IPFS {
     }
 
     class Name {
-        // publish
+        // TODO publish
 
-        // resolve
+        // TODO resolve
     }
 
 
@@ -227,6 +227,20 @@ public class IPFS {
 
         public Map set(String key, String value) throws IOException {
             return (Map)retrieveAndParse("config?arg="+key+"&arg="+value);
+        }
+    }
+
+    public Object update() throws IOException {
+        return retrieveAndParse("update");
+    }
+
+    class Update {
+        public Object check() throws IOException {
+            return retrieveAndParse("update/check");
+        }
+
+        public Object log() throws IOException {
+            return retrieveAndParse("update/log");
         }
     }
 

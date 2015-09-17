@@ -127,4 +127,15 @@ public class Test {
             throw new RuntimeException(e);
         }
     }
+
+    // this api is disbaled until deployment over IPFS is enabled
+    public void updateTest() {
+        try {
+            Object check = ipfs.update.check();
+            Object update = ipfs.update();
+            System.out.println(update);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
