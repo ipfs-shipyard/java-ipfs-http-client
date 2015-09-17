@@ -9,15 +9,11 @@ public class IPFS {
 
     public enum Command {
         // TODO
-        dht,
         dns,
         mount,
-        name,
         resolve,
         stats,
         tour,
-        file,
-        update,
         bitswap
     }
 
@@ -33,6 +29,8 @@ public class IPFS {
     public final Config config = new Config();
     public final Refs refs = new Refs();
     public final Update update = new Update();
+    public final DHT dht = new DHT();
+    public final File file = new File();
     public final Name name = new Name();
 
     public IPFS(String host, int port) {
@@ -117,6 +115,8 @@ public class IPFS {
             String res = m.finish();
             return JSONParser.parseStream(res).stream().map(x -> MerkleNode.fromJSON((Map<String, Object>) x)).collect(Collectors.toList());
         }
+
+        //TODO stat
     }
 
     /* 'ipfs object' is a plumbing command used to manipulate DAG objects directly. {Object} is a subset of {Block}
@@ -158,6 +158,15 @@ public class IPFS {
         // TODO resolve
     }
 
+    class DHT {
+        // TODO findprovs get put
+    }
+
+    class File {
+        public Map ls(String path) throws IOException {
+            return (Map)retrieveAndParse("file/ls?arg=" +path);
+        }
+    }
 
     // Network commands
 
@@ -179,6 +188,8 @@ public class IPFS {
             Map m = (Map)retrieveAndParse("swarm/addrs?stream-channels=true");
             return (Map<String, Object>)m.get("Addrs");
         }
+
+        // TODO connect, disconnect
     }
 
     class Diag {

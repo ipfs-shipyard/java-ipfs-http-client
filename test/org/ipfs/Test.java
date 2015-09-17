@@ -67,7 +67,6 @@ public class Test {
             MerkleNode links = ipfs.object.links(pointer);
             byte[] data = ipfs.object.data(pointer);
             Map stat = ipfs.object.stat(pointer);
-            System.out.println(object);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -85,6 +84,19 @@ public class Test {
     }
 
     @org.junit.Test
+    public void fileTest() {
+        try {
+            List<String> local = ipfs.refs.local();
+            for (String hash: local) {
+                Map ls = ipfs.file.ls(hash);
+                System.out.println(ls);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @org.junit.Test
     public void swarmTest() {
         try {
             Map bootstrap = ipfs.bootstrap();
@@ -95,7 +107,6 @@ public class Test {
                 System.out.println(ping);
             }
             List<NodeAddress> peers = ipfs.swarm.peers();
-            System.out.println(peers);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -110,7 +121,6 @@ public class Test {
             ipfs.config.replace(new NamedStreamable.ByteArrayWrapper(JSONParser.toString(config).getBytes()));
 //            Object log = ipfs.log();
             String net = ipfs.diag.net();
-            System.out.println(net);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
