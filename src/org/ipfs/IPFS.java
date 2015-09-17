@@ -14,7 +14,6 @@ public class IPFS {
         get,
         mount,
         name,
-        refs,
         resolve,
         stats,
         tour,
@@ -61,6 +60,10 @@ public class IPFS {
 
     public byte[] cat(MerkleNode merkleObject) throws IOException {
         return retrieve("cat/" + merkleObject.hash);
+    }
+
+    public byte[] get(MerkleNode merkleObject) throws IOException {
+        return retrieve("get/" + merkleObject.hash);
     }
 
     public Map refs(String hash, boolean recursive) throws IOException {

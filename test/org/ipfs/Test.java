@@ -32,6 +32,7 @@ public class Test {
             if (!lsResult.get(0).equals(merkleObject))
                 throw new IllegalStateException("Object not returned in ls!");
             byte[] catResult = ipfs.cat(merkleObject);
+            byte[] getResult = ipfs.get(merkleObject);
             if (!Arrays.equals(catResult, file.getContents()))
                 throw new IllegalStateException("Different contents!");
             List<MerkleNode> pinRm = ipfs.pin.rm(merkleObject, true);
@@ -107,7 +108,7 @@ public class Test {
             String val = ipfs.config.get("Datastore.Path");
             Map setResult = ipfs.config.set("Datastore.Path", val);
             ipfs.config.replace(new NamedStreamable.ByteArrayWrapper(JSONParser.toString(config).getBytes()));
-            Object log = ipfs.log();
+//            Object log = ipfs.log();
             String net = ipfs.diag.net();
             System.out.println(net);
         } catch (IOException e) {
