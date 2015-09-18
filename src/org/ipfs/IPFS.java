@@ -69,6 +69,11 @@ public class IPFS {
         return res;
     }
 
+    public Map resolve(String scheme, String hash, boolean recursive) throws IOException {
+        Map res = (Map) retrieveAndParse("resolve?arg=/" + scheme+"/"+hash +"&r="+recursive);
+        return res;
+    }
+
     // level 2 commands
     class Refs {
         public List<String> local() throws IOException {

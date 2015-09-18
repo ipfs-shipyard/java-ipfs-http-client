@@ -96,6 +96,16 @@ public class Test {
         }
     }
 
+    public void resolveTest() {
+        try {
+            String hash = "QmatmE9msSfkKxoffpHwNLNKgwZG8eT9Bud6YoPab52vpy";
+            Map res = ipfs.resolve("ipns", hash, false);
+            System.out.println(res);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @org.junit.Test
     public void swarmTest() {
         try {
