@@ -108,6 +108,18 @@ public class Test {
     }
 
     @org.junit.Test
+    public void mountTest() {
+        try {
+            Map mount = ipfs.mount(null, null);
+            System.out.println(mount);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+
+    @org.junit.Test
     public void statsTest() {
         try {
             Map stats = ipfs.stats.bw();

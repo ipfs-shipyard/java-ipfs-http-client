@@ -7,13 +7,6 @@ import java.util.stream.*;
 
 public class IPFS {
 
-    public enum Command {
-        // TODO
-        mount,
-        tour,
-        bitswap
-    }
-
     public final String host;
     public final int port;
     private final String version;
@@ -76,6 +69,15 @@ public class IPFS {
     public String dns(String domain) throws IOException {
         Map res = (Map) retrieveAndParse("dns?arg=" + domain);
         return (String)res.get("Path");
+    }
+
+
+    public Map mount(java.io.File ipfsRoot, java.io.File ipnsRoot) throws IOException {
+        if (ipfsRoot != null && !ipfsRoot.exists())
+            ipfsRoot.mkdirs();
+        if (ipnsRoot != null && !ipnsRoot.exists())
+            ipnsRoot.mkdirs();
+        return (Map)retrieveAndParse("mount?" + (ipfsRoot != null ? ipfsRoot.getPath() : "./ipfs" ) + (ipnsRoot != null ? ipnsRoot.getPath() : "./ipns" ));
     }
 
     // level 2 commands
