@@ -129,7 +129,6 @@ public class Test {
         }
     }
 
-    @org.junit.Test
     public void mountTest() {
         try {
             Map mount = ipfs.mount(null, null);

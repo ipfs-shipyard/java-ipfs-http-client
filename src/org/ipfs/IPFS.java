@@ -43,7 +43,7 @@ public class IPFS {
     }
 
     public List<MerkleNode> ls(MerkleNode merkleObject) throws IOException {
-        Map res = (Map) retrieveAndParse("ls/" + merkleObject.hash);
+        Map res = retrieveMap("ls/" + merkleObject.hash);
         return ((List<Object>) res.get("Objects")).stream().map(x -> MerkleNode.fromJSON((Map) x)).collect(Collectors.toList());
     }
 
@@ -56,28 +56,26 @@ public class IPFS {
     }
 
     public Map refs(String hash, boolean recursive) throws IOException {
-        Map res = (Map) retrieveAndParse("refs?arg=" + hash +"&r="+recursive);
-        return res;
+        return retrieveMap("refs?arg=" + hash +"&r="+recursive);
     }
 
     public Map resolve(String scheme, String hash, boolean recursive) throws IOException {
-        Map res = (Map) retrieveAndParse("resolve?arg=/" + scheme+"/"+hash +"&r="+recursive);
-        return res;
+        return retrieveMap("resolve?arg=/" + scheme+"/"+hash +"&r="+recursive);
     }
 
 
     public String dns(String domain) throws IOException {
-        Map res = (Map) retrieveAndParse("dns?arg=" + domain);
+        Map res = retrieveMap("dns?arg=" + domain);
         return (String)res.get("Path");
     }
-
 
     public Map mount(java.io.File ipfsRoot, java.io.File ipnsRoot) throws IOException {
         if (ipfsRoot != null && !ipfsRoot.exists())
             ipfsRoot.mkdirs();
         if (ipnsRoot != null && !ipnsRoot.exists())
             ipnsRoot.mkdirs();
-        return (Map)retrieveAndParse("mount?" + (ipfsRoot != null ? ipfsRoot.getPath() : "./ipfs" ) + (ipnsRoot != null ? ipnsRoot.getPath() : "./ipns" ));
+        return (Map)retrieveAndParse("mount?arg=" + (ipfsRoot != null ? ipfsRoot.getPath() : "/ipfs" ) + "&arg=" +
+                (ipnsRoot != null ? ipnsRoot.getPath() : "/ipns" ));
     }
 
     // level 2 commands
@@ -87,7 +85,7 @@ public class IPFS {
         }
     }
 
-    /* Pinning an object ensure a local copy of it is kept.
+    /* Pinning an object ensures a local copy of it is kept.
      */
     class Pin {
         public Object add(MerkleNode merkleObject) throws IOException {
@@ -99,7 +97,7 @@ public class IPFS {
         }
 
         public List<MerkleNode> rm(MerkleNode merkleObject, boolean recursive) throws IOException {
-            Map json = (Map) retrieveAndParse("pin/rm?stream-channels=true&r=" + recursive + "&arg=" + merkleObject.hash);
+            Map json = retrieveMap("pin/rm?stream-channels=true&r=" + recursive + "&arg=" + merkleObject.hash);
             return ((List<Object>) json.get("Pinned")).stream().map(x -> new MerkleNode((String) x)).collect(Collectors.toList());
         }
     }
@@ -127,8 +125,8 @@ public class IPFS {
             return JSONParser.parseStream(res).stream().map(x -> MerkleNode.fromJSON((Map<String, Object>) x)).collect(Collectors.toList());
         }
 
-        public Map<String, Object> stat(MerkleNode merkleObject) throws IOException {
-            return (Map)retrieveAndParse("block/stat?stream-channels=true&arg=" + merkleObject.hash);
+        public Map stat(MerkleNode merkleObject) throws IOException {
+            return retrieveMap("block/stat?stream-channels=true&arg=" + merkleObject.hash);
         }
     }
 
@@ -144,18 +142,18 @@ public class IPFS {
         }
 
         public MerkleNode get(MerkleNode merkleObject) throws IOException {
-            Map json = (Map)retrieveAndParse("object/get?stream-channels=true&arg=" + merkleObject.hash);
+            Map json = retrieveMap("object/get?stream-channels=true&arg=" + merkleObject.hash);
             json.put("Hash", merkleObject.hash.toBase58());
             return MerkleNode.fromJSON(json);
         }
 
         public MerkleNode links(MerkleNode merkleObject) throws IOException {
-            Map json = (Map)retrieveAndParse("object/links?stream-channels=true&arg=" + merkleObject.hash);
+            Map json = retrieveMap("object/links?stream-channels=true&arg=" + merkleObject.hash);
             return MerkleNode.fromJSON(json);
         }
 
         public Map<String, Object> stat(MerkleNode merkleObject) throws IOException {
-            return (Map)retrieveAndParse("object/stat?stream-channels=true&arg=" + merkleObject.hash);
+            return retrieveMap("object/stat?stream-channels=true&arg=" + merkleObject.hash);
         }
 
         public byte[] data(MerkleNode merkleObject) throws IOException {
@@ -171,8 +169,7 @@ public class IPFS {
         }
 
         public Map publish(Optional<String> id, MerkleNode node) throws IOException {
-            Map res = (Map) retrieveAndParse("name/publish?arg=" + (id.isPresent() ? id+"&arg=" : "") + "/ipfs/"+node.hash);
-            return res;
+            return retrieveMap("name/publish?arg=" + (id.isPresent() ? id+"&arg=" : "") + "/ipfs/"+node.hash);
         }
 
         public String resolve(String addr) throws IOException {
@@ -183,41 +180,36 @@ public class IPFS {
 
     class DHT {
         public Map findprovs(MerkleNode node) throws IOException {
-            Map res = (Map) retrieveAndParse("dht/findprovs?arg=" + node.hash);
-            return res;
+            return retrieveMap("dht/findprovs?arg=" + node.hash);
         }
 
         public Map query(NodeAddress addr) throws IOException {
-            Map res = (Map) retrieveAndParse("dht/query?arg=" + addr.address);
-            return res;
+            return retrieveMap("dht/query?arg=" + addr.address);
         }
 
         public Map findpeer(NodeAddress addr) throws IOException {
-            Map res = (Map) retrieveAndParse("dht/findpeer?arg=" + addr.address);
-            return res;
+            return retrieveMap("dht/findpeer?arg=" + addr.address);
         }
 
         public Map get(MerkleNode node) throws IOException {
-            Map res = (Map) retrieveAndParse("dht/get?arg=" + node.hash);
-            return res;
+            return retrieveMap("dht/get?arg=" + node.hash);
         }
 
         public Map put(String key, String value) throws IOException {
-            Map res = (Map) retrieveAndParse("dht/put?arg=" + key + "&arg="+value);
-            return res;
+            return retrieveMap("dht/put?arg=" + key + "&arg="+value);
         }
     }
 
     class File {
         public Map ls(String path) throws IOException {
-            return (Map)retrieveAndParse("file/ls?arg=" +path);
+            return retrieveMap("file/ls?arg=" + path);
         }
     }
 
     // Network commands
 
     public Map bootstrap() throws IOException {
-        return (Map)retrieveAndParse("bootstrap/");
+        return retrieveMap("bootstrap/");
     }
 
     /*  ipfs swarm is a tool to manipulate the network swarm. The swarm is the
@@ -226,12 +218,12 @@ public class IPFS {
      */
     class Swarm {
         public List<NodeAddress> peers() throws IOException {
-            Map m = (Map)retrieveAndParse("swarm/peers?stream-channels=true");
+            Map m = retrieveMap("swarm/peers?stream-channels=true");
             return ((List<Object>)m.get("Strings")).stream().map(x -> new NodeAddress((String)x)).collect(Collectors.toList());
         }
 
-        public Map<String, Object> addrs() throws IOException {
-            Map m = (Map)retrieveAndParse("swarm/addrs?stream-channels=true");
+        public Map addrs() throws IOException {
+            Map m = retrieveMap("swarm/addrs?stream-channels=true");
             return (Map<String, Object>)m.get("Addrs");
         }
 
@@ -245,16 +237,16 @@ public class IPFS {
     }
 
     public Map ping(String target) throws IOException {
-        return (Map)retrieveAndParse("ping/"+target.toString());
+        return retrieveMap("ping/" + target.toString());
     }
 
     public Map id(String target) throws IOException {
-        return (Map)retrieveAndParse("id/"+target.toString());
+        return retrieveMap("id/" + target.toString());
     }
 
     class Stats {
         public Map bw() throws IOException {
-            return (Map)retrieveAndParse("stats/bw");
+            return retrieveMap("stats/bw");
         }
     }
 
@@ -265,11 +257,11 @@ public class IPFS {
     }
 
     public Map commands() throws IOException {
-        return (Map)retrieveAndParse("commands");
+        return retrieveMap("commands");
     }
 
     public Map log() throws IOException {
-        return (Map)retrieveAndParse("log/tail");
+        return retrieveMap("log/tail");
     }
 
     class Config {
@@ -289,7 +281,7 @@ public class IPFS {
         }
 
         public Map set(String key, String value) throws IOException {
-            return (Map)retrieveAndParse("config?arg="+key+"&arg="+value);
+            return retrieveMap("config?arg=" + key + "&arg=" + value);
         }
     }
 
@@ -307,6 +299,10 @@ public class IPFS {
         }
     }
 
+    private Map retrieveMap(String path) throws IOException {
+        return (Map)retrieveAndParse(path);
+    }
+
     private Object retrieveAndParse(String path) throws IOException {
         byte[] res = retrieve(path);
         return JSONParser.parse(new String(res));
@@ -315,12 +311,6 @@ public class IPFS {
     private byte[] retrieve(String path) throws IOException {
         URL target = new URL("http", host, port, version + path);
         return IPFS.get(target);
-    }
-
-    private Object retrieveAndParsePost(String path, byte[] body) throws IOException {
-        URL target = new URL("http", host, port, version + path);
-        byte[] res = post(target, body, Collections.EMPTY_MAP);
-        return JSONParser.parse(new String(res));
     }
 
     private static byte[] get(URL target) throws IOException {

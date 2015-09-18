@@ -4,8 +4,8 @@ import java.util.*;
 import java.util.stream.*;
 
 public class MerkleNode {
-    public final Optional<String> name;
     public final Multihash hash;
+    public final Optional<String> name;
     public final Optional<Integer> size;
     public final Optional<Integer> type;
     public final List<MerkleNode> links;
