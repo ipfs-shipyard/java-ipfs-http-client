@@ -145,7 +145,7 @@ public class IPFS {
 
         public MerkleNode get(MerkleNode merkleObject) throws IOException {
             Map json = (Map)retrieveAndParse("object/get?stream-channels=true&arg=" + merkleObject.hash);
-            json.put("Hash", merkleObject.hash);
+            json.put("Hash", merkleObject.hash.toBase58());
             return MerkleNode.fromJSON(json);
         }
 

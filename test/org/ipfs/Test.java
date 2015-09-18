@@ -6,6 +6,15 @@ import java.util.*;
 public class Test {
 
     IPFS ipfs = new IPFS("127.0.0.1", 5001);
+    @org.junit.Test
+    public void base58Test() {
+        String input = "QmPZ9gcCEpqKTo6aq61g2nXGUhM4iCL3ewB6LDXZCtioEB";
+        byte[] output = Base58.decode(input);
+        String encoded = Base58.encode(output);
+        if (!encoded.equals(input))
+            throw new IllegalStateException("Incorrect base58! "+ input + " => "+encoded);
+    }
+
 
     @org.junit.Test
     public void singleFileTest() {
@@ -139,7 +148,7 @@ public class Test {
             Map findprovs = ipfs.dht.findprovs(pointer);
             List<NodeAddress> peers = ipfs.swarm.peers();
             Map query = ipfs.dht.query(peers.get(0));
-            Map find = ipfs.dht.findpeer(peers.get(0));
+//            Map find = ipfs.dht.findpeer(peers.get(0));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

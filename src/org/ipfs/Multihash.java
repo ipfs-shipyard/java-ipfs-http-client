@@ -33,21 +33,19 @@ public class Multihash {
     }
 
     public final Type type;
-    public final byte size;
     public final byte[] hash;
 
-    public Multihash(Type type, byte size, byte[] hash) {
-        if ((size & 0xff) != hash.length)
-            throw new IllegalStateException("Incorrect size: " + (size&0xff) + " != "+hash.length);
+    public Multihash(Type type, byte[] hash) {
+        if (hash.length > 127)
+            throw new IllegalStateException("Unsupported hash size: "+hash.length);
         if (hash.length != type.length)
             throw new IllegalStateException("Incorrect hash length: " + hash.length + " != "+type.length);
         this.type = type;
-        this.size = size;
         this.hash = hash;
     }
 
     public Multihash(byte[] multihash) {
-        this(Type.lookup(multihash[0] & 0xff), multihash[1], Arrays.copyOfRange(multihash, 2, multihash.length));
+        this(Type.lookup(multihash[0] & 0xff), Arrays.copyOfRange(multihash, 2, multihash.length));
     }
 
     public byte[] toBytes() {
@@ -58,11 +56,32 @@ public class Multihash {
         return res;
     }
 
+    @Override
+    public String toString() {
+        return toBase58();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof Multihash))
+            return false;
+        return type == ((Multihash) o).type && Arrays.equals(hash, ((Multihash) o).hash);
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(hash) ^ type.hashCode();
+    }
+
     public String toHex() {
         StringBuilder res = new StringBuilder();
         for (byte b: toBytes())
             res.append(String.format("%x", b&0xff));
         return res.toString();
+    }
+
+    public String toBase58() {
+        return Base58.encode(toBytes());
     }
 
     public static Multihash fromHex(String hex) {
@@ -72,5 +91,9 @@ public class Multihash {
         for (int i=0; i < hex.length()-1; i+= 2)
             bout.write(Integer.valueOf(hex.substring(i, i+2), 16));
         return new Multihash(bout.toByteArray());
+    }
+
+    public static Multihash fromBase58(String base58) {
+        return new Multihash(Base58.decode(base58));
     }
 }

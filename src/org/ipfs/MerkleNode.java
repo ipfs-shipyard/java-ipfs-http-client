@@ -5,7 +5,7 @@ import java.util.stream.*;
 
 public class MerkleNode {
     public final Optional<String> name;
-    public final String hash;
+    public final Multihash hash;
     public final Optional<Integer> size;
     public final Optional<Integer> type;
     public final List<MerkleNode> links;
@@ -21,7 +21,7 @@ public class MerkleNode {
 
     public MerkleNode(String hash, Optional<String> name, Optional<Integer> size, Optional<Integer> type, List<MerkleNode> links, Optional<byte[]> data) {
         this.name = name;
-        this.hash = hash;
+        this.hash = Multihash.fromBase58(hash);
         this.size = size;
         this.type = type;
         this.links = links;
