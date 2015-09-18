@@ -9,9 +9,7 @@ public class IPFS {
 
     public enum Command {
         // TODO
-        dns,
         mount,
-        stats,
         tour,
         bitswap
     }
@@ -30,6 +28,7 @@ public class IPFS {
     public final Update update = new Update();
     public final DHT dht = new DHT();
     public final File file = new File();
+    public final Stats stats = new Stats();
     public final Name name = new Name();
 
     public IPFS(String host, int port) {
@@ -75,7 +74,7 @@ public class IPFS {
 
 
     public String dns(String domain) throws IOException {
-        Map res = (Map) retrieveAndParse("dns?arg="+domain);
+        Map res = (Map) retrieveAndParse("dns?arg=" + domain);
         return (String)res.get("Path");
     }
 
@@ -214,6 +213,12 @@ public class IPFS {
 
     public Map id(String target) throws IOException {
         return (Map)retrieveAndParse("id/"+target.toString());
+    }
+
+    class Stats {
+        public Map bw() throws IOException {
+            return (Map)retrieveAndParse("stats/bw");
+        }
     }
 
     // Tools

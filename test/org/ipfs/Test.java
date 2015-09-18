@@ -107,6 +107,16 @@ public class Test {
         }
     }
 
+    @org.junit.Test
+    public void statsTest() {
+        try {
+            Map stats = ipfs.stats.bw();
+            System.out.println(stats);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public void resolveTest() {
         try {
             String hash = "QmatmE9msSfkKxoffpHwNLNKgwZG8eT9Bud6YoPab52vpy";
