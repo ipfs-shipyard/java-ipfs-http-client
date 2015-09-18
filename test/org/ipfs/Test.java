@@ -97,6 +97,18 @@ public class Test {
     }
 
     @org.junit.Test
+    public void nameTest() {
+        try {
+            MerkleNode pointer = new MerkleNode("QmPZ9gcCEpqKTo6aq61g2nXGUhM4iCL3ewB6LDXZCtioEB");
+            Map pub = ipfs.name.publish(pointer);
+            String resolved = ipfs.name.resolve((String)pub.get("Name"));
+            System.out.println(resolved);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @org.junit.Test
     public void dnsTest() {
         try {
             String domain = "ipfs.io";

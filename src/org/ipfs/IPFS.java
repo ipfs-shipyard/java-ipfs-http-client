@@ -164,9 +164,19 @@ public class IPFS {
     }
 
     class Name {
-        // TODO publish
+        public Map publish(MerkleNode node) throws IOException {
+            return publish(Optional.empty(), node);
+        }
 
-        // TODO resolve
+        public Map publish(Optional<String> id, MerkleNode node) throws IOException {
+            Map res = (Map) retrieveAndParse("name/publish?arg=" + (id.isPresent() ? id+"&arg=" : "") + "/ipfs/"+node.hash);
+            return res;
+        }
+
+        public String resolve(String addr) throws IOException {
+            Map res = (Map) retrieveAndParse("name/resolve?arg=" + addr);
+            return (String)res.get("Path");
+        }
     }
 
     class DHT {
