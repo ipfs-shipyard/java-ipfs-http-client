@@ -127,7 +127,9 @@ public class IPFS {
             return JSONParser.parseStream(res).stream().map(x -> MerkleNode.fromJSON((Map<String, Object>) x)).collect(Collectors.toList());
         }
 
-        //TODO stat
+        public Map<String, Object> stat(MerkleNode merkleObject) throws IOException {
+            return (Map)retrieveAndParse("block/stat?stream-channels=true&arg=" + merkleObject.hash);
+        }
     }
 
     /* 'ipfs object' is a plumbing command used to manipulate DAG objects directly. {Object} is a subset of {Block}

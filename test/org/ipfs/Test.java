@@ -76,6 +76,7 @@ public class Test {
     public void blockTest() {
         try {
             MerkleNode pointer = new MerkleNode("QmPZ9gcCEpqKTo6aq61g2nXGUhM4iCL3ewB6LDXZCtioEB");
+            Map stat = ipfs.block.stat(pointer);
             byte[] object = ipfs.block.get(pointer);
             List<MerkleNode> newPointer = ipfs.block.put(Arrays.asList("Some random data...".getBytes()));
         } catch (IOException e) {
