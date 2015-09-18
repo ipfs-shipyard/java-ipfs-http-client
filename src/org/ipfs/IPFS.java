@@ -11,7 +11,6 @@ public class IPFS {
         // TODO
         dns,
         mount,
-        resolve,
         stats,
         tour,
         bitswap
@@ -72,6 +71,12 @@ public class IPFS {
     public Map resolve(String scheme, String hash, boolean recursive) throws IOException {
         Map res = (Map) retrieveAndParse("resolve?arg=/" + scheme+"/"+hash +"&r="+recursive);
         return res;
+    }
+
+
+    public String dns(String domain) throws IOException {
+        Map res = (Map) retrieveAndParse("dns?arg="+domain);
+        return (String)res.get("Path");
     }
 
     // level 2 commands

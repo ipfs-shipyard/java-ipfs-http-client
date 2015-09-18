@@ -96,6 +96,17 @@ public class Test {
         }
     }
 
+    @org.junit.Test
+    public void dnsTest() {
+        try {
+            String domain = "ipfs.io";
+            String dns = ipfs.dns(domain);
+            System.out.println(dns);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public void resolveTest() {
         try {
             String hash = "QmatmE9msSfkKxoffpHwNLNKgwZG8eT9Bud6YoPab52vpy";
