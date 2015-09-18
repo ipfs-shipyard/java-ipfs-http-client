@@ -170,7 +170,30 @@ public class IPFS {
     }
 
     class DHT {
-        // TODO findprovs get put
+        public Map findprovs(MerkleNode node) throws IOException {
+            Map res = (Map) retrieveAndParse("dht/findprovs?arg=" + node.hash);
+            return res;
+        }
+
+        public Map query(NodeAddress addr) throws IOException {
+            Map res = (Map) retrieveAndParse("dht/query?arg=" + addr.address);
+            return res;
+        }
+
+        public Map findpeer(NodeAddress addr) throws IOException {
+            Map res = (Map) retrieveAndParse("dht/findpeer?arg=" + addr.address);
+            return res;
+        }
+
+        public Map get(MerkleNode node) throws IOException {
+            Map res = (Map) retrieveAndParse("dht/get?arg=" + node.hash);
+            return res;
+        }
+
+        public Map put(String key, String value) throws IOException {
+            Map res = (Map) retrieveAndParse("dht/put?arg=" + key + "&arg="+value);
+            return res;
+        }
     }
 
     class File {

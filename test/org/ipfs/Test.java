@@ -117,7 +117,20 @@ public class Test {
         }
     }
 
-
+    @org.junit.Test
+    public void dhtTest() {
+        try {
+            MerkleNode pointer = new MerkleNode("QmPZ9gcCEpqKTo6aq61g2nXGUhM4iCL3ewB6LDXZCtioEB");
+            Map get = ipfs.dht.get(pointer);
+            Map put = ipfs.dht.put("somekey", "somevalue");
+            Map findprovs = ipfs.dht.findprovs(pointer);
+            List<NodeAddress> peers = ipfs.swarm.peers();
+            Map query = ipfs.dht.query(peers.get(0));
+            Map find = ipfs.dht.findpeer(peers.get(0));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     @org.junit.Test
     public void statsTest() {
