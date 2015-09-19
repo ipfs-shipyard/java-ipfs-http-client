@@ -7,6 +7,8 @@ import java.util.stream.*;
 
 public class IPFS {
 
+    public List<String> ObjectTemplates = Arrays.asList("unixfs-dir");
+
     public final String host;
     public final int port;
     private final String version;
@@ -164,7 +166,14 @@ public class IPFS {
             return retrieve("object/data?stream-channels=true&arg=" + merkleObject.hash);
         }
 
-        // TODO new, patch
+        public MerkleNode _new(Optional<String> template) throws IOException {
+            if (template.isPresent() && !ObjectTemplates.contains(template.get()))
+                throw new IllegalStateException("Unrecognised template: "+template.get());
+            Map json = retrieveMap("object/new?stream-channels=true"+(template.isPresent() ? "&arg=" + template.get() : ""));
+            return MerkleNode.fromJSON(json);
+        }
+
+        // TODO patch
     }
 
     class Name {
