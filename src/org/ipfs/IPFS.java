@@ -34,6 +34,10 @@ public class IPFS {
         this.version = version;
     }
 
+    public MerkleNode add(NamedStreamable file) throws IOException {
+        return add(Arrays.<NamedStreamable>asList(file)).get(0);
+    }
+
     public List<MerkleNode> add(List<NamedStreamable> files) throws IOException {
         Multipart m = new Multipart("http://" + host + ":" + port + version+"add?stream-channels=true", "UTF-8");
         for (NamedStreamable f : files)
