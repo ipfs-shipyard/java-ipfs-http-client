@@ -59,8 +59,6 @@ public class Test {
             List<String> local = ipfs.refs.local();
             for (String ref: local) {
                 Object refs = ipfs.refs(ref, false);
-                if (refs != null)
-                    System.out.println(refs);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -99,7 +97,6 @@ public class Test {
             List<String> local = ipfs.refs.local();
             for (String hash: local) {
                 Map ls = ipfs.file.ls(hash);
-                System.out.println(ls);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -112,7 +109,6 @@ public class Test {
             MerkleNode pointer = new MerkleNode("QmPZ9gcCEpqKTo6aq61g2nXGUhM4iCL3ewB6LDXZCtioEB");
             Map pub = ipfs.name.publish(pointer);
             String resolved = ipfs.name.resolve((String)pub.get("Name"));
-            System.out.println(resolved);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -123,7 +119,6 @@ public class Test {
         try {
             String domain = "ipfs.io";
             String dns = ipfs.dns(domain);
-            System.out.println(dns);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -132,7 +127,6 @@ public class Test {
     public void mountTest() {
         try {
             Map mount = ipfs.mount(null, null);
-            System.out.println(mount);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -157,7 +151,6 @@ public class Test {
     public void statsTest() {
         try {
             Map stats = ipfs.stats.bw();
-            System.out.println(stats);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -167,7 +160,6 @@ public class Test {
         try {
             String hash = "QmatmE9msSfkKxoffpHwNLNKgwZG8eT9Bud6YoPab52vpy";
             Map res = ipfs.resolve("ipns", hash, false);
-            System.out.println(res);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -181,7 +173,6 @@ public class Test {
             if (addrs.size() > 0) {
                 Map id = ipfs.id(addrs.keySet().stream().findAny().get());
                 Map ping = ipfs.ping(addrs.keySet().stream().findAny().get());
-                System.out.println(ping);
             }
             List<NodeAddress> peers = ipfs.swarm.peers();
         } catch (IOException e) {
@@ -207,9 +198,7 @@ public class Test {
     public void toolsTest() {
         try {
             String version = ipfs.version();
-            System.out.println(version);
             Map commands = ipfs.commands();
-            System.out.println(commands);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -220,7 +209,6 @@ public class Test {
         try {
             Object check = ipfs.update.check();
             Object update = ipfs.update();
-            System.out.println(update);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
