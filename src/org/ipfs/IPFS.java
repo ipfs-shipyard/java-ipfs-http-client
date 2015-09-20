@@ -240,7 +240,15 @@ public class IPFS {
             return (Map<String, Object>)m.get("Addrs");
         }
 
-        // TODO connect, disconnect
+        public Map connect(String multiAddr) throws IOException {
+            Map m = retrieveMap("swarm/connect?arg="+multiAddr);
+            return m;
+        }
+
+        public Map disconnect(String multiAddr) throws IOException {
+            Map m = retrieveMap("swarm/disconnect?arg="+multiAddr);
+            return m;
+        }
     }
 
     class Diag {
