@@ -196,12 +196,12 @@ public class IPFS {
             return retrieveMap("dht/findprovs?arg=" + node.hash);
         }
 
-        public Map query(NodeAddress addr) throws IOException {
-            return retrieveMap("dht/query?arg=" + addr.address);
+        public Map query(MultiAddress addr) throws IOException {
+            return retrieveMap("dht/query?arg=" + addr.toString());
         }
 
-        public Map findpeer(NodeAddress addr) throws IOException {
-            return retrieveMap("dht/findpeer?arg=" + addr.address);
+        public Map findpeer(MultiAddress addr) throws IOException {
+            return retrieveMap("dht/findpeer?arg=" + addr.toString());
         }
 
         public Map get(MerkleNode node) throws IOException {
@@ -230,9 +230,9 @@ public class IPFS {
         ipfs peers in the internet.
      */
     class Swarm {
-        public List<NodeAddress> peers() throws IOException {
+        public List<MultiAddress> peers() throws IOException {
             Map m = retrieveMap("swarm/peers?stream-channels=true");
-            return ((List<Object>)m.get("Strings")).stream().map(x -> new NodeAddress((String)x)).collect(Collectors.toList());
+            return ((List<Object>)m.get("Strings")).stream().map(x -> new MultiAddress((String)x)).collect(Collectors.toList());
         }
 
         public Map addrs() throws IOException {

@@ -95,6 +95,7 @@ public class Test {
     @org.junit.Test
     public void fileTest() {
         try {
+            ipfs.repo.gc();
             List<String> local = ipfs.refs.local();
             for (String hash: local) {
                 Map ls = ipfs.file.ls(hash);
@@ -140,7 +141,7 @@ public class Test {
             Map get = ipfs.dht.get(pointer);
             Map put = ipfs.dht.put("somekey", "somevalue");
             Map findprovs = ipfs.dht.findprovs(pointer);
-            List<NodeAddress> peers = ipfs.swarm.peers();
+            List<MultiAddress> peers = ipfs.swarm.peers();
             Map query = ipfs.dht.query(peers.get(0));
 //            Map find = ipfs.dht.findpeer(peers.get(0));
         } catch (IOException e) {
@@ -178,7 +179,8 @@ public class Test {
                 Map id = ipfs.id(addrs.keySet().stream().findAny().get());
                 Map ping = ipfs.ping(addrs.keySet().stream().findAny().get());
             }
-            List<NodeAddress> peers = ipfs.swarm.peers();
+            List<MultiAddress> peers = ipfs.swarm.peers();
+            System.out.println(peers);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
