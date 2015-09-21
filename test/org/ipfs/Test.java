@@ -110,7 +110,7 @@ public class Test {
         try {
             MerkleNode pointer = new MerkleNode("QmPZ9gcCEpqKTo6aq61g2nXGUhM4iCL3ewB6LDXZCtioEB");
             Map pub = ipfs.name.publish(pointer);
-            String resolved = ipfs.name.resolve((String)pub.get("Name"));
+            String resolved = ipfs.name.resolve((String) pub.get("Name"));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -173,7 +173,6 @@ public class Test {
             String multiaddr = "/ip4/104.131.131.82/tcp/4001/ipfs/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ";
             Map connect = ipfs.swarm.connect(multiaddr);
             Map disconnect = ipfs.swarm.disconnect(multiaddr);
-            Map bootstrap = ipfs.bootstrap();
             Map<String, Object> addrs = ipfs.swarm.addrs();
             if (addrs.size() > 0) {
                 Map id = ipfs.id(addrs.keySet().stream().findAny().get());
@@ -181,6 +180,19 @@ public class Test {
             }
             List<MultiAddress> peers = ipfs.swarm.peers();
             System.out.println(peers);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @org.junit.Test
+    public void bootstrapTest() {
+        try {
+            List<MultiAddress> bootstrap = ipfs.bootstrap.list();
+            System.out.println(bootstrap);
+            List<MultiAddress> rm = ipfs.bootstrap.rm(bootstrap.get(0), false);
+            List<MultiAddress> add = ipfs.bootstrap.add(bootstrap.get(0));
+            System.out.println();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

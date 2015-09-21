@@ -16,6 +16,7 @@ public class IPFS {
     public final Repo repo = new Repo();
     public final IPFSObject object = new IPFSObject();
     public final Swarm swarm = new Swarm();
+    public final Bootstrap bootstrap = new Bootstrap();
     public final Block block = new Block();
     public final Diag diag = new Diag();
     public final Config config = new Config();
@@ -221,8 +222,26 @@ public class IPFS {
 
     // Network commands
 
-    public Map bootstrap() throws IOException {
-        return retrieveMap("bootstrap/");
+    public List<MultiAddress> bootstrap() throws IOException {
+        return ((List<String>)retrieveMap("bootstrap/").get("Peers")).stream().map(x -> new MultiAddress(x)).collect(Collectors.toList());
+    }
+
+    class Bootstrap {
+        public List<MultiAddress> list() throws IOException {
+            return bootstrap();
+        }
+
+        public List<MultiAddress> add(MultiAddress addr) throws IOException {
+            return ((List<String>)retrieveMap("bootstrap/add?arg="+addr).get("Peers")).stream().map(x -> new MultiAddress(x)).collect(Collectors.toList());
+        }
+
+        public List<MultiAddress> rm(MultiAddress addr) throws IOException {
+            return rm(addr, false);
+        }
+
+        public List<MultiAddress> rm(MultiAddress addr, boolean all) throws IOException {
+            return ((List<String>)retrieveMap("bootstrap/rm?"+(all ? "all=true&":"")+"arg="+addr).get("Peers")).stream().map(x -> new MultiAddress(x)).collect(Collectors.toList());
+        }
     }
 
     /*  ipfs swarm is a tool to manipulate the network swarm. The swarm is the
