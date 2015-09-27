@@ -29,8 +29,8 @@ MerkleNode addResult = ipfs.add(file);
 
 To get a file use:
 ```Java
-MerkleNode addResult = new MerkleNode("QmPZ9gcCEpqKTo6aq61g2nXGUhM4iCL3ewB6LDXZCtioEB");
-byte[] fileContents = ipfs.cat(merkleObject);
+MultiHash filePointer = MultiHash.fromBase58("QmPZ9gcCEpqKTo6aq61g2nXGUhM4iCL3ewB6LDXZCtioEB");
+byte[] fileContents = ipfs.cat(filePointer);
 ```
 
 ##Building

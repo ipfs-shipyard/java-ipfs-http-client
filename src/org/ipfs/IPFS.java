@@ -49,24 +49,24 @@ public class IPFS {
         return JSONParser.parseStream(res).stream().map(x -> MerkleNode.fromJSON((Map<String, Object>) x)).collect(Collectors.toList());
     }
 
-    public List<MerkleNode> ls(MerkleNode merkleObject) throws IOException {
-        Map res = retrieveMap("ls/" + merkleObject.hash);
+    public List<MerkleNode> ls(Multihash hash) throws IOException {
+        Map res = retrieveMap("ls/" + hash);
         return ((List<Object>) res.get("Objects")).stream().map(x -> MerkleNode.fromJSON((Map) x)).collect(Collectors.toList());
     }
 
-    public byte[] cat(MerkleNode merkleObject) throws IOException {
-        return retrieve("cat/" + merkleObject.hash);
+    public byte[] cat(Multihash hash) throws IOException {
+        return retrieve("cat/" + hash);
     }
 
-    public byte[] get(MerkleNode merkleObject) throws IOException {
-        return retrieve("get/" + merkleObject.hash);
+    public byte[] get(Multihash hash) throws IOException {
+        return retrieve("get/" + hash);
     }
 
-    public Map refs(String hash, boolean recursive) throws IOException {
+    public Map refs(Multihash hash, boolean recursive) throws IOException {
         return retrieveMap("refs?arg=" + hash +"&r="+recursive);
     }
 
-    public Map resolve(String scheme, String hash, boolean recursive) throws IOException {
+    public Map resolve(String scheme, Multihash hash, boolean recursive) throws IOException {
         return retrieveMap("resolve?arg=/" + scheme+"/"+hash +"&r="+recursive);
     }
 
@@ -87,8 +87,8 @@ public class IPFS {
 
     // level 2 commands
     class Refs {
-        public List<String> local() throws IOException {
-            return Arrays.asList(new String(retrieve("refs/local")).split("\n"));
+        public List<Multihash> local() throws IOException {
+            return Arrays.asList(new String(retrieve("refs/local")).split("\n")).stream().map(Multihash::fromBase58).collect(Collectors.toList());
         }
     }
 
@@ -186,15 +186,15 @@ public class IPFS {
             return retrieveMap("name/publish?arg=" + (id.isPresent() ? id+"&arg=" : "") + "/ipfs/"+node.hash);
         }
 
-        public String resolve(String addr) throws IOException {
+        public String resolve(Multihash addr) throws IOException {
             Map res = (Map) retrieveAndParse("name/resolve?arg=" + addr);
             return (String)res.get("Path");
         }
     }
 
     class DHT {
-        public Map findprovs(MerkleNode node) throws IOException {
-            return retrieveMap("dht/findprovs?arg=" + node.hash);
+        public Map findprovs(Multihash hash) throws IOException {
+            return retrieveMap("dht/findprovs?arg=" + hash);
         }
 
         public Map query(MultiAddress addr) throws IOException {
@@ -205,8 +205,8 @@ public class IPFS {
             return retrieveMap("dht/findpeer?arg=" + addr.toString());
         }
 
-        public Map get(MerkleNode node) throws IOException {
-            return retrieveMap("dht/get?arg=" + node.hash);
+        public Map get(Multihash hash) throws IOException {
+            return retrieveMap("dht/get?arg=" + hash);
         }
 
         public Map put(String key, String value) throws IOException {
@@ -215,7 +215,7 @@ public class IPFS {
     }
 
     class File {
-        public Map ls(String path) throws IOException {
+        public Map ls(Multihash path) throws IOException {
             return retrieveMap("file/ls?arg=" + path);
         }
     }
