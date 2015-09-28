@@ -6,7 +6,7 @@ import java.util.*;
 import java.util.stream.*;
 
 public class IPFS {
-
+    public enum PinType {all, direct, indirect, recursive}
     public List<String> ObjectTemplates = Arrays.asList("unixfs-dir");
 
     public final String host;
@@ -99,17 +99,30 @@ public class IPFS {
     /* Pinning an object ensures a local copy of it is kept.
      */
     class Pin {
-        public Object add(MerkleNode merkleObject) throws IOException {
-            return retrieveAndParse("pin/add?stream-channels=true&arg=" + merkleObject.hash);
+        public List<Multihash> add(Multihash hash) throws IOException {
+            return ((List<Object>)((Map)retrieveAndParse("pin/add?stream-channels=true&arg=" + hash)).get("Pinned"))
+                    .stream()
+                    .map(x -> Multihash.fromBase58((String)x))
+                    .collect(Collectors.toList());
         }
 
-        public Object ls() throws IOException {
-            return retrieveAndParse("pin/ls?stream-channels=true");
+        public Map<Multihash, Object> ls() throws IOException {
+            return ls(PinType.direct);
         }
 
-        public List<MerkleNode> rm(MerkleNode merkleObject, boolean recursive) throws IOException {
-            Map json = retrieveMap("pin/rm?stream-channels=true&r=" + recursive + "&arg=" + merkleObject.hash);
-            return ((List<Object>) json.get("Pinned")).stream().map(x -> new MerkleNode((String) x)).collect(Collectors.toList());
+        public Map<Multihash, Object> ls(PinType type) throws IOException {
+            return ((Map<String, Object>)(((Map)retrieveAndParse("pin/ls?stream-channels=true&t="+type.name())).get("Keys"))).entrySet()
+                    .stream()
+                    .collect(Collectors.toMap(x -> Multihash.fromBase58(x.getKey()), x-> x.getValue()));
+        }
+
+        public List<Multihash> rm(Multihash hash) throws IOException {
+            return rm(hash, true);
+        }
+
+        public List<Multihash> rm(Multihash hash, boolean recursive) throws IOException {
+            Map json = retrieveMap("pin/rm?stream-channels=true&r=" + recursive + "&arg=" + hash);
+            return ((List<Object>) json.get("Pinned")).stream().map(x -> Multihash.fromBase58((String) x)).collect(Collectors.toList());
         }
     }
 
@@ -124,8 +137,8 @@ public class IPFS {
     /* 'ipfs block' is a plumbing command used to manipulate raw ipfs blocks.
      */
     class Block {
-        public byte[] get(MerkleNode merkleObject) throws IOException {
-            return retrieve("block/get?stream-channels=true&arg=" + merkleObject.hash);
+        public byte[] get(Multihash hash) throws IOException {
+            return retrieve("block/get?stream-channels=true&arg=" + hash);
         }
 
         public List<MerkleNode> put(List<byte[]> data) throws IOException {
@@ -136,8 +149,8 @@ public class IPFS {
             return JSONParser.parseStream(res).stream().map(x -> MerkleNode.fromJSON((Map<String, Object>) x)).collect(Collectors.toList());
         }
 
-        public Map stat(MerkleNode merkleObject) throws IOException {
-            return retrieveMap("block/stat?stream-channels=true&arg=" + merkleObject.hash);
+        public Map stat(Multihash hash) throws IOException {
+            return retrieveMap("block/stat?stream-channels=true&arg=" + hash);
         }
     }
 
@@ -152,23 +165,23 @@ public class IPFS {
             return JSONParser.parseStream(res).stream().map(x -> MerkleNode.fromJSON((Map<String, Object>) x)).collect(Collectors.toList());
         }
 
-        public MerkleNode get(MerkleNode merkleObject) throws IOException {
-            Map json = retrieveMap("object/get?stream-channels=true&arg=" + merkleObject.hash);
-            json.put("Hash", merkleObject.hash.toBase58());
+        public MerkleNode get(Multihash hash) throws IOException {
+            Map json = retrieveMap("object/get?stream-channels=true&arg=" + hash);
+            json.put("Hash", hash.toBase58());
             return MerkleNode.fromJSON(json);
         }
 
-        public MerkleNode links(MerkleNode merkleObject) throws IOException {
-            Map json = retrieveMap("object/links?stream-channels=true&arg=" + merkleObject.hash);
+        public MerkleNode links(Multihash hash) throws IOException {
+            Map json = retrieveMap("object/links?stream-channels=true&arg=" + hash);
             return MerkleNode.fromJSON(json);
         }
 
-        public Map<String, Object> stat(MerkleNode merkleObject) throws IOException {
-            return retrieveMap("object/stat?stream-channels=true&arg=" + merkleObject.hash);
+        public Map<String, Object> stat(Multihash hash) throws IOException {
+            return retrieveMap("object/stat?stream-channels=true&arg=" + hash);
         }
 
-        public byte[] data(MerkleNode merkleObject) throws IOException {
-            return retrieve("object/data?stream-channels=true&arg=" + merkleObject.hash);
+        public byte[] data(Multihash hash) throws IOException {
+            return retrieve("object/data?stream-channels=true&arg=" + hash);
         }
 
         public MerkleNode _new(Optional<String> template) throws IOException {
@@ -182,16 +195,16 @@ public class IPFS {
     }
 
     class Name {
-        public Map publish(MerkleNode node) throws IOException {
-            return publish(Optional.empty(), node);
+        public Map publish(Multihash hash) throws IOException {
+            return publish(Optional.empty(), hash);
         }
 
-        public Map publish(Optional<String> id, MerkleNode node) throws IOException {
-            return retrieveMap("name/publish?arg=" + (id.isPresent() ? id+"&arg=" : "") + "/ipfs/"+node.hash);
+        public Map publish(Optional<String> id, Multihash hash) throws IOException {
+            return retrieveMap("name/publish?arg=" + (id.isPresent() ? id+"&arg=" : "") + "/ipfs/"+hash);
         }
 
-        public String resolve(Multihash addr) throws IOException {
-            Map res = (Map) retrieveAndParse("name/resolve?arg=" + addr);
+        public String resolve(Multihash hash) throws IOException {
+            Map res = (Map) retrieveAndParse("name/resolve?arg=" + hash);
             return (String)res.get("Path");
         }
     }

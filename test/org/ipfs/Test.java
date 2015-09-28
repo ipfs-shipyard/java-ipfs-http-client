@@ -48,10 +48,30 @@ public class Test {
             byte[] getResult = ipfs.get(addResult.hash);
             if (!Arrays.equals(catResult, file.getContents()))
                 throw new IllegalStateException("Different contents!");
-            List<MerkleNode> pinRm = ipfs.pin.rm(addResult, true);
-            if (!pinRm.get(0).equals(addResult))
+            List<Multihash> pinRm = ipfs.pin.rm(addResult.hash, true);
+            if (!pinRm.get(0).equals(addResult.hash))
                 throw new IllegalStateException("Didn't remove file!");
             Object gc = ipfs.repo.gc();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @org.junit.Test
+    public void pinTest() {
+        try {
+            MerkleNode file = ipfs.add(new NamedStreamable.ByteArrayWrapper("some data".getBytes()));
+            Multihash hash = file.hash;
+            Map<Multihash, Object> ls1 = ipfs.pin.ls(IPFS.PinType.all);
+            boolean pinned = ls1.containsKey(hash);
+            List<Multihash> rm = ipfs.pin.rm(hash);
+            // second rm should not throw a http 500, but return an empty list
+//            List<Multihash> rm2 = ipfs.pin.rm(hash);
+            List<Multihash> add2 = ipfs.pin.add(hash);
+            // adding something already pinned should succeed
+            List<Multihash> add3 = ipfs.pin.add(hash);
+            Map<Multihash, Object> ls = ipfs.pin.ls();
+            System.out.println(ls);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -73,7 +93,7 @@ public class Test {
     public void objectTest() {
         try {
             MerkleNode _new = ipfs.object._new(Optional.empty());
-            MerkleNode pointer = new MerkleNode("QmPZ9gcCEpqKTo6aq61g2nXGUhM4iCL3ewB6LDXZCtioEB");
+            Multihash pointer = Multihash.fromBase58("QmPZ9gcCEpqKTo6aq61g2nXGUhM4iCL3ewB6LDXZCtioEB");
             MerkleNode object = ipfs.object.get(pointer);
             List<MerkleNode> newPointer = ipfs.object.put(Arrays.asList(object.toJSONString().getBytes()));
             MerkleNode links = ipfs.object.links(pointer);
@@ -88,8 +108,8 @@ public class Test {
     public void blockTest() {
         try {
             MerkleNode pointer = new MerkleNode("QmPZ9gcCEpqKTo6aq61g2nXGUhM4iCL3ewB6LDXZCtioEB");
-            Map stat = ipfs.block.stat(pointer);
-            byte[] object = ipfs.block.get(pointer);
+            Map stat = ipfs.block.stat(pointer.hash);
+            byte[] object = ipfs.block.get(pointer.hash);
             List<MerkleNode> newPointer = ipfs.block.put(Arrays.asList("Some random data...".getBytes()));
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -113,7 +133,7 @@ public class Test {
     public void nameTest() {
         try {
             MerkleNode pointer = new MerkleNode("QmPZ9gcCEpqKTo6aq61g2nXGUhM4iCL3ewB6LDXZCtioEB");
-            Map pub = ipfs.name.publish(pointer);
+            Map pub = ipfs.name.publish(pointer.hash);
             String resolved = ipfs.name.resolve(Multihash.fromBase58((String) pub.get("Name")));
         } catch (IOException e) {
             throw new RuntimeException(e);
