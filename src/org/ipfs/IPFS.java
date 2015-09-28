@@ -31,6 +31,10 @@ public class IPFS {
         this(host, port, "/api/v0/");
     }
 
+    public IPFS(String multiaddr) {
+        this(new MultiAddress(multiaddr));
+    }
+
     public IPFS(MultiAddress addr) {
         this(addr.getHost(), addr.getTCPPort(), "/api/v0/");
     }
