@@ -20,6 +20,31 @@ public class MultiAddress
         return Arrays.copyOfRange(raw, 0, raw.length);
     }
 
+    public boolean isTCPIP() {
+        String[] parts = toString().substring(1).split("/");
+        if (parts.length != 4)
+            return false;
+        if (!parts[0].startsWith("ip"))
+            return false;
+        if (!parts[2].equals("tcp"))
+            return false;
+        return true;
+    }
+
+    public String getHost() {
+        String[] parts = toString().substring(1).split("/");
+        if (parts[0].startsWith("ip"))
+            return parts[1];
+        throw new IllegalStateException("This multiaddress doesn't have a host: "+toString());
+    }
+
+    public int getTCPPort() {
+        String[] parts = toString().substring(1).split("/");
+        if (parts[2].startsWith("tcp"))
+            return Integer.parseInt(parts[3]);
+        throw new IllegalStateException("This multiaddress doesn't have a tcp port: "+toString());
+    }
+
     private static byte[] decodeFromString(String addr) {
         while (addr.endsWith("/"))
             addr = addr.substring(0, addr.length()-1);

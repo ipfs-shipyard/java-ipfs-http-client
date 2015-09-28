@@ -5,7 +5,7 @@ import java.util.*;
 
 public class Test {
 
-    IPFS ipfs = new IPFS("127.0.0.1", 5001);
+    IPFS ipfs = new IPFS(new MultiAddress("/ip4/127.0.0.1/tcp/5001"));
     @org.junit.Test
     public void base58Test() {
         String input = "QmPZ9gcCEpqKTo6aq61g2nXGUhM4iCL3ewB6LDXZCtioEB";
