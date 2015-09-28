@@ -7,7 +7,7 @@ Include the IPFS.jar in your project.
 
 Create an IPFS instance with:
 ```Java
-IPFS ipfs = new IPFS("127.0.0.1", 5001);
+IPFS ipfs = new IPFS("/ip4/127.0.0.1/tcp/5001");
 ```
 
 Then run commands like:
