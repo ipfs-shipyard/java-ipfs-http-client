@@ -22,4 +22,4 @@ tests:
 	jar -cfm Tests.jar def.manifest \
 	    -C build org
 	rm -f def.manifest
-	java -cp $(CP):Tests.jar org.junit.runner.JUnitCore org.ipfs.Test
+	java -cp $(CP):Tests.jar org.junit.runner.JUnitCore org.ipfs.test.Test

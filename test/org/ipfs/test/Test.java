@@ -1,4 +1,6 @@
-package org.ipfs;
+package org.ipfs.test;
+
+import org.ipfs.*;
 
 import java.io.*;
 import java.util.*;

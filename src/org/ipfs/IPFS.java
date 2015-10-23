@@ -94,7 +94,7 @@ public class IPFS {
     }
 
     // level 2 commands
-    class Refs {
+    public class Refs {
         public List<Multihash> local() throws IOException {
             return Arrays.asList(new String(retrieve("refs/local")).split("\n")).stream().map(Multihash::fromBase58).collect(Collectors.toList());
         }
@@ -102,7 +102,7 @@ public class IPFS {
 
     /* Pinning an object ensures a local copy of it is kept.
      */
-    class Pin {
+    public class Pin {
         public List<Multihash> add(Multihash hash) throws IOException {
             return ((List<Object>)((Map)retrieveAndParse("pin/add?stream-channels=true&arg=" + hash)).get("Pinned"))
                     .stream()
@@ -132,7 +132,7 @@ public class IPFS {
 
     /* 'ipfs repo' is a plumbing command used to manipulate the repo.
      */
-    class Repo {
+    public class Repo {
         public Object gc() throws IOException {
             return retrieveAndParse("repo/gc");
         }
@@ -140,7 +140,7 @@ public class IPFS {
 
     /* 'ipfs block' is a plumbing command used to manipulate raw ipfs blocks.
      */
-    class Block {
+    public class Block {
         public byte[] get(Multihash hash) throws IOException {
             return retrieve("block/get?stream-channels=true&arg=" + hash);
         }
@@ -160,7 +160,7 @@ public class IPFS {
 
     /* 'ipfs object' is a plumbing command used to manipulate DAG objects directly. {Object} is a subset of {Block}
      */
-    class IPFSObject {
+    public class IPFSObject {
         public List<MerkleNode> put(List<byte[]> data) throws IOException {
             Multipart m = new Multipart("http://" + host + ":" + port + version+"object/put?stream-channels=true", "UTF-8");
             for (byte[] f : data)
@@ -198,7 +198,7 @@ public class IPFS {
         // TODO patch
     }
 
-    class Name {
+    public class Name {
         public Map publish(Multihash hash) throws IOException {
             return publish(Optional.empty(), hash);
         }
@@ -213,7 +213,7 @@ public class IPFS {
         }
     }
 
-    class DHT {
+    public class DHT {
         public Map findprovs(Multihash hash) throws IOException {
             return retrieveMap("dht/findprovs?arg=" + hash);
         }
@@ -235,7 +235,7 @@ public class IPFS {
         }
     }
 
-    class File {
+    public class File {
         public Map ls(Multihash path) throws IOException {
             return retrieveMap("file/ls?arg=" + path);
         }
@@ -247,7 +247,7 @@ public class IPFS {
         return ((List<String>)retrieveMap("bootstrap/").get("Peers")).stream().map(x -> new MultiAddress(x)).collect(Collectors.toList());
     }
 
-    class Bootstrap {
+    public class Bootstrap {
         public List<MultiAddress> list() throws IOException {
             return bootstrap();
         }
@@ -269,7 +269,7 @@ public class IPFS {
         component that opens, listens for, and maintains connections to other
         ipfs peers in the internet.
      */
-    class Swarm {
+    public class Swarm {
         public List<MultiAddress> peers() throws IOException {
             Map m = retrieveMap("swarm/peers?stream-channels=true");
             return ((List<Object>)m.get("Strings")).stream().map(x -> new MultiAddress((String)x)).collect(Collectors.toList());
@@ -291,7 +291,7 @@ public class IPFS {
         }
     }
 
-    class Diag {
+    public class Diag {
         public String net() throws IOException {
             return new String(retrieve("diag/net?stream-channels=true"));
         }
@@ -305,7 +305,7 @@ public class IPFS {
         return retrieveMap("id/" + target.toString());
     }
 
-    class Stats {
+    public class Stats {
         public Map bw() throws IOException {
             return retrieveMap("stats/bw");
         }
@@ -325,7 +325,7 @@ public class IPFS {
         return retrieveMap("log/tail");
     }
 
-    class Config {
+    public class Config {
         public Map show() throws IOException {
             return (Map)retrieveAndParse("config/show");
         }
@@ -350,7 +350,7 @@ public class IPFS {
         return retrieveAndParse("update");
     }
 
-    class Update {
+    public class Update {
         public Object check() throws IOException {
             return retrieveAndParse("update/check");
         }
