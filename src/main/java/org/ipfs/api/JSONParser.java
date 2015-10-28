@@ -1,4 +1,4 @@
-package org.ipfs;
+package org.ipfs.api;
 
 import java.util.*;
 

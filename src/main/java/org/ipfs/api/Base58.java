@@ -1,4 +1,4 @@
-package org.ipfs;
+package org.ipfs.api;
 
 /**
  * Copyright 2011 Google Inc.

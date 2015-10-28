@@ -1,9 +1,12 @@
-package org.ipfs.test;
+package org.ipfs.api;
 
-import org.ipfs.*;
-
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Random;
 
 public class Test {
 
