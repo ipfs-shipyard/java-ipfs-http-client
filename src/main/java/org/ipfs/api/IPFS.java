@@ -169,6 +169,16 @@ public class IPFS {
             return JSONParser.parseStream(res).stream().map(x -> MerkleNode.fromJSON((Map<String, Object>) x)).collect(Collectors.toList());
         }
 
+        public List<MerkleNode> put(String encoding, List<byte[]> data) throws IOException {
+            if (!"json".equals(encoding) && "protobuf".equals(encoding))
+                throw new IllegalArgumentException("Encoding must be json or protobuf");
+            Multipart m = new Multipart("http://" + host + ":" + port + version+"object/put?stream-channels=true&encoding="+encoding, "UTF-8");
+            for (byte[] f : data)
+                m.addFilePart("file", new NamedStreamable.ByteArrayWrapper(f));
+            String res = m.finish();
+            return JSONParser.parseStream(res).stream().map(x -> MerkleNode.fromJSON((Map<String, Object>) x)).collect(Collectors.toList());
+        }
+
         public MerkleNode get(Multihash hash) throws IOException {
             Map json = retrieveMap("object/get?stream-channels=true&arg=" + hash);
             json.put("Hash", hash.toBase58());

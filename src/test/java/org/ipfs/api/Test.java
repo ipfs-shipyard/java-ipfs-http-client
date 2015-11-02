@@ -101,6 +101,7 @@ public class Test {
             Multihash pointer = Multihash.fromBase58("QmPZ9gcCEpqKTo6aq61g2nXGUhM4iCL3ewB6LDXZCtioEB");
             MerkleNode object = ipfs.object.get(pointer);
             List<MerkleNode> newPointer = ipfs.object.put(Arrays.asList(object.toJSONString().getBytes()));
+            List<MerkleNode> newPointer2 = ipfs.object.put("json", Arrays.asList(object.toJSONString().getBytes()));
             MerkleNode links = ipfs.object.links(pointer);
             byte[] data = ipfs.object.data(pointer);
             Map stat = ipfs.object.stat(pointer);
