@@ -170,7 +170,7 @@ public class IPFS {
         }
 
         public List<MerkleNode> put(String encoding, List<byte[]> data) throws IOException {
-            if (!"json".equals(encoding) && "protobuf".equals(encoding))
+            if (!"json".equals(encoding) && !"protobuf".equals(encoding))
                 throw new IllegalArgumentException("Encoding must be json or protobuf");
             Multipart m = new Multipart("http://" + host + ":" + port + version+"object/put?stream-channels=true&encoding="+encoding, "UTF-8");
             for (byte[] f : data)
