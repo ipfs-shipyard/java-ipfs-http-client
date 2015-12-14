@@ -8,6 +8,7 @@ import java.util.stream.*;
 public class IPFS {
     public enum PinType {all, direct, indirect, recursive}
     public List<String> ObjectTemplates = Arrays.asList("unixfs-dir");
+    public List<String> ObjectPatchTypes = Arrays.asList("add-link", "rm-link", "set-data", "append-data");
 
     public final String host;
     public final int port;
@@ -205,7 +206,38 @@ public class IPFS {
             return MerkleNode.fromJSON(json);
         }
 
-        // TODO patch
+        public MerkleNode patch(Multihash base, String command, Optional<byte[]> data, Optional<String> name, Optional<Multihash> target) throws IOException {
+            if (!ObjectPatchTypes.contains(command))
+                throw new IllegalStateException("Illegal Object.patch command type: "+command);
+            String targetPath = "object/patch?arg=" + base.toBase58() + "&arg=" + command;
+            if (name.isPresent())
+                targetPath += "&arg=" + name.get();
+            if (target.isPresent())
+                targetPath += "&arg=" + target.get().toBase58();
+
+            switch (command) {
+                case "add-link":
+                    if (!name.isPresent() || !target.isPresent())
+                        throw new IllegalStateException("add-link requires name and target!");
+                    return MerkleNode.fromJSON(retrieveMap(targetPath));
+                case "rm-link":
+                    if (!name.isPresent())
+                        throw new IllegalStateException("rm-link requires name!");
+                    return MerkleNode.fromJSON(retrieveMap(targetPath));
+                case "set-data":
+                    if (!data.isPresent())
+                        throw new IllegalStateException("set-data requires data!");
+                    targetPath += "&arg="+new String(data.get());
+                    return MerkleNode.fromJSON(retrieveMap(targetPath));
+                case "append-data":
+                    if (!data.isPresent())
+                        throw new IllegalStateException("append-data requires data!");
+                    targetPath += "&arg="+new String(data.get());
+                    return MerkleNode.fromJSON(retrieveMap(targetPath));
+                default:
+                    throw new IllegalStateException("Unimplemented");
+            }
+        }
     }
 
     public class Name {

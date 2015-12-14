@@ -83,6 +83,41 @@ public class Test {
     }
 
     @org.junit.Test
+    public void objectPatch() {
+        try {
+            MerkleNode obj = ipfs.object._new(Optional.empty());
+            Multihash base = obj.hash;
+            // link tests
+            String linkName = "alink";
+            MerkleNode addLink = ipfs.object.patch(base, "add-link", Optional.empty(), Optional.of(linkName), Optional.of(base));
+            MerkleNode withLink = ipfs.object.get(addLink.hash);
+            if (withLink.links.size() != 1 || !withLink.links.get(0).hash.equals(base) || !withLink.links.get(0).name.get().equals(linkName))
+                throw new RuntimeException("Added link not correct!");
+            MerkleNode rmLink = ipfs.object.patch(addLink.hash, "rm-link", Optional.empty(), Optional.of(linkName), Optional.empty());
+            if (!rmLink.hash.equals(base))
+                throw new RuntimeException("Adding not inverse of removing link!");
+
+            // data tests
+            byte[] data = "somerandomdata".getBytes();
+            MerkleNode patched = ipfs.object.patch(base, "set-data", Optional.of(data), Optional.empty(), Optional.empty());
+            MerkleNode patchedResult = ipfs.object.get(patched.hash);
+            if (!Arrays.equals(patchedResult.data.get(), data))
+                throw new RuntimeException("object.patch: returned data != stored data!");
+
+            MerkleNode twicePatched = ipfs.object.patch(patched.hash, "append-data", Optional.of(data), Optional.empty(), Optional.empty());
+            MerkleNode twicePatchedResult = ipfs.object.get(twicePatched.hash);
+            byte[] twice = new byte[2*data.length];
+            for (int i=0; i < 2; i++)
+                System.arraycopy(data, 0, twice, i*data.length, data.length);
+            if (!Arrays.equals(twicePatchedResult.data.get(), twice))
+                throw new RuntimeException("object.patch: returned data after append != stored data!");
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @org.junit.Test
     public void refsTest() {
         try {
             List<Multihash> local = ipfs.refs.local();
