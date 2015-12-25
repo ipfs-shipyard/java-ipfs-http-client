@@ -227,13 +227,11 @@ public class IPFS {
                 case "set-data":
                     if (!data.isPresent())
                         throw new IllegalStateException("set-data requires data!");
-                    targetPath += "&arg="+new String(data.get());
-                    return MerkleNode.fromJSON(retrieveMap(targetPath));
+                    return MerkleNode.fromJSON(postMap(targetPath, data.get(), Collections.EMPTY_MAP));
                 case "append-data":
                     if (!data.isPresent())
                         throw new IllegalStateException("append-data requires data!");
-                    targetPath += "&arg="+new String(data.get());
-                    return MerkleNode.fromJSON(retrieveMap(targetPath));
+                    return MerkleNode.fromJSON(postMap(targetPath, data.get(), Collections.EMPTY_MAP));
                 default:
                     throw new IllegalStateException("Unimplemented");
             }
@@ -429,6 +427,11 @@ public class IPFS {
         while ((r=in.read(buf)) >= 0)
             resp.write(buf, 0, r);
         return resp.toByteArray();
+    }
+
+    private Map postMap(String path, byte[] body, Map<String, String> headers) throws IOException {
+        URL target = new URL("http", host, port, version + path);
+        return (Map) JSONParser.parse(new String(post(target, body, headers)));
     }
 
     private static byte[] post(URL target, byte[] body, Map<String, String> headers) throws IOException {

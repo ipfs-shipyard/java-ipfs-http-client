@@ -98,7 +98,9 @@ public class Test {
                 throw new RuntimeException("Adding not inverse of removing link!");
 
             // data tests
-            byte[] data = "somerandomdata".getBytes();
+            byte[] data = "some random textual data".getBytes();
+//            byte[] data = new byte[1024];
+//            new Random().nextBytes(data);
             MerkleNode patched = ipfs.object.patch(base, "set-data", Optional.of(data), Optional.empty(), Optional.empty());
             MerkleNode patchedResult = ipfs.object.get(patched.hash);
             if (!Arrays.equals(patchedResult.data.get(), data))
