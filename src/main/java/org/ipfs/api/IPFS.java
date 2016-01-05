@@ -209,7 +209,7 @@ public class IPFS {
         public MerkleNode patch(Multihash base, String command, Optional<byte[]> data, Optional<String> name, Optional<Multihash> target) throws IOException {
             if (!ObjectPatchTypes.contains(command))
                 throw new IllegalStateException("Illegal Object.patch command type: "+command);
-            String targetPath = "object/patch?arg=" + base.toBase58() + "&arg=" + command;
+            String targetPath = "object/patch/"+command+"?arg=" + base.toBase58();
             if (name.isPresent())
                 targetPath += "&arg=" + name.get();
             if (target.isPresent())
@@ -217,21 +217,21 @@ public class IPFS {
 
             switch (command) {
                 case "add-link":
-                    if (!name.isPresent() || !target.isPresent())
+                    if (!target.isPresent())
                         throw new IllegalStateException("add-link requires name and target!");
-                    return MerkleNode.fromJSON(retrieveMap(targetPath));
                 case "rm-link":
                     if (!name.isPresent())
-                        throw new IllegalStateException("rm-link requires name!");
+                        throw new IllegalStateException("link name is required!");
                     return MerkleNode.fromJSON(retrieveMap(targetPath));
                 case "set-data":
-                    if (!data.isPresent())
-                        throw new IllegalStateException("set-data requires data!");
-                    return MerkleNode.fromJSON(postMap(targetPath, data.get(), Collections.EMPTY_MAP));
                 case "append-data":
                     if (!data.isPresent())
-                        throw new IllegalStateException("append-data requires data!");
-                    return MerkleNode.fromJSON(postMap(targetPath, data.get(), Collections.EMPTY_MAP));
+                        throw new IllegalStateException("set-data requires data!");
+                    Multipart m = new Multipart("http://" + host + ":" + port + version+"object/patch/"+command+"?arg="+base.toBase58()+"&stream-channels=true", "UTF-8");
+                    m.addFilePart("file", new NamedStreamable.ByteArrayWrapper(data.get()));
+                    String res = m.finish();
+                    return MerkleNode.fromJSON(JSONParser.parse(res));
+
                 default:
                     throw new IllegalStateException("Unimplemented");
             }
@@ -419,14 +419,18 @@ public class IPFS {
         conn.setRequestMethod("GET");
         conn.setRequestProperty("Content-Type", "application/json");
 
-        InputStream in = conn.getInputStream();
-        ByteArrayOutputStream resp = new ByteArrayOutputStream();
+        try {
+            InputStream in = conn.getInputStream();
+            ByteArrayOutputStream resp = new ByteArrayOutputStream();
 
-        byte[] buf = new byte[4096];
-        int r;
-        while ((r=in.read(buf)) >= 0)
-            resp.write(buf, 0, r);
-        return resp.toByteArray();
+            byte[] buf = new byte[4096];
+            int r;
+            while ((r = in.read(buf)) >= 0)
+                resp.write(buf, 0, r);
+            return resp.toByteArray();
+        } catch (IOException e) {
+            throw new RuntimeException("Trailer: " + conn.getHeaderFields().get("Trailer"), e);
+        }
     }
 
     private Map postMap(String path, byte[] body, Map<String, String> headers) throws IOException {

@@ -242,8 +242,9 @@ public class Test {
             Map disconnect = ipfs.swarm.disconnect(multiaddr);
             Map<String, Object> addrs = ipfs.swarm.addrs();
             if (addrs.size() > 0) {
-                Map id = ipfs.id(addrs.keySet().stream().findAny().get());
-                Map ping = ipfs.ping(addrs.keySet().stream().findAny().get());
+                String target = addrs.keySet().stream().findAny().get();
+                Map id = ipfs.id(target);
+                Map ping = ipfs.ping(target);
             }
             List<MultiAddress> peers = ipfs.swarm.peers();
             System.out.println(peers);

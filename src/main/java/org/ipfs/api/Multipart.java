@@ -94,7 +94,16 @@ public class Multipart {
             reader.close();
             httpConn.disconnect();
         } else {
-            throw new IOException("Server returned status: " + status);
+            try {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(
+                        httpConn.getInputStream()));
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    b.append(line);
+                }
+                reader.close();
+            } catch (Throwable t) {}
+            throw new IOException("Server returned status: " + status + " with body: "+b.toString() + " and Trailer header: "+httpConn.getHeaderFields().get("Trailer"));
         }
 
         return b.toString();
