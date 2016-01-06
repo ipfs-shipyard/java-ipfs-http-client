@@ -98,20 +98,20 @@ public class Test {
                 throw new RuntimeException("Adding not inverse of removing link!");
 
             // data tests
-            byte[] data = "some random textual data".getBytes();
-//            byte[] data = new byte[1024];
-//            new Random().nextBytes(data);
+//            byte[] data = "some random textual data".getBytes();
+            byte[] data = new byte[1024];
+            new Random().nextBytes(data);
             MerkleNode patched = ipfs.object.patch(base, "set-data", Optional.of(data), Optional.empty(), Optional.empty());
-            MerkleNode patchedResult = ipfs.object.get(patched.hash);
-            if (!Arrays.equals(patchedResult.data.get(), data))
+            byte[] patchedResult = ipfs.object.data(patched.hash);
+            if (!Arrays.equals(patchedResult, data))
                 throw new RuntimeException("object.patch: returned data != stored data!");
 
             MerkleNode twicePatched = ipfs.object.patch(patched.hash, "append-data", Optional.of(data), Optional.empty(), Optional.empty());
-            MerkleNode twicePatchedResult = ipfs.object.get(twicePatched.hash);
+            byte[] twicePatchedResult = ipfs.object.data(twicePatched.hash);
             byte[] twice = new byte[2*data.length];
             for (int i=0; i < 2; i++)
                 System.arraycopy(data, 0, twice, i*data.length, data.length);
-            if (!Arrays.equals(twicePatchedResult.data.get(), twice))
+            if (!Arrays.equals(twicePatchedResult, twice))
                 throw new RuntimeException("object.patch: returned data after append != stored data!");
 
         } catch (IOException e) {
