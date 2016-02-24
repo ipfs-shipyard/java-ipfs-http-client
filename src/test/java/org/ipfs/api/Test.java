@@ -75,12 +75,47 @@ public class Test {
             List<Multihash> add2 = ipfs.pin.add(hash);
             // adding something already pinned should succeed
             List<Multihash> add3 = ipfs.pin.add(hash);
-            Map<Multihash, Object> ls = ipfs.pin.ls();
+            Map<Multihash, Object> ls = ipfs.pin.ls(IPFS.PinType.recursive);
+            ipfs.repo.gc();
+            // object should still be present after gc
+            Map<Multihash, Object> ls2 = ipfs.pin.ls(IPFS.PinType.recursive);
+            boolean stillPinned = ls2.containsKey(hash);
             System.out.println(ls);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
+
+    @org.junit.Test
+    public void indirectPinTest() {
+        try {
+            Multihash EMPTY = ipfs.object._new(Optional.empty()).hash;
+            org.ipfs.api.MerkleNode data = ipfs.object.patch(EMPTY, "set-data", Optional.of("childdata".getBytes()), Optional.empty(), Optional.empty());
+            Multihash child = data.hash;
+
+            org.ipfs.api.MerkleNode tmp1 = ipfs.object.patch(EMPTY, "set-data", Optional.of("parent1_data".getBytes()), Optional.empty(), Optional.empty());
+            Multihash parent1 = ipfs.object.patch(tmp1.hash, "add-link", Optional.empty(), Optional.of(child.toString()), Optional.of(child)).hash;
+            ipfs.pin.add(parent1);
+
+            org.ipfs.api.MerkleNode tmp2 = ipfs.object.patch(EMPTY, "set-data", Optional.of("parent2_data".getBytes()), Optional.empty(), Optional.empty());
+            Multihash parent2 = ipfs.object.patch(tmp2.hash, "add-link", Optional.empty(), Optional.of(child.toString()), Optional.of(child)).hash;
+            ipfs.pin.add(parent2);
+            ipfs.pin.rm(parent1, true);
+
+            Map<Multihash, Object> ls = ipfs.pin.ls(IPFS.PinType.all);
+            boolean childPresent = ls.containsKey(child);
+            if (!childPresent)
+                throw new IllegalStateException("Child not present!");
+
+            ipfs.repo.gc();
+            Map<Multihash, Object> ls2 = ipfs.pin.ls(IPFS.PinType.all);
+            boolean childPresentAfterGC = ls2.containsKey(child);
+            if (!childPresentAfterGC)
+                throw new IllegalStateException("Child not present!");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+}
 
     @org.junit.Test
     public void objectPatch() {
