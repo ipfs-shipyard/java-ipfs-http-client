@@ -71,6 +71,10 @@ public class IPFS {
         return retrieve("get/" + hash);
     }
 
+    public InputStream catStream(Multihash hash) throws IOException {
+        return retrieveStream("cat/" + hash);
+    }
+
     public Map refs(Multihash hash, boolean recursive) throws IOException {
         return retrieveMap("refs?arg=" + hash +"&r="+recursive);
     }
@@ -431,6 +435,19 @@ public class IPFS {
         } catch (IOException e) {
             throw new RuntimeException("Trailer: " + conn.getHeaderFields().get("Trailer"), e);
         }
+    }
+
+    private InputStream retrieveStream(String path) throws IOException {
+        URL target = new URL("http", host, port, version + path);
+        return IPFS.getStream(target);
+    }
+
+    private static InputStream getStream(URL target) throws IOException {
+        HttpURLConnection conn = (HttpURLConnection) target.openConnection();
+        conn.setRequestMethod("GET");
+        conn.setRequestProperty("Content-Type", "application/json");
+
+        return conn.getInputStream();
     }
 
     private Map postMap(String path, byte[] body, Map<String, String> headers) throws IOException {

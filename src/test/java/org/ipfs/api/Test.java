@@ -1,7 +1,6 @@
 package org.ipfs.api;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +32,34 @@ public class Test {
         new Random(1).nextBytes(largerData);
         NamedStreamable.ByteArrayWrapper largeFile = new NamedStreamable.ByteArrayWrapper("nontrivial.txt", largerData);
         fileTest(largeFile);
+    }
+
+//    @org.junit.Test
+    public void hugeFileStreamTest() {
+        byte[] hugeData = new byte[1000*1024*1024];
+        new Random(1).nextBytes(hugeData);
+        NamedStreamable.ByteArrayWrapper largeFile = new NamedStreamable.ByteArrayWrapper("massive.txt", hugeData);
+        try {
+            MerkleNode addResult = ipfs.add(largeFile);
+            InputStream in = ipfs.catStream(addResult.hash);
+
+            byte[] res = new byte[hugeData.length];
+            int offset = 0;
+            byte[] buf = new byte[4096];
+            int r;
+            while ((r = in.read(buf)) >= 0) {
+                try {
+                    System.arraycopy(buf, 0, res, offset, r);
+                    offset += r;
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+            if (!Arrays.equals(res, hugeData))
+                throw new IllegalStateException("Different contents!");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @org.junit.Test
