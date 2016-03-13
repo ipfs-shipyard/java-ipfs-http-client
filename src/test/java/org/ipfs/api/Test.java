@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 
+import static org.junit.Assert.assertTrue;
+
 public class Test {
 
     IPFS ipfs = new IPFS(new MultiAddress("/ip4/127.0.0.1/tcp/5001"));
@@ -346,6 +348,7 @@ public class Test {
     public void toolsTest() {
         try {
             String version = ipfs.version();
+            assertTrue(version.equals("0.4.0-dev"));     // No longer works with any 0.3 version
             Map commands = ipfs.commands();
         } catch (IOException e) {
             throw new RuntimeException(e);
