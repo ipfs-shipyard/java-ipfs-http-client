@@ -1,11 +1,8 @@
 package org.ipfs.api;
 
 import java.io.*;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Random;
+import java.nio.file.*;
+import java.util.*;
 
 import static org.junit.Assert.assertTrue;
 
@@ -65,8 +62,13 @@ public class Test {
     }
 
     @org.junit.Test
-    public void hostFileTest() {
-        NamedStreamable hostFile = new NamedStreamable.FileWrapper(new File("Makefile"));
+    public void hostFileTest() throws IOException {
+        Path tempFile = Files.createTempFile("IPFS", "tmp");
+        BufferedWriter w = new BufferedWriter(new FileWriter(tempFile.toFile()));
+        w.append("Some data");
+        w.flush();
+        w.close();
+        NamedStreamable hostFile = new NamedStreamable.FileWrapper(tempFile.toFile());
         fileTest(hostFile);
     }
 
@@ -348,7 +350,9 @@ public class Test {
     public void toolsTest() {
         try {
             String version = ipfs.version();
-            assertTrue(version.equals("0.4.0-dev"));     // No longer works with any 0.3 version
+            int major = Integer.parseInt(version.split("\\.")[0]);
+            int minor = Integer.parseInt(version.split("\\.")[1]);
+            assertTrue(major >= 0 && minor >= 4);     // Requires at least 0.4.0
             Map commands = ipfs.commands();
         } catch (IOException e) {
             throw new RuntimeException(e);
