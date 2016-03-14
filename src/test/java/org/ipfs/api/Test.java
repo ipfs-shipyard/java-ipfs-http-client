@@ -226,12 +226,15 @@ public class Test {
     }
 
     @org.junit.Test
-    public void fileTest() {
+    public void fileContentsTest() {
         try {
             ipfs.repo.gc();
             List<Multihash> local = ipfs.refs.local();
             for (Multihash hash: local) {
-                Map ls = ipfs.file.ls(hash);
+                try {
+                    Map ls = ipfs.file.ls(hash);
+                    return;
+                } catch (Exception e) {} // non unixfs files will throw an exception here
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
