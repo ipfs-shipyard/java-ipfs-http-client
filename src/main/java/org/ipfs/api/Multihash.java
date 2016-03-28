@@ -56,6 +56,19 @@ public class Multihash {
         return res;
     }
 
+    public void serialize(DataOutput dout) throws IOException {
+        dout.write(toBytes());
+    }
+
+    public static Multihash deserialize(DataInput din) throws IOException {
+        int type = din.readUnsignedByte();
+        int len = din.readUnsignedByte();
+        Type t = Type.lookup(type);
+        byte[] hash = new byte[len];
+        din.readFully(hash);
+        return new Multihash(t, hash);
+    }
+
     @Override
     public String toString() {
         return toBase58();
