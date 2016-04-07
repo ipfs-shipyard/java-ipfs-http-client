@@ -18,7 +18,8 @@ public class Protocol {
         UDT(302, 0, "udt"),
         IPFS(421, LENGTH_PREFIXED_VAR_SIZE, "ipfs"),
         HTTPS(443, 0, "https"),
-        HTTP(480, 0, "http");
+        HTTP(480, 0, "http"),
+        ONION(444, 80, "onion");
 
         public final int code, size;
         public final String name;
@@ -77,8 +78,8 @@ public class Protocol {
                 case DCCP:
                 case SCTP:
                     int x = Integer.parseInt(addr);
-                    if (x > 65536)
-                        throw new IllegalStateException("Failed to parse "+type.name+" address "+addr + " (> 65536");
+                    if (x > 65535)
+                        throw new IllegalStateException("Failed to parse "+type.name+" address "+addr + " (> 65535");
                     return new byte[]{(byte)(x >>8), (byte)x};
                 case IPFS:
                     Multihash hash = Multihash.fromBase58(addr);
@@ -89,6 +90,29 @@ public class Protocol {
                     bout.write(varint);
                     bout.write(hashBytes);
                     return bout.toByteArray();
+                case ONION:
+                    String[] split = addr.split(":");
+                    if (split.length != 2)
+                        throw new IllegalStateException("Onion address needs a port: "+addr);
+
+                    // onion address without the ".onion" substring
+                    if (split[0].length() != 16)
+                        throw new IllegalStateException("failed to parse "+name()+" addr: "+addr+" not a Tor onion address.");
+
+                    byte[] onionHostBytes = Base32.decode(split[0].toUpperCase());
+                    int port = Integer.parseInt(split[1]);
+                    if (port > 65535)
+                        throw new IllegalStateException("Port is > 65535: "+port);
+
+                    if (port < 1)
+                        throw new IllegalStateException("Port is < 1: "+port);
+
+                    ByteArrayOutputStream b = new ByteArrayOutputStream();
+                    DataOutputStream dout = new DataOutputStream(b);
+                    dout.write(onionHostBytes);
+                    dout.writeShort(port);
+                    dout.flush();
+                    return b.toByteArray();
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -117,6 +141,11 @@ public class Protocol {
                 buf = new byte[sizeForAddress];
                 in.read(buf);
                 return new Multihash(buf).toBase58();
+            case ONION:
+                byte[] host = new byte[10];
+                in.read(host);
+                String port = Integer.toString((in.read() << 8) | (in.read()));
+                return Base32.encode(host)+":"+port;
         }
         throw new IllegalStateException("Unimplemented protocl type: "+type.name);
     }

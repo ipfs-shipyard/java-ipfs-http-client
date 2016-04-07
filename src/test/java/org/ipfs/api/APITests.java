@@ -6,7 +6,7 @@ import java.util.*;
 
 import static org.junit.Assert.assertTrue;
 
-public class Test {
+public class APITests {
 
     IPFS ipfs = new IPFS(new MultiAddress("/ip4/127.0.0.1/tcp/5001"));
     @org.junit.Test
