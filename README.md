@@ -1,4 +1,4 @@
-# IPFS-API-Java
+# java-ipfs-api
 A Java implementation of the IPFS http api
 
 ##Usage
