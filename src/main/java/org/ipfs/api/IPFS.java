@@ -109,7 +109,7 @@ public class IPFS {
      */
     public class Pin {
         public List<Multihash> add(Multihash hash) throws IOException {
-            return ((List<Object>)((Map)retrieveAndParse("pin/add?stream-channels=true&arg=" + hash)).get("Pinned"))
+            return ((List<Object>)((Map)retrieveAndParse("pin/add?stream-channels=true&arg=" + hash)).get("Pins"))
                     .stream()
                     .map(x -> Multihash.fromBase58((String)x))
                     .collect(Collectors.toList());
@@ -131,7 +131,7 @@ public class IPFS {
 
         public List<Multihash> rm(Multihash hash, boolean recursive) throws IOException {
             Map json = retrieveMap("pin/rm?stream-channels=true&r=" + recursive + "&arg=" + hash);
-            return ((List<Object>) json.get("Pinned")).stream().map(x -> Multihash.fromBase58((String) x)).collect(Collectors.toList());
+            return ((List<Object>) json.get("Pins")).stream().map(x -> Multihash.fromBase58((String) x)).collect(Collectors.toList());
         }
     }
 
