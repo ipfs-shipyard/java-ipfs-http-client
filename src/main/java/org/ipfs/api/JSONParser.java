@@ -274,6 +274,7 @@ public class JSONParser
             return null;
         int[] pos = new int[1];
         List<Object> res = new ArrayList<>();
+        json = json.trim();
         while (pos[0] < json.length())
             res.add(parse(json, pos));
         return res;

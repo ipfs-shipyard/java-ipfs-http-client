@@ -55,7 +55,10 @@ public class IPFS {
         for (NamedStreamable f : files)
             m.addFilePart("file", f);
         String res = m.finish();
-        return JSONParser.parseStream(res).stream().map(x -> MerkleNode.fromJSON((Map<String, Object>) x)).collect(Collectors.toList());
+        return JSONParser.parseStream(res).stream()
+                .skip(1)
+                .map(x -> MerkleNode.fromJSON((Map<String, Object>) x))
+                .collect(Collectors.toList());
     }
 
     public List<MerkleNode> ls(Multihash hash) throws IOException {
@@ -101,7 +104,11 @@ public class IPFS {
     // level 2 commands
     public class Refs {
         public List<Multihash> local() throws IOException {
-            return Arrays.asList(new String(retrieve("refs/local")).split("\n")).stream().map(Multihash::fromBase58).collect(Collectors.toList());
+            String jsonStream = new String(retrieve("refs/local"));
+            return JSONParser.parseStream(jsonStream).stream()
+                    .map(m -> (String) (((Map) m).get("Ref")))
+                    .map(Multihash::fromBase58)
+                    .collect(Collectors.toList());
         }
     }
 
