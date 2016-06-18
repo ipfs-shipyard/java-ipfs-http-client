@@ -439,8 +439,10 @@ public class IPFS {
             while ((r = in.read(buf)) >= 0)
                 resp.write(buf, 0, r);
             return resp.toByteArray();
+        } catch (ConnectException e) {
+            throw new RuntimeException("Couldn't connect to IPFS daemon at "+target+"\n Is IPFS running?");
         } catch (IOException e) {
-            throw new RuntimeException("Trailer: " + conn.getHeaderFields().get("Trailer"), e);
+            throw new RuntimeException("IOException contacting IPFS daemon.\nTrailer: " + conn.getHeaderFields().get("Trailer"), e);
         }
     }
 
