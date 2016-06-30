@@ -6,6 +6,8 @@ import java.util.*;
 import java.util.stream.*;
 
 public class IPFS {
+
+    public static final String MIN_VERSION = "0.4.2";
     public enum PinType {all, direct, indirect, recursive}
     public List<String> ObjectTemplates = Arrays.asList("unixfs-dir");
     public List<String> ObjectPatchTypes = Arrays.asList("add-link", "rm-link", "set-data", "append-data");
@@ -44,6 +46,16 @@ public class IPFS {
         this.host = host;
         this.port = port;
         this.version = version;
+        // Check IPFS is sufficiently recent
+        try {
+            String ipfsVersion = version();
+            int[] parts = Stream.of(ipfsVersion.split("\\.")).mapToInt(Integer::parseInt).toArray();
+            int[] minParts = Stream.of(MIN_VERSION.split("\\.")).mapToInt(Integer::parseInt).toArray();
+            if (parts[0] < minParts[0] || parts[1] < minParts[1] || parts[2] < minParts[2])
+                throw new IllegalStateException("You need to use a more recent version of IPFS! >= " + MIN_VERSION);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public MerkleNode add(NamedStreamable file) throws IOException {
