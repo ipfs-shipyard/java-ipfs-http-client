@@ -1,11 +1,15 @@
 package org.ipfs.api;
 
 import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.net.Inet4Address;
+import java.net.Inet6Address;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Protocol {
-    public static int LENGTH_PREFIXED_VAR_SIZE = -1;
+
+    private static final int LENGTH_PREFIXED_VAR_SIZE = -1;
+    private static final int MAX_PORT =  65535;
 
     enum Type {
         IP4(4, 32, "ip4"),
@@ -78,7 +82,7 @@ public class Protocol {
                 case DCCP:
                 case SCTP:
                     int x = Integer.parseInt(addr);
-                    if (x > 65535)
+                    if (x > MAX_PORT)
                         throw new IllegalStateException("Failed to parse "+type.name+" address "+addr + " (> 65535");
                     return new byte[]{(byte)(x >>8), (byte)x};
                 case IPFS:
@@ -101,7 +105,7 @@ public class Protocol {
 
                     byte[] onionHostBytes = Base32.decode(split[0].toUpperCase());
                     int port = Integer.parseInt(split[1]);
-                    if (port > 65535)
+                    if (port > MAX_PORT)
                         throw new IllegalStateException("Port is > 65535: "+port);
 
                     if (port < 1)

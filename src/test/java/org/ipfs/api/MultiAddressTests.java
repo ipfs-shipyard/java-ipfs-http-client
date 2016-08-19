@@ -1,11 +1,17 @@
 package org.ipfs.api;
 
-import org.junit.*;
+import org.junit.Test;
 
-import java.io.*;
-import java.util.*;
-import java.util.function.*;
-import java.util.stream.*;
+import java.io.ByteArrayOutputStream;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static junit.framework.TestCase.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class MultiAddressTests {
 
@@ -44,8 +50,8 @@ public class MultiAddressTests {
                 return Stream.empty();
             }
         }).collect(Collectors.toList());
-        if (parsed.size() > 0)
-            throw new IllegalStateException("Parsed invalid MultiAddresses: "+parsed);
+
+        assertEquals(0, parsed.size());
     }
 
     @Test
@@ -87,8 +93,8 @@ public class MultiAddressTests {
                 return Stream.of(s);
             }
         }).collect(Collectors.toList());
-        if (failed.size() > 0)
-            throw new IllegalStateException("Failed to construct MultiAddresses: "+failed);
+
+        assertEquals(0, failed.size());
     }
 
     @Test
@@ -131,7 +137,7 @@ public class MultiAddressTests {
         test.accept("/ip4/127.0.0.1/udp/1234/ip4/127.0.0.1/tcp/4321", "047f0000011104d2047f0000010610e1");
     }
 
-   @Test
+    @Test
     public void bytesToString() {
         BiConsumer<String, String> test = (s, h) -> {
             if (!s.equals(new MultiAddress(fromHex(h)).toString())) throw new IllegalStateException(s + " != " + new MultiAddress(fromHex(h)));
@@ -149,5 +155,35 @@ public class MultiAddressTests {
         for (int i=0; i < hex.length()-1; i+= 2)
             bout.write(Integer.valueOf(hex.substring(i, i+2), 16));
         return bout.toByteArray();
+    }
+
+    @Test
+    public void ip4_udp_MultiAddressTest() {
+        MultiAddress multiAddress = new MultiAddress("/ip4/127.0.0.1/udp/1234");
+
+        assertEquals("127.0.0.1", multiAddress.getHost());
+        assertFalse(multiAddress.isTCPIP());
+    }
+
+    @Test
+    public void ip4_tcp_MultiAddressTest() {
+        MultiAddress multiAddress = new MultiAddress("/ip4/127.0.0.1/tcp/1234");
+
+        assertEquals("127.0.0.1", multiAddress.getHost());
+        assertTrue(multiAddress.isTCPIP());
+        assertEquals(1234, multiAddress.getTCPPort());
+    }
+
+    @Test (expected = IllegalStateException.class)
+    public void noHostMultiAddressTest() {
+        MultiAddress multiAddress = new MultiAddress("/tcp/1234");
+        multiAddress.getHost();
+    }
+
+    @Test (expected = IllegalStateException.class)
+    public void tcpMultiAddressWithNoPortTest() {
+        MultiAddress multiAddress = new MultiAddress("/ip4/127.0.0.1/udp/1234");
+        assertFalse(multiAddress.isTCPIP());
+        multiAddress.getTCPPort();
     }
 }
