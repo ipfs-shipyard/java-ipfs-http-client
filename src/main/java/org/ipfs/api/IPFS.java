@@ -7,7 +7,7 @@ import java.util.stream.*;
 
 public class IPFS {
 
-    public static final String MIN_VERSION = "0.4.2";
+    public static final String MIN_VERSION = "0.4.4";
     public enum PinType {all, direct, indirect, recursive}
     public List<String> ObjectTemplates = Arrays.asList("unixfs-dir");
     public List<String> ObjectPatchTypes = Arrays.asList("add-link", "rm-link", "set-data", "append-data");
@@ -49,9 +49,11 @@ public class IPFS {
         // Check IPFS is sufficiently recent
         try {
             String ipfsVersion = version();
-            int[] parts = Stream.of(ipfsVersion.split("\\.")).mapToInt(Integer::parseInt).toArray();
-            int[] minParts = Stream.of(MIN_VERSION.split("\\.")).mapToInt(Integer::parseInt).toArray();
-            if (parts[0] < minParts[0] || parts[1] < minParts[1] || parts[2] < minParts[2])
+            String[] parts = ipfsVersion.split("\\.");
+            String[] minParts = MIN_VERSION.split("\\.");
+            if (parts[0].compareTo(minParts[0]) < 0
+                    || parts[1].compareTo(minParts[1]) < 0
+                    || parts[2].compareTo(minParts[2]) < 0)
                 throw new IllegalStateException("You need to use a more recent version of IPFS! >= " + MIN_VERSION);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -68,7 +70,6 @@ public class IPFS {
             m.addFilePart("file", f);
         String res = m.finish();
         return JSONParser.parseStream(res).stream()
-                .skip(1)
                 .map(x -> MerkleNode.fromJSON((Map<String, Object>) x))
                 .collect(Collectors.toList());
     }
