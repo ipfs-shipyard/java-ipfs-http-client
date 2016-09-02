@@ -306,7 +306,7 @@ public class APITests {
     @org.junit.Test
     public void swarmTest() {
         try {
-            String multiaddr = "/ip4/104.131.131.82/tcp/4001/ipfs/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ";
+            String multiaddr = "/ip4/127.0.0.1/tcp/4001/ipfs/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ";
             Map connect = ipfs.swarm.connect(multiaddr);
             Map disconnect = ipfs.swarm.disconnect(multiaddr);
             Map<String, Object> addrs = ipfs.swarm.addrs();
