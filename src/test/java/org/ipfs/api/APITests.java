@@ -25,6 +25,46 @@ public class APITests {
         fileTest(file);
     }
 
+    @org.junit.Test
+    public void directoryTest() throws IOException {
+        Random rnd = new Random();
+        String dirName = "folder" + rnd.nextInt(100);
+        Path tmpDir = Files.createTempDirectory(dirName);
+
+        String fileName = "afile" + rnd.nextInt(100);
+        Path file = tmpDir.resolve(fileName);
+        FileOutputStream fout = new FileOutputStream(file.toFile());
+        byte[] fileContents = "IPFS rocks!".getBytes();
+        fout.write(fileContents);
+        fout.flush();
+        fout.close();
+
+        String subdirName = "subdir";
+        tmpDir.resolve(subdirName).toFile().mkdir();
+
+        String subfileName = "subdirfile" + rnd.nextInt(100);
+        Path subdirfile = tmpDir.resolve(subdirName + "/" + subfileName);
+        FileOutputStream fout2 = new FileOutputStream(subdirfile.toFile());
+        byte[] file2Contents = "IPFS still rocks!".getBytes();
+        fout2.write(file2Contents);
+        fout2.flush();
+        fout2.close();
+
+        MerkleNode addResult = ipfs.add(new NamedStreamable.FileWrapper(tmpDir.toFile()));
+        List<MerkleNode> lsResult = ipfs.ls(addResult.hash);
+        if (lsResult.size() != 1)
+            throw new IllegalStateException("Incorrect number of objects in ls!");
+        if (!lsResult.get(0).equals(addResult))
+            throw new IllegalStateException("Object not returned in ls!");
+        byte[] catResult = ipfs.cat(addResult.hash, "/" + fileName);
+        if (!Arrays.equals(catResult, fileContents))
+            throw new IllegalStateException("Different contents!");
+
+        byte[] catResult2 = ipfs.cat(addResult.hash, "/" + subdirName + "/" + subfileName);
+        if (!Arrays.equals(catResult2, file2Contents))
+            throw new IllegalStateException("Different contents!");
+    }
+
 //    @org.junit.Test
     public void largeFileTest() {
         byte[] largerData = new byte[100*1024*1024];

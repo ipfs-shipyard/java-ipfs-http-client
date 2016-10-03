@@ -3,6 +3,7 @@ package org.ipfs.api;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.function.*;
 import java.util.stream.*;
 
 public class IPFS {
@@ -61,13 +62,23 @@ public class IPFS {
     }
 
     public MerkleNode add(NamedStreamable file) throws IOException {
-        return add(Arrays.<NamedStreamable>asList(file)).get(0);
+        List<MerkleNode> addParts = add(Collections.singletonList(file));
+        Optional<MerkleNode> sameName = addParts.stream()
+                .filter(node -> node.name.equals(file.getName()))
+                .findAny();
+        if (sameName.isPresent())
+            return sameName.get();
+        return addParts.get(0);
     }
 
     public List<MerkleNode> add(List<NamedStreamable> files) throws IOException {
         Multipart m = new Multipart("http://" + host + ":" + port + version+"add?stream-channels=true", "UTF-8");
-        for (NamedStreamable f : files)
-            m.addFilePart("file", f);
+        for (NamedStreamable file: files) {
+            if (file.isDirectory()) {
+                m.addSubtree("", ((NamedStreamable.FileWrapper)file).getFile());
+            } else
+                m.addFilePart("file", file);
+        };
         String res = m.finish();
         return JSONParser.parseStream(res).stream()
                 .map(x -> MerkleNode.fromJSON((Map<String, Object>) x))
@@ -81,6 +92,10 @@ public class IPFS {
 
     public byte[] cat(Multihash hash) throws IOException {
         return retrieve("cat/" + hash);
+    }
+
+    public byte[] cat(Multihash hash, String subPath) throws IOException {
+        return retrieve("cat?arg=" + hash + URLEncoder.encode(subPath, "UTF-8"));
     }
 
     public byte[] get(Multihash hash) throws IOException {
