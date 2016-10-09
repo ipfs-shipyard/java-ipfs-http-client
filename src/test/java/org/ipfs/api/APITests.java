@@ -8,16 +8,7 @@ import static org.junit.Assert.assertTrue;
 
 public class APITests {
 
-    IPFS ipfs = new IPFS(new MultiAddress("/ip4/127.0.0.1/tcp/5001"));
-    @org.junit.Test
-    public void base58Test() {
-        String input = "QmPZ9gcCEpqKTo6aq61g2nXGUhM4iCL3ewB6LDXZCtioEB";
-        byte[] output = Base58.decode(input);
-        String encoded = Base58.encode(output);
-        if (!encoded.equals(input))
-            throw new IllegalStateException("Incorrect base58! "+ input + " => "+encoded);
-    }
-
+    private final IPFS ipfs = new IPFS(new MultiAddress("/ip4/127.0.0.1/tcp/5001"));
 
     @org.junit.Test
     public void singleFileTest() {
