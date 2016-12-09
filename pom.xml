@@ -29,6 +29,16 @@
 			<artifactId>hamcrest-core</artifactId>
 			<version>${hamcrest.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.ipfs.api</groupId>
+			<artifactId>Multiaddr</artifactId>
+			<version>1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.ipfs.api</groupId>
+			<artifactId>Multihash</artifactId>
+			<version>1.0</version>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -41,6 +51,43 @@
 					<source>1.8</source>
 					<target>1.8</target>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-install-plugin</artifactId>
+				<version>2.5.1</version>
+				<executions>
+					<execution>
+						<id>install-Multiaddr</id>
+						<goals>
+							<goal>install-file</goal>
+						</goals>
+						<phase>validate</phase>
+						<configuration>
+							<groupId>org.ipfs.api</groupId>
+							<artifactId>Multiaddr</artifactId>
+							<version>1.0</version>
+							<packaging>jar</packaging>
+							<file>${basedir}/lib/Multiaddr.jar</file>
+							<generatePom>true</generatePom>
+						</configuration>
+					</execution>
+					<execution>
+						<id>install-Multihash</id>
+						<goals>
+							<goal>install-file</goal>
+						</goals>
+						<phase>validate</phase>
+						<configuration>
+							<groupId>org.ipfs.api</groupId>
+							<artifactId>Multihash</artifactId>
+							<version>1.0</version>
+							<packaging>jar</packaging>
+							<file>${basedir}/lib/Multihash.jar</file>
+							<generatePom>true</generatePom>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
