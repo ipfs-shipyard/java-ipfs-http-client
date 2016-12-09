@@ -28,6 +28,7 @@
 			<groupId>org.hamcrest</groupId>
 			<artifactId>hamcrest-core</artifactId>
 			<version>${hamcrest.version}</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.ipfs.api</groupId>
