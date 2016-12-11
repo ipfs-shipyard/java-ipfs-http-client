@@ -55,7 +55,7 @@
 	<pathelement location="lib/multiaddr.jar" />
 	<pathelement location="dist/ipfs.jar" />
       </classpath>
-      <test name="org.ipfs.api.APITest" haltonfailure="yes">
+      <test name="io.ipfs.api.APITest" haltonfailure="yes">
 	<formatter type="plain"/>
 	<formatter type="xml"/>
       </test>
