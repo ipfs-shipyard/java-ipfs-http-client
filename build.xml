@@ -20,7 +20,7 @@
   <target name="compile" depends="init" description="compile the source">
     <javac includeantruntime="false" srcdir="${src}" destdir="${build}" debug="true" debuglevel="lines,vars,source">
       <classpath>
-	<fileset dir="lib">
+        <fileset dir="lib">
           <include name="**/*.jar" />
         </fileset>
       </classpath>
@@ -35,16 +35,15 @@
     <manifestclasspath property="manifest_cp" jarfile="myjar.jar">
       <classpath refid="dep.runtime" />
     </manifestclasspath>
-    <jar jarfile="${dist}/IPFS.jar" basedir="${build}">
+    <jar jarfile="${dist}/ipfs.jar" basedir="${build}">
       <manifest>
-	  <attribute name="Class-Path" value="${manifest_cp}"/>
+        <attribute name="Class-Path" value="${manifest_cp}"/>
+        <attribute name="Implementation-Vendor" value="io.ipfs"/>
+        <attribute name="Implementation-Title" value="api"/>
+        <attribute name="Implementation-Version" value="1.0.0"/>
       </manifest>
     </jar>
-    <copy todir=".">
-      <fileset file="${dist}/IPFS.jar"/>
-    </copy>
   </target>
-
 
   <target name="test" depends="compile,dist">
     <junit printsummary="yes" fork="true" haltonfailure="yes">
@@ -52,15 +51,15 @@
       <classpath>
 	<pathelement location="lib/junit-4.11.jar" />
 	<pathelement location="lib/hamcrest-core-1.3.jar" />
-	<pathelement location="lib/Multihash.jar" />
-	<pathelement location="lib/Multiaddr.jar" />
-	<pathelement location="IPFS.jar" />
+	<pathelement location="lib/multihash.jar" />
+	<pathelement location="lib/multiaddr.jar" />
+	<pathelement location="dist/ipfs.jar" />
       </classpath>
-      <test name="org.ipfs.api.APITests" haltonfailure="yes">
+      <test name="io.ipfs.api.APITest" haltonfailure="yes">
 	<formatter type="plain"/>
 	<formatter type="xml"/>
       </test>
-      </junit>
+    </junit>
   </target>
 
   <target name="clean" description="clean up">

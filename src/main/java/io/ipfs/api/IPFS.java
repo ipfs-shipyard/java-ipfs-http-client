@@ -1,4 +1,7 @@
-package org.ipfs.api;
+package io.ipfs.api;
+
+import io.ipfs.multihash.Multihash;
+import io.ipfs.multiaddr.MultiAddress;
 
 import java.io.*;
 import java.net.*;

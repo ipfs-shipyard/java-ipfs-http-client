@@ -2,6 +2,7 @@
 *.log
 dist/*
 target/
+dependency-reduced-pom.xml
 
 # Scala-IDE specific
 .idea/*
