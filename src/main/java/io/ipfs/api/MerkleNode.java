@@ -1,4 +1,4 @@
-package org.ipfs.api;
+package io.ipfs.api;
 
 import io.ipfs.multihash.Multihash;
 
