@@ -57,13 +57,13 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>io.ipfs.multiformats</groupId>
-			<artifactId>multiaddr</artifactId>
+			<groupId>com.github.multiformats</groupId>
+			<artifactId>java-multiaddr</artifactId>
 			<version>v1.0.0</version>
 		</dependency>
 		<dependency>
-			<groupId>io.ipfs.multiformats</groupId>
-			<artifactId>multihash</artifactId>
+			<groupId>com.github.multiformats</groupId>
+			<artifactId>java-multihash</artifactId>
 			<version>v1.0.0</version>
 		</dependency>
 	</dependencies>

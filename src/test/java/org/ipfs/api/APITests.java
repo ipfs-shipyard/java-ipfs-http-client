@@ -1,4 +1,7 @@
-package org.ipfs.api;
+package io.ipfs.api;
+
+import io.ipfs.multihash.Multihash;
+import io.ipfs.multiaddr.MultiAddress;
 
 import java.io.*;
 import java.nio.file.*;
@@ -6,7 +9,7 @@ import java.util.*;
 
 import static org.junit.Assert.assertTrue;
 
-public class APITests {
+public class APITest {
 
     private final IPFS ipfs = new IPFS(new MultiAddress("/ip4/127.0.0.1/tcp/5001"));
 

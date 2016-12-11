@@ -1,5 +1,7 @@
 package org.ipfs.api;
 
+import io.ipfs.multihash.Multihash;
+
 import java.util.*;
 import java.util.stream.*;
 
