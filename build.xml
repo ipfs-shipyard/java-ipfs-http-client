@@ -40,7 +40,7 @@
         <attribute name="Class-Path" value="${manifest_cp}"/>
         <attribute name="Implementation-Vendor" value="io.ipfs"/>
         <attribute name="Implementation-Title" value="api"/>
-        <attribute name="Implementation-Version" value="1.0.0"/>
+        <attribute name="Implementation-Version" value="1.1.0"/>
       </manifest>
     </jar>
   </target>
