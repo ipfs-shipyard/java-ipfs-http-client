@@ -1,17 +1,67 @@
 package io.ipfs.api;
 
+import io.ipfs.api.cbor.*;
+import io.ipfs.cid.*;
 import io.ipfs.multihash.Multihash;
 import io.ipfs.multiaddr.MultiAddress;
+import org.junit.*;
 
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
+import java.util.function.*;
+import java.util.stream.*;
 
 import static org.junit.Assert.assertTrue;
 
 public class APITest {
 
     private final IPFS ipfs = new IPFS(new MultiAddress("/ip4/127.0.0.1/tcp/5001"));
+
+    @org.junit.Test
+    public void dag() throws IOException {
+        byte[] object = "{\"data\":1234}".getBytes();
+        MerkleNode put = ipfs.dag.put("json", object);
+
+        Cid expected = Cid.decode("zdpuB2CbdLrUK5AgZusm4hraisDDDC135ugdmZWvMHhhsSYTb");
+
+        Multihash result = put.hash;
+        Assert.assertTrue("Correct cid returned", result.equals(expected));
+
+        byte[] get = ipfs.dag.get(expected);
+        Assert.assertTrue("Raw data equal", Arrays.equals(object, get));
+    }
+
+    @org.junit.Test
+    public void dagCbor() throws IOException {
+        Map<String, CborObject> tmp = new TreeMap<>();
+        tmp.put("data", new CborObject.CborByteArray("G'day mate!".getBytes()));
+        CborObject original = CborObject.CborMap.build(tmp);
+        byte[] object = original.toByteArray();
+        MerkleNode put = ipfs.dag.put("cbor", object);
+
+        Cid cid = (Cid) put.hash;
+
+        byte[] get = ipfs.dag.get(cid);
+        CborObject cborObject = CborObject.fromByteArray(get);
+        Assert.assertTrue("Raw data equal", Arrays.equals(object, get));
+
+        Cid expected = Cid.decode("zdpuB2RwxeC5eC7oxiyzzhuZwAPd26YNRxXHvcTvgm4MbXwsC");
+        Assert.assertTrue("Correct cid returned", cid.equals(expected));
+    }
+
+    @org.junit.Test
+    public void ipldNode() {
+        Function<Stream<Pair<String, CborObject>>, CborObject.CborMap> map =
+                s -> CborObject.CborMap.build(s.collect(Collectors.toMap(p -> p.left, p -> p.right)));
+        CborObject.CborMap a = map.apply(Stream.of(new Pair<>("b", new CborObject.CborLong(1))));
+
+        CborObject.CborMap cbor = map.apply(Stream.of(new Pair<>("a", a), new Pair<>("c", new CborObject.CborLong(2))));
+
+        IpldNode.CborIpldNode node = new IpldNode.CborIpldNode(cbor);
+        List<String> tree = node.tree("", -1);
+        Assert.assertTrue("Correct tree", tree.equals(Arrays.asList("/a/b", "/c")));
+    }
 
     @org.junit.Test
     public void singleFileTest() {
@@ -145,7 +195,7 @@ public class APITest {
             // object should still be present after gc
             Map<Multihash, Object> ls2 = ipfs.pin.ls(IPFS.PinType.recursive);
             boolean stillPinned = ls2.containsKey(hash);
-            System.out.println(ls);
+            Assert.assertTrue("Pinning works", pinned && stillPinned);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -259,6 +309,44 @@ public class APITest {
         }
     }
 
+    private static String toEscapedHex(byte[] in) throws IOException {
+        StringBuilder res = new StringBuilder();
+        for (byte b : in) {
+            res.append("\\x");
+            res.append(String.format("%02x", b & 0xFF));
+        }
+        return res.toString();
+    }
+
+    @org.junit.Test
+    public void cborBlockTest() {
+        try {
+            CborObject.CborByteArray cbor1 = new CborObject.CborByteArray("g'day IPFS!".getBytes());
+            byte[] obj1 = cbor1.toByteArray();
+            MerkleNode block1 = ipfs.block.put(Arrays.asList(obj1), Optional.of("cbor")).get(0);
+            Multihash block1Hash = block1.hash;
+            byte[] retrievedObj1 = ipfs.block.get(block1Hash);
+            Assert.assertTrue("get inverse of put", Arrays.equals(retrievedObj1, obj1));
+
+            CborObject.CborMerkleLink cbor2 = new CborObject.CborMerkleLink(block1.hash);
+            byte[] obj2 = cbor2.toByteArray();
+            MerkleNode block2 = ipfs.block.put(Arrays.asList(obj2), Optional.of("cbor")).get(0);
+            byte[] retrievedObj2 = ipfs.block.get(block2.hash);
+            Assert.assertTrue("get inverse of put", Arrays.equals(retrievedObj2, obj2));
+
+            List<Multihash> add = ipfs.pin.add(block2.hash);
+            ipfs.repo.gc();
+
+            byte[] bytes = ipfs.block.get(block1.hash);
+            // These commands can be used to reproduce this on the command line
+            String reproCommand1 = "printf \"" + toEscapedHex(obj1) + "\" | ipfs block put --format=cbor";
+            String reproCommand2 = "printf \"" + toEscapedHex(obj2) + "\" | ipfs block put --format=cbor";
+            System.out.println();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @org.junit.Test
     public void fileContentsTest() {
         try {
@@ -311,8 +399,8 @@ public class APITest {
             Map get = ipfs.dht.get(pointer);
             Map put = ipfs.dht.put("somekey", "somevalue");
             Map findprovs = ipfs.dht.findprovs(pointer);
-            List<MultiAddress> peers = ipfs.swarm.peers();
-            Map query = ipfs.dht.query(peers.get(0));
+            List<Peer> peers = ipfs.swarm.peers();
+            Map query = ipfs.dht.query(peers.get(0).address);
 //            Map find = ipfs.dht.findpeer(peers.get(0));
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -345,11 +433,21 @@ public class APITest {
             Map disconnect = ipfs.swarm.disconnect(multiaddr);
             Map<String, Object> addrs = ipfs.swarm.addrs();
             if (addrs.size() > 0) {
-                String target = addrs.keySet().stream().findAny().get();
-                Map id = ipfs.id(target);
-                Map ping = ipfs.ping(target);
+                boolean contacted = addrs.keySet().stream()
+                        .filter(target -> {
+                            try {
+                                Map id = ipfs.id(target);
+                                Map ping = ipfs.ping(target);
+                                return true;
+                            } catch (Exception e) {
+                                // not all nodes have to be contactable
+                                return false;
+                            }
+                        }).findAny().isPresent();
+                if (!contacted)
+                    throw new IllegalStateException("Couldn't contact any node!");
             }
-            List<MultiAddress> peers = ipfs.swarm.peers();
+            List<Peer> peers = ipfs.swarm.peers();
             System.out.println(peers);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -396,7 +494,7 @@ public class APITest {
         }
     }
 
-    // this api is disbaled until deployment over IPFS is enabled
+    // this api is disabled until deployment over IPFS is enabled
     public void updateTest() {
         try {
             Object check = ipfs.update.check();
