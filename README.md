@@ -52,8 +52,10 @@ byte[] fileContents = ipfs.cat(filePointer);
 ```
 
 ## Dependencies
-* [Multiaddr](https://github.com/multiformats/java-multiaddr)
-* [Multihash](https://github.com/multiformats/java-multihash)
+* [multibase](https://github.com/multiformats/java-multibase)
+* [multiaddr](https://github.com/multiformats/java-multiaddr)
+* [multihash](https://github.com/multiformats/java-multihash)
+* [cid](https://github.com/ipld/java-cid)
 
 ## Building
 ---------
