@@ -5,7 +5,7 @@
 	<groupId>io.ipfs</groupId>
 	<artifactId>api</artifactId>
 	<version>v1.1.0</version>
-	<packaging>jar</packaging>
+	<packaging>pom</packaging>
 
 	<name>java-ipfs-api</name>
 	<url>https://github.com/ipfs/java-ipfs-api</url>
@@ -34,8 +34,15 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<junit.version>4.12</junit.version>
 		<hamcrest.version>1.3</hamcrest.version>
+		<cid.version>1.0.0</cid.version>
 	</properties>
 
+    <modules>
+        <module>java-multiaddr</module>
+        <module>java-multibase</module>
+        <module>java-multihash</module>
+        <module>java-cid</module>
+    </modules>
 	<repositories>
 		<repository>
 			<id>jitpack.io</id>
@@ -70,6 +77,11 @@
 			<groupId>com.github.ipld</groupId>
 			<artifactId>java-cid</artifactId>
 			<version>v1.0.1</version>
+		</dependency>
+		<dependency>
+			<groupId>io.ipfs</groupId>
+			<artifactId>cid</artifactId>
+			<version>${cid.version}</version>
 		</dependency>
 	</dependencies>
 
