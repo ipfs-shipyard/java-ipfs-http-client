@@ -55,15 +55,21 @@ public class MerkleNode {
         Optional<Integer> size = json.containsKey("Size") ? Optional.<Integer>empty().of((Integer) json.get("Size")): Optional.<Integer>empty().empty();
         Optional<Integer> type = json.containsKey("Type") ? Optional.<Integer>empty().of((Integer) json.get("Type")): Optional.<Integer>empty().empty();
         List<Object> linksRaw = (List<Object>) json.get("Links");
-        List<MerkleNode> links = linksRaw == null ? Collections.EMPTY_LIST : linksRaw.stream().map(x -> MerkleNode.fromJSON(x)).collect(Collectors.toList());
+        List<MerkleNode> links = linksRaw == null ? Collections.EMPTY_LIST : convertLinks(linksRaw);
         Optional<byte[]> data = json.containsKey("Data") ? Optional.of(((String)json.get("Data")).getBytes()): Optional.empty();
-        return new MerkleNode(hash, name, size, type, links, data);
+        MerkleNode merkleNode = new MerkleNode(hash, name, size, type, links, data);
+		return merkleNode;
     }
+
+	private static List<MerkleNode> convertLinks(List<Object> linksRaw) {
+		List<MerkleNode> collected = linksRaw.stream().map(x -> MerkleNode.fromJSON(x)).collect(Collectors.toList());
+		return collected;
+	}
 
     public Object toJSON() {
         Map res = new TreeMap<>();
         res.put("Hash", hash);
-        res.put("Links", links.stream().map(x -> x.hash).collect(Collectors.toList()));
+        res.put("Links", links.stream().map(x -> x.toJSON()).collect(Collectors.toList()));
         if (data.isPresent())
             res.put("Data", data.get());
         if (name.isPresent())
