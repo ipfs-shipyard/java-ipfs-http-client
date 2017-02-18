@@ -305,6 +305,9 @@ public interface CborObject {
 
         @Override
         public int compareTo(CborString cborString) {
+            int lenDiff = value.length() - cborString.value.length();
+            if (lenDiff != 0)
+                return lenDiff;
             return value.compareTo(cborString.value);
         }
 

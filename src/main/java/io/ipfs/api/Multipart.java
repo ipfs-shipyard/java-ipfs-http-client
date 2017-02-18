@@ -12,20 +12,24 @@ public class Multipart {
     private OutputStream out;
     private PrintWriter writer;
 
-    public Multipart(String requestURL, String charset) throws IOException {
+    public Multipart(String requestURL, String charset) {
         this.charset = charset;
 
         boundary = createBoundary();
 
-        URL url = new URL(requestURL);
-        httpConn = (HttpURLConnection) url.openConnection();
-        httpConn.setUseCaches(false);
-        httpConn.setDoOutput(true);
-        httpConn.setDoInput(true);
-        httpConn.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
-        httpConn.setRequestProperty("User-Agent", "Java IPFS CLient");
-        out = httpConn.getOutputStream();
-        writer = new PrintWriter(new OutputStreamWriter(out, charset), true);
+        try {
+            URL url = new URL(requestURL);
+            httpConn = (HttpURLConnection) url.openConnection();
+            httpConn.setUseCaches(false);
+            httpConn.setDoOutput(true);
+            httpConn.setDoInput(true);
+            httpConn.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
+            httpConn.setRequestProperty("User-Agent", "Java IPFS CLient");
+            out = httpConn.getOutputStream();
+            writer = new PrintWriter(new OutputStreamWriter(out, charset), true);
+        } catch (IOException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
     }
 
     public static String createBoundary() {
@@ -73,25 +77,29 @@ public class Multipart {
         }
     }
 
-    public void addFilePart(String fieldName, NamedStreamable uploadFile) throws IOException {
+    public void addFilePart(String fieldName, NamedStreamable uploadFile) {
         Optional<String> fileName = uploadFile.getName();
         writer.append("--" + boundary).append(LINE_FEED);
         if (!fileName.isPresent())
             writer.append("Content-Disposition: file; name=\"" + fieldName + "\";").append(LINE_FEED);
         else
-            writer.append("Content-Disposition: file; filename=\"" + fileName.get() + "\"").append(LINE_FEED);
+            writer.append("Content-Disposition: file; filename=\"" + fileName.get() + "\";").append(LINE_FEED);
         writer.append("Content-Type: application/octet-stream").append(LINE_FEED);
         writer.append("Content-Transfer-Encoding: binary").append(LINE_FEED);
         writer.append(LINE_FEED);
         writer.flush();
 
-        InputStream inputStream = uploadFile.getInputStream();
-        byte[] buffer = new byte[4096];
-        int r;
-        while ((r = inputStream.read(buffer)) != -1)
-            out.write(buffer, 0, r);
-        out.flush();
-        inputStream.close();
+        try {
+            InputStream inputStream = uploadFile.getInputStream();
+            byte[] buffer = new byte[4096];
+            int r;
+            while ((r = inputStream.read(buffer)) != -1)
+                out.write(buffer, 0, r);
+            out.flush();
+            inputStream.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
 
         writer.append(LINE_FEED);
         writer.flush();
@@ -102,24 +110,15 @@ public class Multipart {
         writer.flush();
     }
 
-    public String finish() throws IOException {
+    public String finish() {
         StringBuilder b = new StringBuilder();
 
         writer.append("--" + boundary + "--").append(LINE_FEED);
         writer.close();
 
-        int status = httpConn.getResponseCode();
-        if (status == HttpURLConnection.HTTP_OK) {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(
-                    httpConn.getInputStream()));
-            String line;
-            while ((line = reader.readLine()) != null) {
-                b.append(line);
-            }
-            reader.close();
-            httpConn.disconnect();
-        } else {
-            try {
+        try {
+            int status = httpConn.getResponseCode();
+            if (status == HttpURLConnection.HTTP_OK) {
                 BufferedReader reader = new BufferedReader(new InputStreamReader(
                         httpConn.getInputStream()));
                 String line;
@@ -127,10 +126,24 @@ public class Multipart {
                     b.append(line);
                 }
                 reader.close();
-            } catch (Throwable t) {}
-            throw new IOException("Server returned status: " + status + " with body: "+b.toString() + " and Trailer header: "+httpConn.getHeaderFields().get("Trailer"));
-        }
+                httpConn.disconnect();
+            } else {
+                try {
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(
+                            httpConn.getInputStream()));
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        b.append(line);
+                    }
+                    reader.close();
+                } catch (Throwable t) {
+                }
+                throw new IOException("Server returned status: " + status + " with body: " + b.toString() + " and Trailer header: " + httpConn.getHeaderFields().get("Trailer"));
+            }
 
-        return b.toString();
+            return b.toString();
+        } catch (IOException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
     }
 }

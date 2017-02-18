@@ -110,8 +110,12 @@ public class IPFS {
         return retrieveStream("cat/" + hash);
     }
 
-    public Map refs(Multihash hash, boolean recursive) throws IOException {
-        return retrieveMap("refs?arg=" + hash +"&r="+recursive);
+    public List<Multihash> refs(Multihash hash, boolean recursive) throws IOException {
+        String jsonStream = new String(retrieve("refs?arg=" + hash + "&r=" + recursive));
+        return JSONParser.parseStream(jsonStream).stream()
+                .map(m -> (String) (((Map) m).get("Ref")))
+                .map(Cid::decode)
+                .collect(Collectors.toList());
     }
 
     public Map resolve(String scheme, Multihash hash, boolean recursive) throws IOException {
@@ -150,7 +154,7 @@ public class IPFS {
         public List<Multihash> add(Multihash hash) throws IOException {
             return ((List<Object>)((Map)retrieveAndParse("pin/add?stream-channels=true&arg=" + hash)).get("Pins"))
                     .stream()
-                    .map(x -> Cid.decode((String)x))
+                    .map(x -> Cid.decode((String) x))
                     .collect(Collectors.toList());
         }
 
@@ -194,12 +198,16 @@ public class IPFS {
         }
 
         public List<MerkleNode> put(List<byte[]> data, Optional<String> format) throws IOException {
+            // N.B. Once IPFS implements a bulk put this can become a single multipart call with multiple 'files'
+            return data.stream().map(array -> put(array, format)).collect(Collectors.toList());
+        }
+
+        public MerkleNode put(byte[] data, Optional<String> format) {
             String fmt = format.map(f -> "&format=" + f).orElse("");
             Multipart m = new Multipart("http://" + host + ":" + port + version+"block/put?stream-channels=true" + fmt, "UTF-8");
-            for (byte[] f : data)
-                m.addFilePart("file", new NamedStreamable.ByteArrayWrapper(f));
+            m.addFilePart("file", new NamedStreamable.ByteArrayWrapper(data));
             String res = m.finish();
-            return JSONParser.parseStream(res).stream().map(x -> MerkleNode.fromJSON((Map<String, Object>) x)).collect(Collectors.toList());
+            return JSONParser.parseStream(res).stream().map(x -> MerkleNode.fromJSON((Map<String, Object>) x)).findFirst().get();
         }
 
         public Map stat(Multihash hash) throws IOException {
@@ -506,7 +514,8 @@ public class IPFS {
         } catch (ConnectException e) {
             throw new RuntimeException("Couldn't connect to IPFS daemon at "+target+"\n Is IPFS running?");
         } catch (IOException e) {
-            throw new RuntimeException("IOException contacting IPFS daemon.\nTrailer: " + conn.getHeaderFields().get("Trailer"), e);
+            String err = new String(readFully(conn.getErrorStream()));
+            throw new RuntimeException("IOException contacting IPFS daemon.\nTrailer: " + conn.getHeaderFields().get("Trailer") + " " + err, e);
         }
     }
 
@@ -541,6 +550,10 @@ public class IPFS {
         out.close();
 
         InputStream in = conn.getInputStream();
+        return readFully(in);
+    }
+
+    private static final byte[] readFully(InputStream in) throws IOException {
         ByteArrayOutputStream resp = new ByteArrayOutputStream();
         byte[] buf = new byte[4096];
         int r;

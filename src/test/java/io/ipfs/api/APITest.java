@@ -309,6 +309,20 @@ public class APITest {
         }
     }
 
+    @org.junit.Test
+    public void bulkBlockTest() {
+        try {
+            CborObject cbor = new CborObject.CborString("G'day IPFS!");
+            byte[] raw = cbor.toByteArray();
+            List<MerkleNode> bulkPut = ipfs.block.put(Arrays.asList(raw, raw, raw, raw, raw), Optional.of("cbor"));
+            List<Multihash> hashes = bulkPut.stream().map(m -> m.hash).collect(Collectors.toList());
+            byte[] result = ipfs.block.get(hashes.get(0));
+            System.out.println();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private static String toEscapedHex(byte[] in) throws IOException {
         StringBuilder res = new StringBuilder();
         for (byte b : in) {
@@ -325,19 +339,26 @@ public class APITest {
     public void merkleLinkInMap() {
         try {
             Random r = new Random();
-            CborObject.CborByteArray target = new CborObject.CborByteArray(("g'day IPFS!" + r.nextInt()).getBytes());
+            CborObject.CborByteArray target = new CborObject.CborByteArray(("g'day IPFS!").getBytes());
             byte[] rawTarget = target.toByteArray();
             MerkleNode targetRes = ipfs.block.put(Arrays.asList(rawTarget), Optional.of("cbor")).get(0);
 
             CborObject.CborMerkleLink link = new CborObject.CborMerkleLink(targetRes.hash);
-            CborObject.CborMap source = CborObject.CborMap.build(Stream.of(link)
-                    .collect(Collectors.toMap(l -> l.target.toString(), l -> l)));
+            Map<String, CborObject> m = new TreeMap<>();
+            m.put("alink", link);
+            m.put("arr", new CborObject.CborList(Collections.emptyList()));
+            CborObject.CborMap source = CborObject.CborMap.build(m);
             byte[] rawSource = source.toByteArray();
             MerkleNode sourceRes = ipfs.block.put(Arrays.asList(rawSource), Optional.of("cbor")).get(0);
+
+            CborObject.fromByteArray(rawSource);
 
             List<Multihash> add = ipfs.pin.add(sourceRes.hash);
             ipfs.repo.gc();
             ipfs.repo.gc();
+
+            List<Multihash> refs = ipfs.refs(sourceRes.hash, true);
+            Assert.assertTrue("refs returns links", refs.contains(targetRes.hash));
 
             byte[] bytes = ipfs.block.get(targetRes.hash);
             Assert.assertTrue("same contents after GC", Arrays.equals(bytes, rawTarget));
@@ -345,6 +366,44 @@ public class APITest {
             String reproCommand1 = "printf \"" + toEscapedHex(rawTarget) + "\" | ipfs block put --format=cbor";
             String reproCommand2 = "printf \"" + toEscapedHex(rawSource) + "\" | ipfs block put --format=cbor";
             System.out.println();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @org.junit.Test
+    public void recursiveRefs() {
+        try {
+            CborObject.CborByteArray leaf1 = new CborObject.CborByteArray(("G'day IPFS!").getBytes());
+            byte[] rawLeaf1 = leaf1.toByteArray();
+            MerkleNode leaf1Res = ipfs.block.put(Arrays.asList(rawLeaf1), Optional.of("cbor")).get(0);
+
+            CborObject.CborMerkleLink link = new CborObject.CborMerkleLink(leaf1Res.hash);
+            Map<String, CborObject> m = new TreeMap<>();
+            m.put("link1", link);
+            CborObject.CborMap source = CborObject.CborMap.build(m);
+            MerkleNode sourceRes = ipfs.block.put(Arrays.asList(source.toByteArray()), Optional.of("cbor")).get(0);
+
+            CborObject.CborByteArray leaf2 = new CborObject.CborByteArray(("G'day again, IPFS!").getBytes());
+            byte[] rawLeaf2 = leaf2.toByteArray();
+            MerkleNode leaf2Res = ipfs.block.put(Arrays.asList(rawLeaf2), Optional.of("cbor")).get(0);
+
+            Map<String, CborObject> m2 = new TreeMap<>();
+            m2.put("link1", new CborObject.CborMerkleLink(sourceRes.hash));
+            m2.put("link2", new CborObject.CborMerkleLink(leaf2Res.hash));
+            CborObject.CborMap source2 = CborObject.CborMap.build(m2);
+            MerkleNode rootRes = ipfs.block.put(Arrays.asList(source2.toByteArray()), Optional.of("cbor")).get(0);
+
+            List<Multihash> refs = ipfs.refs(rootRes.hash, false);
+            boolean correct = refs.contains(sourceRes.hash) && refs.contains(leaf2Res.hash) && refs.size() == 2;
+            Assert.assertTrue("refs returns links", correct);
+
+            List<Multihash> refsRecurse = ipfs.refs(rootRes.hash, true);
+            boolean correctRecurse = refs.contains(sourceRes.hash)
+                    && refs.contains(leaf1Res.hash)
+                    && refs.contains(leaf2Res.hash)
+                    && refs.size() == 3;
+            Assert.assertTrue("refs returns links", correct);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -379,6 +438,30 @@ public class APITest {
             // These commands can be used to reproduce this on the command line
             String reproCommand1 = "printf \"" + toEscapedHex(rawTarget) + "\" | ipfs block put --format=cbor";
             String reproCommand2 = "printf \"" + toEscapedHex(obj2) + "\" | ipfs block put --format=cbor";
+            System.out.println();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     *  Test that merkle links as a root object are followed during recursive pins
+     */
+    @org.junit.Test
+    public void rootNull() {
+        try {
+            CborObject.CborNull cbor = new CborObject.CborNull();
+            byte[] obj = cbor.toByteArray();
+            MerkleNode block = ipfs.block.put(Arrays.asList(obj), Optional.of("cbor")).get(0);
+            byte[] retrievedObj = ipfs.block.get(block.hash);
+            Assert.assertTrue("get inverse of put", Arrays.equals(retrievedObj, obj));
+
+            List<Multihash> add = ipfs.pin.add(block.hash);
+            ipfs.repo.gc();
+            ipfs.repo.gc();
+
+            // These commands can be used to reproduce this on the command line
+            String reproCommand1 = "printf \"" + toEscapedHex(obj) + "\" | ipfs block put --format=cbor";
             System.out.println();
         } catch (IOException e) {
             throw new RuntimeException(e);
