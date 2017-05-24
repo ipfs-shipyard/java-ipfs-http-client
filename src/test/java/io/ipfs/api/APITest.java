@@ -202,6 +202,37 @@ public class APITest {
     }
 
     @org.junit.Test
+    public void pinUpdate() {
+        try {
+            MerkleNode child1 = ipfs.add(new NamedStreamable.ByteArrayWrapper("some data".getBytes()));
+            Multihash hashChild1 = child1.hash;
+            System.out.println("child1: " + hashChild1);
+
+            CborObject.CborMerkleLink root1 = new CborObject.CborMerkleLink(hashChild1);
+            MerkleNode root1Res = ipfs.block.put(Collections.singletonList(root1.toByteArray()), Optional.of("cbor")).get(0);
+            System.out.println("root1: " + root1Res.hash);
+            ipfs.pin.add(root1Res.hash);
+
+            CborObject.CborList root2 = new CborObject.CborList(Arrays.asList(new CborObject.CborMerkleLink(hashChild1), new CborObject.CborLong(42)));
+            MerkleNode root2Res = ipfs.block.put(Collections.singletonList(root2.toByteArray()), Optional.of("cbor")).get(0);
+            ipfs.pin.update(root1Res.hash, root2Res.hash, true);
+
+            Map<Multihash, Object> ls = ipfs.pin.ls(IPFS.PinType.all);
+            boolean childPresent = ls.containsKey(hashChild1);
+            if (!childPresent)
+                throw new IllegalStateException("Child not present!");
+
+            ipfs.repo.gc();
+            Map<Multihash, Object> ls2 = ipfs.pin.ls(IPFS.PinType.all);
+            boolean childPresentAfterGC = ls2.containsKey(hashChild1);
+            if (!childPresentAfterGC)
+                throw new IllegalStateException("Child not present!");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @org.junit.Test
     public void indirectPinTest() {
         try {
             Multihash EMPTY = ipfs.object._new(Optional.empty()).hash;

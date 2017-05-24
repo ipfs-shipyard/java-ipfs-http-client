@@ -176,6 +176,11 @@ public class IPFS {
             Map json = retrieveMap("pin/rm?stream-channels=true&r=" + recursive + "&arg=" + hash);
             return ((List<Object>) json.get("Pins")).stream().map(x -> Cid.decode((String) x)).collect(Collectors.toList());
         }
+
+        public Object update(Multihash existing, Multihash modified, boolean unpin) throws IOException {
+            Object obj = retrieveAndParse("pin/update?stream-channels=true&arg=" + existing + "&arg=" + modified + "&unpin=" + unpin);
+            return obj;
+        }
     }
 
     /* 'ipfs repo' is a plumbing command used to manipulate the repo.
