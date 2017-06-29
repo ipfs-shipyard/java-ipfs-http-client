@@ -58,7 +58,7 @@ public class IPFS {
                 throw new IllegalStateException("You need to use a more recent version of IPFS! >= " + MIN_VERSION);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 
