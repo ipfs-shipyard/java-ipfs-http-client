@@ -303,11 +303,16 @@ public class IPFS {
 
     public class Name {
         public Map publish(Multihash hash) throws IOException {
-            return publish(Optional.empty(), hash);
+            return publish(hash, Optional.empty());
         }
 
+        public Map publish(Multihash hash, Optional<String> key) throws IOException {
+            return retrieveMap("name/publish?arg=/ipfs/"+hash + (key.isPresent() ? "&key="+key : ""));
+        }
+
+        @Deprecated
         public Map publish(Optional<String> id, Multihash hash) throws IOException {
-            return retrieveMap("name/publish?arg=" + (id.isPresent() ? id+"&arg=" : "") + "/ipfs/"+hash);
+            return IPFS.this.retrieveMap("name/publish?arg=" + (id.isPresent()?id + "&arg=":"") + "/ipfs/" + hash);
         }
 
         public String resolve(Multihash hash) throws IOException {
