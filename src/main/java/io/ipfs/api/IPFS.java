@@ -312,7 +312,7 @@ public class IPFS {
 
         @Deprecated
         public Map publish(Optional<String> id, Multihash hash) throws IOException {
-            return IPFS.this.retrieveMap("name/publish?arg=" + (id.isPresent()?id + "&arg=":"") + "/ipfs/" + hash);
+            return retrieveMap("name/publish?arg=" + (id.isPresent()?id + "&arg=":"") + "/ipfs/" + hash);
         }
 
         public String resolve(Multihash hash) throws IOException {
