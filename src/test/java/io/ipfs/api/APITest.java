@@ -578,6 +578,9 @@ public class APITest {
         try {
             MerkleNode pointer = new MerkleNode("QmPZ9gcCEpqKTo6aq61g2nXGUhM4iCL3ewB6LDXZCtioEB");
             Map pub = ipfs.name.publish(pointer.hash);
+            String name = "key" + System.nanoTime();
+            Object gen = ipfs.key.gen(name, Optional.of("rsa"), Optional.of("2048"));
+            Map mykey = ipfs.name.publish(pointer.hash, Optional.of(name));
             String resolved = ipfs.name.resolve(Multihash.fromBase58((String) pub.get("Name")));
         } catch (IOException e) {
             throw new RuntimeException(e);

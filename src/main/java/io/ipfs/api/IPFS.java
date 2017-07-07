@@ -19,6 +19,7 @@ public class IPFS {
     public final String host;
     public final int port;
     private final String version;
+    public final Key key = new Key();
     public final Pin pin = new Pin();
     public final Repo repo = new Repo();
     public final IPFSObject object = new IPFSObject();
@@ -183,6 +184,14 @@ public class IPFS {
 
     /* 'ipfs repo' is a plumbing command used to manipulate the repo.
      */
+    public class Key {
+        public Object gen(String name, Optional<String> type, Optional<String> size) throws IOException {
+            return retrieveAndParse("key/gen?arg=" + name + type.map(t -> "&type=" + t).orElse("") + size.map(s -> "&size=" + s).orElse(""));
+        }
+    }
+
+    /* 'ipfs repo' is a plumbing command used to manipulate the repo.
+     */
     public class Repo {
         public Object gc() throws IOException {
             return retrieveAndParse("repo/gc");
@@ -299,11 +308,11 @@ public class IPFS {
 
     public class Name {
         public Map publish(Multihash hash) throws IOException {
-            return publish(Optional.empty(), hash);
+            return publish(hash, Optional.empty());
         }
 
-        public Map publish(Optional<String> id, Multihash hash) throws IOException {
-            return retrieveMap("name/publish?arg=" + (id.isPresent() ? id+"&arg=" : "") + "/ipfs/"+hash);
+        public Map publish(Multihash hash, Optional<String> id) throws IOException {
+            return retrieveMap("name/publish?arg=/ipfs/" + hash + id.map(name -> "&key=" + name).orElse(""));
         }
 
         public String resolve(Multihash hash) throws IOException {
