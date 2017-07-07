@@ -171,11 +171,6 @@ public class APITest {
     public void fileTest(NamedStreamable file) {
         try {
             MerkleNode addResult = ipfs.add(file);
-            List<MerkleNode> lsResult = ipfs.ls(addResult.hash);
-            if (lsResult.size() != 1)
-                throw new IllegalStateException("Incorrect number of objects in ls!");
-            if (!lsResult.get(0).equals(addResult))
-                throw new IllegalStateException("Object not returned in ls!");
             byte[] catResult = ipfs.cat(addResult.hash);
             byte[] getResult = ipfs.get(addResult.hash);
             if (!Arrays.equals(catResult, file.getContents()))

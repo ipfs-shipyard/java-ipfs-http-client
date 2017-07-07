@@ -69,7 +69,7 @@
 		<dependency>
 			<groupId>com.github.ipld</groupId>
 			<artifactId>java-cid</artifactId>
-			<version>v1.0.1</version>
+			<version>v1.1.0</version>
 		</dependency>
 	</dependencies>
 
