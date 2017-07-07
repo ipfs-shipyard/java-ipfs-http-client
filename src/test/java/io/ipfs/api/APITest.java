@@ -695,7 +695,8 @@ public class APITest {
             Map setResult = ipfs.config.set("Datastore.Path", val);
             ipfs.config.replace(new NamedStreamable.ByteArrayWrapper(JSONParser.toString(config).getBytes()));
 //            Object log = ipfs.log();
-            String net = ipfs.diag.net();
+            String sys = ipfs.diag.sys();
+            String cmds = ipfs.diag.cmds();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

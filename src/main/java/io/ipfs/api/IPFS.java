@@ -445,8 +445,12 @@ public class IPFS {
     }
 
     public class Diag {
-        public String net() throws IOException {
-            return new String(retrieve("diag/net?stream-channels=true"));
+        public String cmds() throws IOException {
+            return new String(retrieve("diag/cmds?stream-channels=true"));
+        }
+
+        public String sys() throws IOException {
+            return new String(retrieve("diag/sys?stream-channels=true"));
         }
     }
 
