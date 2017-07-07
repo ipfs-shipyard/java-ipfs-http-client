@@ -54,12 +54,9 @@ public class IPFS {
         // Check IPFS is sufficiently recent
         try {
             String ipfsVersion = version();
-            String[] parts = ipfsVersion.split("\\.");
-            String[] minParts = MIN_VERSION.split("\\.");
-            if (parts[0].compareTo(minParts[0]) < 0
-                    || parts[1].compareTo(minParts[1]) < 0
-                    || parts[2].compareTo(minParts[2]) < 0)
+            if (!versionIsValid(ipfsVersion)) {
                 throw new IllegalStateException("You need to use a more recent version of IPFS! >= " + MIN_VERSION);
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -303,11 +300,16 @@ public class IPFS {
 
     public class Name {
         public Map publish(Multihash hash) throws IOException {
-            return publish(Optional.empty(), hash);
+            return publish(hash, Optional.empty());
         }
 
+        public Map publish(Multihash hash, Optional<String> key) throws IOException {
+            return retrieveMap("name/publish?arg=/ipfs/"+hash + (key.isPresent() ? "&key="+key : ""));
+        }
+
+        @Deprecated
         public Map publish(Optional<String> id, Multihash hash) throws IOException {
-            return retrieveMap("name/publish?arg=" + (id.isPresent() ? id+"&arg=" : "") + "/ipfs/"+hash);
+            return retrieveMap("name/publish?arg=" + (id.isPresent()?id + "&arg=":"") + "/ipfs/" + hash);
         }
 
         public String resolve(Multihash hash) throws IOException {
@@ -487,6 +489,28 @@ public class IPFS {
 
         public Object log() throws IOException {
             return retrieveAndParse("update/log");
+        }
+    }
+
+    private boolean versionIsValid(String version) {
+        String[] parts = version.split("\\.");
+        String[] minParts = MIN_VERSION.split("\\.");
+        int[] intParts = Arrays.stream(parts).mapToInt(Integer::parseInt).toArray();
+        int[] intMinParts = Arrays.stream(minParts).mapToInt(Integer::parseInt).toArray();
+        return isNewerThan(intParts, intMinParts);
+    }
+
+    private boolean isNewerThan(int[] current, int[] min) {
+        if (min.length == 0) {
+            return true;
+        } else if (current.length == 0) {
+            return false;
+        } else if (current[0] < min[0]) {
+            return false;
+        } else {
+            int[] tailCurrent = Arrays.copyOfRange(current, 1, current.length);
+            int[] tailMin = Arrays.copyOfRange(min, 1, min.length);
+            return isNewerThan(tailCurrent, tailMin);
         }
     }
 
