@@ -50,7 +50,19 @@ public class APITest {
         Assert.assertTrue("Correct cid returned", cid.equals(expected));
     }
 
-    @org.junit.Test
+    @Test
+    public void keys() throws IOException {
+        List<KeyInfo> existing = ipfs.key.list();
+        String name = "mykey" + System.nanoTime();
+        KeyInfo gen = ipfs.key.gen(name, Optional.of("rsa"), Optional.of("2048"));
+        String newName = "bob" + System.nanoTime();
+        Object rename = ipfs.key.rename(name, newName);
+        List<KeyInfo> rm = ipfs.key.rm(newName);
+        List<KeyInfo> remaining = ipfs.key.list();
+        Assert.assertTrue("removed key", remaining.equals(existing));
+    }
+
+    @Test
     public void ipldNode() {
         Function<Stream<Pair<String, CborObject>>, CborObject.CborMap> map =
                 s -> CborObject.CborMap.build(s.collect(Collectors.toMap(p -> p.left, p -> p.right)));

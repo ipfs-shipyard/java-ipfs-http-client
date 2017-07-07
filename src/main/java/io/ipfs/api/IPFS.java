@@ -185,8 +185,26 @@ public class IPFS {
     /* 'ipfs repo' is a plumbing command used to manipulate the repo.
      */
     public class Key {
-        public Object gen(String name, Optional<String> type, Optional<String> size) throws IOException {
-            return retrieveAndParse("key/gen?arg=" + name + type.map(t -> "&type=" + t).orElse("") + size.map(s -> "&size=" + s).orElse(""));
+        public KeyInfo gen(String name, Optional<String> type, Optional<String> size) throws IOException {
+            return KeyInfo.fromJson(retrieveAndParse("key/gen?arg=" + name + type.map(t -> "&type=" + t).orElse("") + size.map(s -> "&size=" + s).orElse("")));
+        }
+
+        public List<KeyInfo> list() throws IOException {
+            return ((List<Object>)((Map)retrieveAndParse("key/list")).get("Keys"))
+                    .stream()
+                    .map(KeyInfo::fromJson)
+                    .collect(Collectors.toList());
+        }
+
+        public Object rename(String name, String newName) throws IOException {
+            return retrieveAndParse("key/rename?arg="+name + "&arg=" + newName);
+        }
+
+        public List<KeyInfo> rm(String name) throws IOException {
+            return ((List<Object>)((Map)retrieveAndParse("key/rm?arg=" + name)).get("Keys"))
+                    .stream()
+                    .map(KeyInfo::fromJson)
+                    .collect(Collectors.toList());
         }
     }
 
