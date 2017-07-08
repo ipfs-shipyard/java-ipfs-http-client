@@ -2,6 +2,7 @@ package io.ipfs.api;
 
 import java.io.*;
 import java.net.*;
+import java.nio.file.*;
 import java.util.*;
 
 public class Multipart {
@@ -52,33 +53,37 @@ public class Multipart {
         writer.flush();
     }
 
-    public void addSubtree(String path, File dir) throws IOException {
-        String dirPath = path + (path.length() > 0 ? "/" : "") + dir.getName();
+    public void addSubtree(Path parentPath, NamedStreamable dir) throws IOException {
+        Path dirPath = parentPath.resolve(dir.getName().get());
         addDirectoryPart(dirPath);
-        for (File f: dir.listFiles()) {
+        for (NamedStreamable f: dir.getChildren()) {
             if (f.isDirectory())
                 addSubtree(dirPath, f);
             else
-                addFilePart("file", new NamedStreamable.FileWrapper(dirPath + "/", f));
+                addFilePart("file", f);
         }
     }
 
-    public void addDirectoryPart(String path) {
+    public void addDirectoryPart(Path path) {
+        writer.append("--" + boundary).append(LINE_FEED);
+        writer.append("Content-Disposition: file; filename=\"" + encode(path.toString()) + "\"").append(LINE_FEED);
+        writer.append("Content-Type: application/x-directory").append(LINE_FEED);
+        writer.append("Content-Transfer-Encoding: binary").append(LINE_FEED);
+        writer.append(LINE_FEED);
+        writer.append(LINE_FEED);
+        writer.flush();
+    }
+
+    private static String encode(String in) {
         try {
-            writer.append("--" + boundary).append(LINE_FEED);
-            writer.append("Content-Disposition: file; filename=\"" + URLEncoder.encode(path, "UTF-8") + "\"").append(LINE_FEED);
-            writer.append("Content-Type: application/x-directory").append(LINE_FEED);
-            writer.append("Content-Transfer-Encoding: binary").append(LINE_FEED);
-            writer.append(LINE_FEED);
-            writer.append(LINE_FEED);
-            writer.flush();
+            return URLEncoder.encode(in, "UTF-8");
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
     }
 
     public void addFilePart(String fieldName, NamedStreamable uploadFile) {
-        Optional<String> fileName = uploadFile.getName();
+        Optional<String> fileName = uploadFile.getName().map(n -> encode(n));
         writer.append("--" + boundary).append(LINE_FEED);
         if (!fileName.isPresent())
             writer.append("Content-Disposition: file; name=\"" + fieldName + "\";").append(LINE_FEED);

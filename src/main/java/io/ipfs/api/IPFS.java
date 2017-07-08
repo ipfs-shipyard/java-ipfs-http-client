@@ -6,6 +6,7 @@ import io.ipfs.multiaddr.MultiAddress;
 
 import java.io.*;
 import java.net.*;
+import java.nio.file.*;
 import java.util.*;
 import java.util.stream.*;
 
@@ -73,10 +74,10 @@ public class IPFS {
     }
 
     public List<MerkleNode> add(List<NamedStreamable> files) throws IOException {
-        Multipart m = new Multipart("http://" + host + ":" + port + version+"add?stream-channels=true", "UTF-8");
+        Multipart m = new Multipart("http://" + host + ":" + port + version + "add", "UTF-8");
         for (NamedStreamable file: files) {
             if (file.isDirectory()) {
-                m.addSubtree("", ((NamedStreamable.FileWrapper)file).getFile());
+                m.addSubtree(Paths.get("/"), file);
             } else
                 m.addFilePart("file", file);
         };

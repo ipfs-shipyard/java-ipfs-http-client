@@ -3,12 +3,15 @@ package io.ipfs.api;
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.util.stream.*;
 
 public interface NamedStreamable
 {
     InputStream getInputStream() throws IOException;
 
     Optional<String> getName();
+
+    List<NamedStreamable> getChildren();
 
     boolean isDirectory();
 
@@ -24,15 +27,9 @@ public interface NamedStreamable
 
     class FileWrapper implements NamedStreamable {
         private final File source;
-        private final String pathPrefix;
-
-        public FileWrapper(String pathPrefix, File source) {
-            this.source = source;
-            this.pathPrefix = pathPrefix;
-        }
 
         public FileWrapper(File source) {
-            this("", source);
+            this.source = source;
         }
 
         public InputStream getInputStream() throws IOException {
@@ -43,13 +40,18 @@ public interface NamedStreamable
             return source.isDirectory();
         }
 
-        public File getFile() {
-            return source;
+        @Override
+        public List<NamedStreamable> getChildren() {
+            return isDirectory() ?
+                    Stream.of(source.listFiles())
+                            .map(NamedStreamable.FileWrapper::new)
+                            .collect(Collectors.toList()) :
+                    Collections.emptyList();
         }
 
         public Optional<String> getName() {
             try {
-                return Optional.of(URLEncoder.encode(pathPrefix + source.getName(), "UTF-8"));
+                return Optional.of(URLEncoder.encode(source.getName(), "UTF-8"));
             } catch (UnsupportedEncodingException e) {
                 throw new RuntimeException(e);
             }
@@ -81,8 +83,44 @@ public interface NamedStreamable
             return new ByteArrayInputStream(data);
         }
 
+        @Override
+        public List<NamedStreamable> getChildren() {
+            return Collections.emptyList();
+        }
+
         public Optional<String> getName() {
             return name;
+        }
+    }
+
+    class DirWrapper implements NamedStreamable {
+
+        private final String name;
+        private final List<NamedStreamable> children;
+
+        public DirWrapper(String name, List<NamedStreamable> children) {
+            this.name = name;
+            this.children = children;
+        }
+
+        @Override
+        public InputStream getInputStream() throws IOException {
+            throw new IllegalStateException("Cannot get an input stream for a directory!");
+        }
+
+        @Override
+        public Optional<String> getName() {
+            return Optional.of(name);
+        }
+
+        @Override
+        public List<NamedStreamable> getChildren() {
+            return children;
+        }
+
+        @Override
+        public boolean isDirectory() {
+            return true;
         }
     }
 }

@@ -82,6 +82,14 @@ public class APITest {
     }
 
     @org.junit.Test
+    public void dirTest() throws IOException {
+        NamedStreamable.DirWrapper dir = new NamedStreamable.DirWrapper("root", Arrays.asList());
+        MerkleNode addResult = ipfs.add(dir);
+        List<MerkleNode> ls = ipfs.ls(addResult.hash);
+        Assert.assertTrue(ls.size() > 0);
+    }
+
+    @org.junit.Test
     public void directoryTest() throws IOException {
         Random rnd = new Random();
         String dirName = "folder" + rnd.nextInt(100);
