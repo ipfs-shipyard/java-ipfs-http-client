@@ -7,6 +7,7 @@ import io.ipfs.multiaddr.MultiAddress;
 import org.junit.*;
 
 import java.io.*;
+import java.net.*;
 import java.nio.file.*;
 import java.util.*;
 import java.util.function.*;
@@ -394,6 +395,17 @@ public class APITest {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Test
+    public void pubsub() throws IOException {
+        Object ls = ipfs.pubsub.ls();
+        Object peers = ipfs.pubsub.peers();
+        Stream<Object> sub = ipfs.pubsub.sub("orbit" + System.nanoTime());
+        String data = "Gday All!";
+        Object pub = ipfs.pubsub.pub("orbit", data);
+        Optional<Object> first = sub.findFirst();
+        Assert.assertTrue(first.isPresent() && first.get().equals(data));
     }
 
     private static String toEscapedHex(byte[] in) throws IOException {

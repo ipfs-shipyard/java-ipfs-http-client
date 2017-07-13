@@ -8,6 +8,8 @@ import java.io.*;
 import java.net.*;
 import java.nio.file.*;
 import java.util.*;
+import java.util.concurrent.*;
+import java.util.function.*;
 import java.util.stream.*;
 
 public class IPFS {
@@ -36,6 +38,7 @@ public class IPFS {
     public final File file = new File();
     public final Stats stats = new Stats();
     public final Name name = new Name();
+    public final Pubsub pubsub = new Pubsub();
 
     public IPFS(String host, int port) {
         this(host, port, "/api/v0/");
@@ -214,6 +217,32 @@ public class IPFS {
     public class Repo {
         public Object gc() throws IOException {
             return retrieveAndParse("repo/gc");
+        }
+    }
+
+    public class Pubsub {
+        public Object ls() throws IOException {
+            return retrieveAndParse("pubsub/ls");
+        }
+
+        public Object peers() throws IOException {
+            return retrieveAndParse("pubsub/peers");
+        }
+
+        public Object peers(String topic) throws IOException {
+            return retrieveAndParse("pubsub/peers?topic="+topic);
+        }
+
+        public Object pub(String topic, String data) throws IOException {
+            return retrieveAndParse("pubsub/peers?arg="+topic + "&data=" + data);
+        }
+
+        public Stream<Object> sub(String topic) throws IOException {
+            return sub(topic, ForkJoinPool.commonPool());
+        }
+
+        public Stream<Object> sub(String topic, ForkJoinPool threadSupplier) throws IOException {
+            return retrieveAndParseStream("pubsub/sub?arg="+topic, threadSupplier);
         }
     }
 
@@ -527,6 +556,12 @@ public class IPFS {
         return JSONParser.parse(new String(res));
     }
 
+    private Stream<Object> retrieveAndParseStream(String path, ForkJoinPool executor) throws IOException {
+        Queue<byte[]> objects = new LinkedBlockingQueue<>();
+        executor.submit(() -> getObjectStream(path, objects::add));
+        return Stream.generate(() -> JSONParser.parse(new String(objects.poll())));
+    }
+
     private byte[] retrieve(String path) throws IOException {
         URL target = new URL("http", host, port, version + path);
         return IPFS.get(target);
@@ -551,6 +586,27 @@ public class IPFS {
         } catch (IOException e) {
             String err = new String(readFully(conn.getErrorStream()));
             throw new RuntimeException("IOException contacting IPFS daemon.\nTrailer: " + conn.getHeaderFields().get("Trailer") + " " + err, e);
+        }
+    }
+
+    private void getObjectStream(String path, Consumer<byte[]> processor) {
+        byte LINE_FEED = (byte)10;
+
+        try {
+            InputStream in = retrieveStream(path);
+            ByteArrayOutputStream resp = new ByteArrayOutputStream();
+
+            byte[] buf = new byte[4096];
+            int r;
+            while ((r = in.read(buf)) >= 0) {
+                resp.write(buf, 0, r);
+                if (buf[r - 1] == LINE_FEED) {
+                    processor.accept(resp.toByteArray());
+                    resp.reset();
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
