@@ -401,11 +401,12 @@ public class APITest {
     public void pubsub() throws IOException {
         Object ls = ipfs.pubsub.ls();
         Object peers = ipfs.pubsub.peers();
-        Stream<Object> sub = ipfs.pubsub.sub("orbit" + System.nanoTime());
-        String data = "Gday All!";
-        Object pub = ipfs.pubsub.pub("orbit", data);
-        Optional<Object> first = sub.findFirst();
-        Assert.assertTrue(first.isPresent() && first.get().equals(data));
+        String topic = "topic" + System.nanoTime();
+        Supplier<Object> sub = ipfs.pubsub.sub(topic);
+        Object first = sub.get();
+        String data = "Hello!";
+        Object pub = ipfs.pubsub.pub(topic, data);
+        Assert.assertTrue(first.equals(Collections.emptyMap()));
     }
 
     private static String toEscapedHex(byte[] in) throws IOException {

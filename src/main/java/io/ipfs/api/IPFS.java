@@ -234,14 +234,14 @@ public class IPFS {
         }
 
         public Object pub(String topic, String data) throws IOException {
-            return retrieveAndParse("pubsub/peers?arg="+topic + "&data=" + data);
+            return retrieveAndParse("pubsub/peers?arg="+topic + "&arg=" + data);
         }
 
-        public Stream<Object> sub(String topic) throws IOException {
+        public Supplier<Object> sub(String topic) throws IOException {
             return sub(topic, ForkJoinPool.commonPool());
         }
 
-        public Stream<Object> sub(String topic, ForkJoinPool threadSupplier) throws IOException {
+        public Supplier<Object> sub(String topic, ForkJoinPool threadSupplier) throws IOException {
             return retrieveAndParseStream("pubsub/sub?arg="+topic, threadSupplier);
         }
     }
@@ -556,10 +556,16 @@ public class IPFS {
         return JSONParser.parse(new String(res));
     }
 
-    private Stream<Object> retrieveAndParseStream(String path, ForkJoinPool executor) throws IOException {
-        Queue<byte[]> objects = new LinkedBlockingQueue<>();
+    private Supplier<Object> retrieveAndParseStream(String path, ForkJoinPool executor) throws IOException {
+        BlockingQueue<byte[]> objects = new LinkedBlockingQueue<>();
         executor.submit(() -> getObjectStream(path, objects::add));
-        return Stream.generate(() -> JSONParser.parse(new String(objects.poll())));
+        return () -> {
+            try {
+                return JSONParser.parse(new String(objects.take()));
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        };
     }
 
     private byte[] retrieve(String path) throws IOException {
