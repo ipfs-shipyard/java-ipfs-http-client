@@ -60,7 +60,7 @@ public class Multipart {
             if (f.isDirectory())
                 addSubtree(dirPath, f);
             else
-                addFilePart("file", f);
+                addFilePart("file", dirPath, f);
         }
     }
 
@@ -82,8 +82,8 @@ public class Multipart {
         }
     }
 
-    public void addFilePart(String fieldName, NamedStreamable uploadFile) {
-        Optional<String> fileName = uploadFile.getName().map(n -> encode(n));
+    public void addFilePart(String fieldName, Path parent, NamedStreamable uploadFile) {
+        Optional<String> fileName = uploadFile.getName().map(n -> encode(parent.resolve(n).toString()));
         writer.append("--" + boundary).append(LINE_FEED);
         if (!fileName.isPresent())
             writer.append("Content-Disposition: file; name=\"" + fieldName + "\";").append(LINE_FEED);
