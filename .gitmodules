@@ -1,0 +1,12 @@
+[submodule "java-cid"]
+	path = java-cid
+	url = https://github.com/ipld/java-cid.git
+[submodule "java-multibase"]
+	path = java-multibase
+	url = https://github.com/multiformats/java-multibase.git
+[submodule "java-multiaddr"]
+	path = java-multiaddr
+	url = https://github.com/multiformats/java-multiaddr.git
+[submodule "java-multihash"]
+	path = java-multihash
+	url = https://github.com/multiformats/java-multihash.git
