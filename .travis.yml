@@ -6,4 +6,4 @@ before_script:
   - tar -xvf /tmp/go-ipfs_v0.4.10_linux-amd64.tar.gz
   - export PATH=$PATH:$PWD/go-ipfs/
   - ipfs init
-  - ipfs daemon &
+  - ipfs daemon --enable-pubsub-experiment &
