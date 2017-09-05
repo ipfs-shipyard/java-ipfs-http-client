@@ -30,10 +30,7 @@
   <target name="dist" depends="compile" description="generate the distribution">
     <mkdir dir="${dist}/lib"/>
     <copy todir="${dist}/lib">
-      <fileset dir="lib">
-        <exclude name="hamcrest*"/>
-        <exclude name="junit*"/>
-      </fileset>
+      <fileset dir="lib"/>
     </copy>
     <manifestclasspath property="manifest_cp" jarfile="myjar.jar">
       <classpath refid="dep.runtime" />
