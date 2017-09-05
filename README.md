@@ -19,11 +19,40 @@
 
 ## Install
 
-Simply clone this repo.
+### Official releases
+
+You can use this project by including `ipfs.jar` from one of the [releases](https://github.com/ipfs/java-ipfs-api/releases).
+
+### Maven, Gradle, SBT
+
+Package managers are supported through [JitPack](https://jitpack.io/#ipfs/java-ipfs-api/) whcih supports Maven, Gradle, SBT, etc.
+
+for Maven, add the following sections to your pom.xml:
+```
+  <repositories>
+    <repository>
+        <id>jitpack.io</id>
+        <url>https://jitpack.io</url>
+    </repository>
+  </repositories>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.github.ipfs</groupId>
+      <artifactId>java-ipfs-api</artifactId>
+      <version>v1.1.1</version>
+    </dependency>
+  </dependencies>
+```
+
+### Building
+
+* Clone this repository
+* Run `ant dist`
+* Copy `dist/ipfs.jar` into your project. Appropriate versions of other [dependencies](#Dependencies) are also included in `dist/lib/`.
+* Run tests using `ant test`.
 
 ## Usage
-
-Include the IPFS.jar in your project.
 
 Create an IPFS instance with:
 ```Java
@@ -54,16 +83,13 @@ byte[] fileContents = ipfs.cat(filePointer);
 ```
 
 ## Dependencies
+
+Current versions of dependencies are included in the `./lib` directory.
+
 * [multibase](https://github.com/multiformats/java-multibase)
 * [multiaddr](https://github.com/multiformats/java-multiaddr)
 * [multihash](https://github.com/multiformats/java-multihash)
 * [cid](https://github.com/ipld/java-cid)
-
-## Building
----------
-To build just run `ant dist`. The dependencies are included in the `./lib` directory, and automatically copied to the `./dist/lib` directory.
-
-To run tests use `ant test`.
 
 ## Contribute
 
