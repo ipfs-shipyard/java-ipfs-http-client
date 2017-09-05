@@ -59,7 +59,7 @@
 		<dependency>
 			<groupId>com.github.multiformats</groupId>
 			<artifactId>java-multiaddr</artifactId>
-			<version>v1.0.0</version>
+			<version>v1.1.1</version>
 		</dependency>
 		<dependency>
 			<groupId>com.github.multiformats</groupId>
