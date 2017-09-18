@@ -52,7 +52,13 @@ public class MerkleNode {
         if (hash == null)
             hash = (String)json.get("Key");
         Optional<String> name = json.containsKey("Name") ? Optional.of((String) json.get("Name")): Optional.empty();
-        Optional<Integer> size = json.containsKey("Size") ? Optional.<Integer>empty().of((Integer) json.get("Size")): Optional.<Integer>empty().empty();
+        Optional<Integer> size;
+        if(json.containsKey("Size")) {
+            Object sizeJson = json.get("Size");
+            size = sizeJson instanceof String ? Optional.<Integer>empty().of(Integer.parseInt((String) json.get("Size"))) : Optional.<Integer>empty().of((Integer) json.get("Size"));
+        } else {
+            size = Optional.<Integer>empty().empty();
+        }
         Optional<Integer> type = json.containsKey("Type") ? Optional.<Integer>empty().of((Integer) json.get("Type")): Optional.<Integer>empty().empty();
         List<Object> linksRaw = (List<Object>) json.get("Links");
         List<MerkleNode> links = linksRaw == null ? Collections.EMPTY_LIST : linksRaw.stream().map(x -> MerkleNode.fromJSON(x)).collect(Collectors.toList());
