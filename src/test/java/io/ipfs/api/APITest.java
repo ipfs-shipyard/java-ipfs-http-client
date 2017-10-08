@@ -404,9 +404,11 @@ public class APITest {
         String topic = "topic" + System.nanoTime();
         Supplier<Object> sub = ipfs.pubsub.sub(topic);
         Object first = sub.get();
+        Assert.assertTrue(first.equals(Collections.emptyMap()));
         String data = "Hello!";
         Object pub = ipfs.pubsub.pub(topic, data);
-        Assert.assertTrue(first.equals(Collections.emptyMap()));
+        Object second = sub.get();
+        Assert.assertTrue( ! second.equals(Collections.emptyMap()));
     }
 
     private static String toEscapedHex(byte[] in) throws IOException {
