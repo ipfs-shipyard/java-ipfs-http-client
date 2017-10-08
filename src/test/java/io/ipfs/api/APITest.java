@@ -712,8 +712,8 @@ public class APITest {
     public void diagTest() {
         try {
             Map config = ipfs.config.show();
-            String val = ipfs.config.get("Datastore.Path");
-            Map setResult = ipfs.config.set("Datastore.Path", val);
+            String val = ipfs.config.get("Datastore.GCPeriod");
+            Map setResult = ipfs.config.set("Datastore.GCPeriod", val);
             ipfs.config.replace(new NamedStreamable.ByteArrayWrapper(JSONParser.toString(config).getBytes()));
 //            Object log = ipfs.log();
             String sys = ipfs.diag.sys();

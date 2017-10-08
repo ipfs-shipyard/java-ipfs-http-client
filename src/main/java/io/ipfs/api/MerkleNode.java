@@ -7,28 +7,37 @@ import java.util.*;
 import java.util.stream.*;
 
 public class MerkleNode {
+
     public final Multihash hash;
     public final Optional<String> name;
     public final Optional<Integer> size;
+    public final Optional<String> largeSize;
     public final Optional<Integer> type;
     public final List<MerkleNode> links;
     public final Optional<byte[]> data;
+
+    public MerkleNode(String hash,
+                      Optional<String> name,
+                      Optional<Integer> size,
+                      Optional<String> largeSize,
+                      Optional<Integer> type,
+                      List<MerkleNode> links,
+                      Optional<byte[]> data) {
+        this.name = name;
+        this.hash = Cid.decode(hash);
+        this.size = size;
+        this.largeSize = largeSize;
+        this.type = type;
+        this.links = links;
+        this.data = data;
+    }
 
     public MerkleNode(String hash) {
         this(hash, Optional.empty());
     }
 
     public MerkleNode(String hash, Optional<String> name) {
-        this(hash, name, Optional.empty(), Optional.empty(), Arrays.asList(), Optional.empty());
-    }
-
-    public MerkleNode(String hash, Optional<String> name, Optional<Integer> size, Optional<Integer> type, List<MerkleNode> links, Optional<byte[]> data) {
-        this.name = name;
-        this.hash = Cid.decode(hash);
-        this.size = size;
-        this.type = type;
-        this.links = links;
-        this.data = data;
+        this(hash, name, Optional.empty(), Optional.empty(), Optional.empty(), Arrays.asList(), Optional.empty());
     }
 
     @Override
@@ -51,13 +60,25 @@ public class MerkleNode {
         String hash = (String)json.get("Hash");
         if (hash == null)
             hash = (String)json.get("Key");
-        Optional<String> name = json.containsKey("Name") ? Optional.of((String) json.get("Name")): Optional.empty();
-        Optional<Integer> size = json.containsKey("Size") ? Optional.<Integer>empty().of((Integer) json.get("Size")): Optional.<Integer>empty().empty();
-        Optional<Integer> type = json.containsKey("Type") ? Optional.<Integer>empty().of((Integer) json.get("Type")): Optional.<Integer>empty().empty();
+        Optional<String> name = json.containsKey("Name") ?
+                Optional.of((String) json.get("Name")) :
+                Optional.empty();
+        Object rawSize = json.get("Size");
+        Optional<Integer> size = rawSize instanceof Integer ?
+                Optional.of((Integer) rawSize) :
+                Optional.empty();
+        Optional<String> largeSize = rawSize instanceof String ?
+                Optional.of((String) json.get("Size")) :
+                Optional.empty();
+        Optional<Integer> type = json.containsKey("Type") ?
+                Optional.of((Integer) json.get("Type")) :
+                Optional.empty();
         List<Object> linksRaw = (List<Object>) json.get("Links");
-        List<MerkleNode> links = linksRaw == null ? Collections.EMPTY_LIST : linksRaw.stream().map(x -> MerkleNode.fromJSON(x)).collect(Collectors.toList());
+        List<MerkleNode> links = linksRaw == null ?
+                Collections.emptyList() :
+                linksRaw.stream().map(x -> MerkleNode.fromJSON(x)).collect(Collectors.toList());
         Optional<byte[]> data = json.containsKey("Data") ? Optional.of(((String)json.get("Data")).getBytes()): Optional.empty();
-        return new MerkleNode(hash, name, size, type, links, data);
+        return new MerkleNode(hash, name, size, largeSize, type, links, data);
     }
 
     public Object toJSON() {
@@ -69,7 +90,7 @@ public class MerkleNode {
         if (name.isPresent())
             res.put("Name", name.get());
         if (size.isPresent())
-            res.put("Size", size.get());
+            res.put("Size", size.isPresent() ? size.get() : largeSize.get());
         if (type.isPresent())
             res.put("Type", type.get());
         return res;
