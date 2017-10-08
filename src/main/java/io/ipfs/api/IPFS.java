@@ -66,18 +66,16 @@ public class IPFS {
         }
     }
 
-    public MerkleNode add(NamedStreamable file) throws IOException {
-        List<MerkleNode> addParts = add(Collections.singletonList(file));
-        Optional<MerkleNode> sameName = addParts.stream()
-                .filter(node -> node.name.equals(file.getName()))
-                .findAny();
-        if (sameName.isPresent())
-            return sameName.get();
-        return addParts.get(0);
+    public List<MerkleNode> add(NamedStreamable file) throws IOException {
+        return add(file, false);
     }
 
-    public List<MerkleNode> add(List<NamedStreamable> files) throws IOException {
-        Multipart m = new Multipart("http://" + host + ":" + port + version + "add", "UTF-8");
+    public List<MerkleNode> add(NamedStreamable file, boolean wrap) throws IOException {
+        return add(Collections.singletonList(file), wrap);
+    }
+
+    public List<MerkleNode> add(List<NamedStreamable> files, boolean wrap) throws IOException {
+        Multipart m = new Multipart("http://" + host + ":" + port + version + "add?w="+wrap, "UTF-8");
         for (NamedStreamable file: files) {
             if (file.isDirectory()) {
                 m.addSubtree(Paths.get(""), file);

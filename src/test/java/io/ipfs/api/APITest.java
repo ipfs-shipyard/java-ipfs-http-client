@@ -7,7 +7,6 @@ import io.ipfs.multiaddr.MultiAddress;
 import org.junit.*;
 
 import java.io.*;
-import java.net.*;
 import java.nio.file.*;
 import java.util.*;
 import java.util.function.*;
@@ -83,9 +82,29 @@ public class APITest {
     }
 
     @Test
+    public void wrappedSingleFileTest() {
+        NamedStreamable.ByteArrayWrapper file = new NamedStreamable.ByteArrayWrapper("hello.txt", "G'day world! IPFS rocks!".getBytes());
+        try {
+            List<MerkleNode> addParts = ipfs.add(file, true);
+            MerkleNode filePart = addParts.get(0);
+            MerkleNode dirPart = addParts.get(1);
+            byte[] catResult = ipfs.cat(filePart.hash);
+            byte[] getResult = ipfs.get(filePart.hash);
+            if (!Arrays.equals(catResult, file.getContents()))
+                throw new IllegalStateException("Different contents!");
+            List<Multihash> pinRm = ipfs.pin.rm(dirPart.hash, true);
+            if (!pinRm.get(0).equals(dirPart.hash))
+                throw new IllegalStateException("Didn't remove file!");
+            Object gc = ipfs.repo.gc();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
     public void dirTest() throws IOException {
         NamedStreamable.DirWrapper dir = new NamedStreamable.DirWrapper("root", Arrays.asList());
-        MerkleNode addResult = ipfs.add(dir);
+        MerkleNode addResult = ipfs.add(dir).get(0);
         List<MerkleNode> ls = ipfs.ls(addResult.hash);
         Assert.assertTrue(ls.size() > 0);
     }
@@ -115,7 +134,8 @@ public class APITest {
         fout2.flush();
         fout2.close();
 
-        MerkleNode addResult = ipfs.add(new NamedStreamable.FileWrapper(tmpDir.toFile()));
+        List<MerkleNode> addParts = ipfs.add(new NamedStreamable.FileWrapper(tmpDir.toFile()));
+        MerkleNode addResult = addParts.get(addParts.size() - 1);
         List<MerkleNode> lsResult = ipfs.ls(addResult.hash);
         if (lsResult.size() != 1)
             throw new IllegalStateException("Incorrect number of objects in ls!");
@@ -144,7 +164,7 @@ public class APITest {
         new Random(1).nextBytes(hugeData);
         NamedStreamable.ByteArrayWrapper largeFile = new NamedStreamable.ByteArrayWrapper("massive.txt", hugeData);
         try {
-            MerkleNode addResult = ipfs.add(largeFile);
+            MerkleNode addResult = ipfs.add(largeFile).get(0);
             InputStream in = ipfs.catStream(addResult.hash);
 
             byte[] res = new byte[hugeData.length];
@@ -179,7 +199,7 @@ public class APITest {
 
     public void fileTest(NamedStreamable file) {
         try {
-            MerkleNode addResult = ipfs.add(file);
+            MerkleNode addResult = ipfs.add(file).get(0);
             byte[] catResult = ipfs.cat(addResult.hash);
             byte[] getResult = ipfs.get(addResult.hash);
             if (!Arrays.equals(catResult, file.getContents()))
@@ -196,7 +216,7 @@ public class APITest {
     @Test
     public void pinTest() {
         try {
-            MerkleNode file = ipfs.add(new NamedStreamable.ByteArrayWrapper("some data".getBytes()));
+            MerkleNode file = ipfs.add(new NamedStreamable.ByteArrayWrapper("some data".getBytes())).get(0);
             Multihash hash = file.hash;
             Map<Multihash, Object> ls1 = ipfs.pin.ls(IPFS.PinType.all);
             boolean pinned = ls1.containsKey(hash);
@@ -220,7 +240,7 @@ public class APITest {
     @Test
     public void pinUpdate() {
         try {
-            MerkleNode child1 = ipfs.add(new NamedStreamable.ByteArrayWrapper("some data".getBytes()));
+            MerkleNode child1 = ipfs.add(new NamedStreamable.ByteArrayWrapper("some data".getBytes())).get(0);
             Multihash hashChild1 = child1.hash;
             System.out.println("child1: " + hashChild1);
 
