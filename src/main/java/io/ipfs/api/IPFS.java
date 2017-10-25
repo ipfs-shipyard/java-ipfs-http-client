@@ -232,7 +232,7 @@ public class IPFS {
         }
 
         public Object pub(String topic, String data) throws IOException {
-            return retrieveAndParse("pubsub/pub?arg="+topic + "&arg=" + data);
+            return retrieveAndParse("pubsub/pub?arg="+topic + "&arg=" + URLEncoder.encode(data, "UTF-8"));
         }
 
         public Supplier<Object> sub(String topic) throws IOException {
