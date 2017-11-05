@@ -71,11 +71,15 @@ public class IPFS {
     }
 
     public List<MerkleNode> add(NamedStreamable file, boolean wrap) throws IOException {
-        return add(Collections.singletonList(file), wrap);
+        return add(file, wrap, false);
     }
 
-    public List<MerkleNode> add(List<NamedStreamable> files, boolean wrap) throws IOException {
-        Multipart m = new Multipart("http://" + host + ":" + port + version + "add?w="+wrap, "UTF-8");
+    public List<MerkleNode> add(NamedStreamable file, boolean wrap, boolean hashOnly) throws IOException {
+        return add(Collections.singletonList(file), wrap, hashOnly);
+    }
+
+    public List<MerkleNode> add(List<NamedStreamable> files, boolean wrap, boolean hashOnly) throws IOException {
+        Multipart m = new Multipart("http://" + host + ":" + port + version + "add?w="+wrap + "&n="+hashOnly, "UTF-8");
         for (NamedStreamable file: files) {
             if (file.isDirectory()) {
                 m.addSubtree(Paths.get(""), file);
