@@ -235,6 +235,13 @@ public class IPFS {
             return retrieveAndParse("pubsub/peers?topic="+topic);
         }
 
+        /**
+         *
+         * @param topic
+         * @param data url encoded data to be published
+         * @return
+         * @throws IOException
+         */
         public Object pub(String topic, String data) throws IOException {
             return retrieveAndParse("pubsub/pub?arg="+topic + "&arg=" + data);
         }
