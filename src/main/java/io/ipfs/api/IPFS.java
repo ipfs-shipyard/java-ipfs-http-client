@@ -232,7 +232,7 @@ public class IPFS {
         }
 
         public Object peers(String topic) throws IOException {
-            return retrieveAndParse("pubsub/peers?topic="+topic);
+            return retrieveAndParse("pubsub/peers?arg="+topic);
         }
 
         /**
