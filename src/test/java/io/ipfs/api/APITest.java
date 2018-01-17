@@ -589,7 +589,7 @@ public class APITest {
         Map findprovs = ipfs.dht.findprovs(pointer);
         List<Peer> peers = ipfs.swarm.peers();
         Map query = ipfs.dht.query(peers.get(0).address);
-//        Map find = ipfs.dht.findpeer(peers.get(0));
+        Map find = ipfs.dht.findpeer(peers.get(0).id);
     }
 
     @Test
