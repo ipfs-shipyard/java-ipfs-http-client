@@ -70,6 +70,8 @@ public class MerkleNode {
         Optional<String> largeSize = rawSize instanceof String ?
                 Optional.of((String) json.get("Size")) :
                 Optional.empty();
+        if ("error".equals(json.get("Type")))
+            throw new IllegalStateException("Remote IPFS error: " + json.get("Message"));
         Optional<Integer> type = json.containsKey("Type") ?
                 Optional.of((Integer) json.get("Type")) :
                 Optional.empty();
