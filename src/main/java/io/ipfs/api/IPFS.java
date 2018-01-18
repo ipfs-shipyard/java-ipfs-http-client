@@ -501,6 +501,10 @@ public class IPFS {
         return retrieveMap("id/" + target.toString());
     }
 
+    public Map id() throws IOException {
+        return retrieveMap("id");
+    }
+
     public class Stats {
         public Map bw() throws IOException {
             return retrieveMap("stats/bw");

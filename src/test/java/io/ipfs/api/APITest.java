@@ -593,6 +593,12 @@ public class APITest {
     }
 
     @Test
+    public void localId() throws Exception {
+        Map id = ipfs.id();
+        System.out.println();
+    }
+
+    @Test
     public void statsTest() throws IOException {
         Map stats = ipfs.stats.bw();
     }
