@@ -27,7 +27,7 @@ You can use this project by including `ipfs.jar` from one of the [releases](http
 
 Package managers are supported through [JitPack](https://jitpack.io/#ipfs/java-ipfs-api/) whcih supports Maven, Gradle, SBT, etc.
 
-for Maven, add the following sections to your pom.xml:
+for Maven, add the following sections to your pom.xml (replacing $LATEST_VERSION):
 ```
   <repositories>
     <repository>
@@ -40,7 +40,7 @@ for Maven, add the following sections to your pom.xml:
     <dependency>
       <groupId>com.github.ipfs</groupId>
       <artifactId>java-ipfs-api</artifactId>
-      <version>v1.1.1</version>
+      <version>$LATEST_VERSION</version>
     </dependency>
   </dependencies>
 ```
