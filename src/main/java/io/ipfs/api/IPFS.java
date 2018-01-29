@@ -253,6 +253,18 @@ public class IPFS {
         public Supplier<Object> sub(String topic, ForkJoinPool threadSupplier) throws IOException {
             return retrieveAndParseStream("pubsub/sub?arg="+topic, threadSupplier);
         }
+
+        /**
+         * A synchronous method to subscribe which consumes the calling thread
+         * @param topic
+         * @param results
+         * @throws IOException
+         */
+        public void sub(String topic, Consumer<Object> results) throws IOException {
+            retrieveAndParseStream("pubsub/sub?arg="+topic, results);
+        }
+
+
     }
 
     /* 'ipfs block' is a plumbing command used to manipulate raw ipfs blocks.
@@ -579,6 +591,16 @@ public class IPFS {
                 throw new RuntimeException(e);
             }
         };
+    }
+
+    /**
+     * A synchronous stream retriever that consumes the calling thread
+     * @param path
+     * @param results
+     * @throws IOException
+     */
+    private void retrieveAndParseStream(String path, Consumer<Object> results) throws IOException {
+        getObjectStream(path, d -> results.accept(JSONParser.parse(new String(d))));
     }
 
     private byte[] retrieve(String path) throws IOException {

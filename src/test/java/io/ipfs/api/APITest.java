@@ -381,6 +381,31 @@ public class APITest {
     }
 
     @Test
+    public void pubsubSynchronous() throws IOException {
+        String topic = "topic" + System.nanoTime();
+        List<Object> res = Collections.synchronizedList(new ArrayList<>());
+        new Thread(() -> {
+            try {
+                ipfs.pubsub.sub(topic, res::add);
+            } catch (IOException e) {
+                throw new RuntimeException(e);}
+        }).start();
+
+        long start = System.currentTimeMillis();
+        for (int i=1; i < 100; ) {
+            long t1 = System.currentTimeMillis();
+            ipfs.pubsub.pub(topic, "Hello!");
+            if (res.size() >= i) {
+                long t2 = System.currentTimeMillis();
+                System.out.println("pub => sub took " + (t2 - t1));
+                i++;
+            }
+        }
+        long duration = System.currentTimeMillis() - start;
+        Assert.assertTrue("Fast synchronous pub-sub", duration < 1000);
+    }
+
+    @Test
     public void pubsub() throws IOException {
         Object ls = ipfs.pubsub.ls();
         Object peers = ipfs.pubsub.peers();
