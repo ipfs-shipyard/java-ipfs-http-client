@@ -246,12 +246,13 @@ public class IPFS {
             return retrieveAndParse("pubsub/pub?arg="+topic + "&arg=" + data);
         }
 
-        public Supplier<Object> sub(String topic) throws IOException {
+        public Supplier<Map<String, Object>> sub(String topic) throws IOException {
             return sub(topic, ForkJoinPool.commonPool());
         }
 
-        public Supplier<Object> sub(String topic, ForkJoinPool threadSupplier) throws IOException {
-            return retrieveAndParseStream("pubsub/sub?arg="+topic, threadSupplier);
+        public Supplier<Map<String, Object>> sub(String topic, ForkJoinPool threadSupplier) throws IOException {
+            Supplier<Object> sup = retrieveAndParseStream("pubsub/sub?arg=" + topic, threadSupplier);
+            return () -> (Map) sup.get();
         }
 
         /**
@@ -260,8 +261,8 @@ public class IPFS {
          * @param results
          * @throws IOException
          */
-        public void sub(String topic, Consumer<Object> results) throws IOException {
-            retrieveAndParseStream("pubsub/sub?arg="+topic, results);
+        public void sub(String topic, Consumer<Map<String, Object>> results) throws IOException {
+            retrieveAndParseStream("pubsub/sub?arg="+topic, res -> results.accept((Map)res));
         }
 
 

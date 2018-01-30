@@ -383,7 +383,7 @@ public class APITest {
     @Test
     public void pubsubSynchronous() throws IOException {
         String topic = "topic" + System.nanoTime();
-        List<Object> res = Collections.synchronizedList(new ArrayList<>());
+        List<Map<String, Object>> res = Collections.synchronizedList(new ArrayList<>());
         new Thread(() -> {
             try {
                 ipfs.pubsub.sub(topic, res::add);
@@ -410,12 +410,12 @@ public class APITest {
         Object ls = ipfs.pubsub.ls();
         Object peers = ipfs.pubsub.peers();
         String topic = "topic" + System.nanoTime();
-        Supplier<Object> sub = ipfs.pubsub.sub(topic);
-        Object first = sub.get();
+        Supplier<Map<String, Object>> sub = ipfs.pubsub.sub(topic);
+        Map<String, Object> first = sub.get();
         Assert.assertTrue(first.equals(Collections.emptyMap()));
         String data = "Hello!";
         Object pub = ipfs.pubsub.pub(topic, data);
-        Object second = sub.get();
+        Map second = sub.get();
         Assert.assertTrue( ! second.equals(Collections.emptyMap()));
     }
 
