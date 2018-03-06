@@ -43,11 +43,10 @@ public class Multipart {
     }
 
     public void addFormField(String name, String value) {
-        writer.append("--" + boundary).append(LINE_FEED);
-        writer.append("Content-Disposition: form-data; name=\"" + name + "\"")
+        writer.append("--").append(boundary).append(LINE_FEED);
+        writer.append("Content-Disposition: form-data; name=\"").append(name).append("\"")
                 .append(LINE_FEED);
-        writer.append("Content-Type: text/plain; charset=" + charset).append(
-                LINE_FEED);
+        writer.append("Content-Type: text/plain; charset=").append(charset).append(LINE_FEED);
         writer.append(LINE_FEED);
         writer.append(value).append(LINE_FEED);
         writer.flush();
@@ -65,8 +64,8 @@ public class Multipart {
     }
 
     public void addDirectoryPart(Path path) {
-        writer.append("--" + boundary).append(LINE_FEED);
-        writer.append("Content-Disposition: file; filename=\"" + encode(path.toString()) + "\"").append(LINE_FEED);
+        writer.append("--").append(boundary).append(LINE_FEED);
+        writer.append("Content-Disposition: file; filename=\"").append(encode(path.toString())).append("\"").append(LINE_FEED);
         writer.append("Content-Type: application/x-directory").append(LINE_FEED);
         writer.append("Content-Transfer-Encoding: binary").append(LINE_FEED);
         writer.append(LINE_FEED);
@@ -84,11 +83,11 @@ public class Multipart {
 
     public void addFilePart(String fieldName, Path parent, NamedStreamable uploadFile) {
         Optional<String> fileName = uploadFile.getName().map(n -> encode(parent.resolve(n).toString()));
-        writer.append("--" + boundary).append(LINE_FEED);
+        writer.append("--").append(boundary).append(LINE_FEED);
         if (!fileName.isPresent())
-            writer.append("Content-Disposition: file; name=\"" + fieldName + "\";").append(LINE_FEED);
+            writer.append("Content-Disposition: file; name=\"").append(fieldName).append("\";").append(LINE_FEED);
         else
-            writer.append("Content-Disposition: file; filename=\"" + fileName.get() + "\";").append(LINE_FEED);
+            writer.append("Content-Disposition: file; filename=\"").append(fileName.get()).append("\";").append(LINE_FEED);
         writer.append("Content-Type: application/octet-stream").append(LINE_FEED);
         writer.append("Content-Transfer-Encoding: binary").append(LINE_FEED);
         writer.append(LINE_FEED);
