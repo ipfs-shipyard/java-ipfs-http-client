@@ -1,9 +1,12 @@
 package io.ipfs.api;
 
 import java.io.*;
-import java.net.*;
-import java.nio.file.*;
-import java.util.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.file.Path;
+import java.util.Optional;
+import java.util.Random;
 
 public class Multipart {
     private final String boundary;
@@ -43,13 +46,20 @@ public class Multipart {
     }
 
     public void addFormField(String name, String value) {
-        writer.append("--" + boundary).append(LINE_FEED);
-        writer.append("Content-Disposition: form-data; name=\"" + name + "\"")
+        writer
+                .append("--")
+                .append(boundary)
+                .append(LINE_FEED)
+                .append("Content-Disposition: form-data; name=\"")
+                .append(name).append("\"")
+                .append(LINE_FEED)
+                .append("Content-Type: text/plain; charset=")
+                .append(charset)
+                .append(
+                        LINE_FEED)
+                .append(LINE_FEED)
+                .append(value)
                 .append(LINE_FEED);
-        writer.append("Content-Type: text/plain; charset=" + charset).append(
-                LINE_FEED);
-        writer.append(LINE_FEED);
-        writer.append(value).append(LINE_FEED);
         writer.flush();
     }
 
