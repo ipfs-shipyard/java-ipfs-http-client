@@ -546,7 +546,7 @@ public class IPFS {
         public void replace(NamedStreamable file) throws IOException {
             Multipart m = new Multipart("http://" + host + ":" + port + version+"config/replace?stream-channels=true", "UTF-8");
             m.addFilePart("file", Paths.get(""), file);
-            String res = m.finish();
+            m.finish();
         }
 
         public String get(String key) throws IOException {
