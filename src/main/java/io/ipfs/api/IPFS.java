@@ -507,11 +507,11 @@ public class IPFS {
     }
 
     public Map ping(String target) throws IOException {
-        return retrieveMap("ping/" + target.toString());
+        return retrieveMap("ping/" + target);
     }
 
     public Map id(String target) throws IOException {
-        return retrieveMap("id/" + target.toString());
+        return retrieveMap("id/" + target);
     }
 
     public Map id() throws IOException {
