@@ -84,17 +84,17 @@ public class MerkleNode {
     }
 
     public Object toJSON() {
-        Map res = new TreeMap<>();
+        Map<String, Object> res = new TreeMap<>();
         res.put("Hash", hash);
         res.put("Links", links.stream().map(x -> x.hash).collect(Collectors.toList()));
-        if (data.isPresent())
-            res.put("Data", data.get());
-        if (name.isPresent())
-            res.put("Name", name.get());
-        if (size.isPresent())
-            res.put("Size", size.isPresent() ? size.get() : largeSize.get());
-        if (type.isPresent())
-            res.put("Type", type.get());
+        data.ifPresent(bytes -> res.put("Data", bytes));
+        name.ifPresent(s -> res.put("Name", s));
+        if (size.isPresent()) {
+            res.put("Size", size.get());
+        } else {
+            largeSize.ifPresent(s -> res.put("Size", s));
+        }
+        type.ifPresent(integer -> res.put("Type", integer));
         return res;
     }
 
