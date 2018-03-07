@@ -60,16 +60,29 @@
 			<groupId>com.github.multiformats</groupId>
 			<artifactId>java-multiaddr</artifactId>
 			<version>v1.1.1</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/lib/multiaddr.jar</systemPath>
 		</dependency>
 		<dependency>
 			<groupId>com.github.multiformats</groupId>
 			<artifactId>java-multihash</artifactId>
+			<version>v1.1.1</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/lib/multihash.jar</systemPath>
+		</dependency>
+		<dependency>
+			<groupId>com.github.multiformats</groupId>
+			<artifactId>java-multibase</artifactId>
 			<version>v1.1.0</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/lib/multibase.jar</systemPath>
 		</dependency>
 		<dependency>
 			<groupId>com.github.ipld</groupId>
 			<artifactId>java-cid</artifactId>
 			<version>v1.1.0</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/lib/cid.jar</systemPath>
 		</dependency>
 	</dependencies>
 
