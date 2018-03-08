@@ -7,3 +7,5 @@ before_script:
   - export PATH=$PATH:$PWD/go-ipfs/
   - ipfs init
   - ipfs daemon --enable-pubsub-experiment &
+script:
+  - mvn clean verify
