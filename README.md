@@ -25,7 +25,7 @@ You can use this project by including `ipfs.jar` from one of the [releases](http
 
 ### Maven, Gradle, SBT
 
-Package managers are supported through [JitPack](https://jitpack.io/#ipfs/java-ipfs-api/) whcih supports Maven, Gradle, SBT, etc.
+Package managers are supported through [JitPack](https://jitpack.io/#ipfs/java-ipfs-api/) which supports Maven, Gradle, SBT, etc.
 
 for Maven, add the following sections to your pom.xml (replacing $LATEST_VERSION):
 ```
