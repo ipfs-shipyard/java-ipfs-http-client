@@ -613,7 +613,7 @@ public class APITest {
         Map put = ipfs.dht.put("somekey", "somevalue");
         Map findprovs = ipfs.dht.findprovs(pointer);
         List<Peer> peers = ipfs.swarm.peers();
-        Map query = ipfs.dht.query(peers.get(0).address);
+        Map query = ipfs.dht.query(peers.get(0).id);
         Map find = ipfs.dht.findpeer(peers.get(0).id);
     }
 

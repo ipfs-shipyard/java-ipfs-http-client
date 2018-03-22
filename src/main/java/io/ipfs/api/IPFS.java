@@ -397,8 +397,8 @@ public class IPFS {
             return retrieveMap("dht/findprovs?arg=" + hash);
         }
 
-        public Map query(MultiAddress addr) throws IOException {
-            return retrieveMap("dht/query?arg=" + addr.toString());
+        public Map query(Multihash peerId) throws IOException {
+            return retrieveMap("dht/query?arg=" + peerId.toString());
         }
 
         public Map findpeer(Multihash id) throws IOException {
