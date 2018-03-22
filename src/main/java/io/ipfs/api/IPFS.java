@@ -242,17 +242,18 @@ public class IPFS {
          * @return
          * @throws IOException
          */
-        public Object pub(String topic, String data) throws IOException {
+        public Object pub(String topic, String data) throws Exception {
             return retrieveAndParse("pubsub/pub?arg="+topic + "&arg=" + data);
         }
 
-        public Supplier<Map<String, Object>> sub(String topic) throws IOException {
+        public Supplier<CompletableFuture<Map<String, Object>>> sub(String topic) throws Exception {
             return sub(topic, ForkJoinPool.commonPool());
         }
 
-        public Supplier<Map<String, Object>> sub(String topic, ForkJoinPool threadSupplier) throws IOException {
-            Supplier<Object> sup = retrieveAndParseStream("pubsub/sub?arg=" + topic, threadSupplier);
-            return () -> (Map) sup.get();
+        public Supplier<CompletableFuture<Map<String, Object>>> sub(String topic, ForkJoinPool threadSupplier) throws Exception {
+            Supplier<CompletableFuture<Object>> sup = retrieveAndParseStream("pubsub/sub?arg=" + topic, threadSupplier);
+            return () -> sup.get()
+                    .thenApply(obj -> (Map)obj);
         }
 
         /**
@@ -261,8 +262,8 @@ public class IPFS {
          * @param results
          * @throws IOException
          */
-        public void sub(String topic, Consumer<Map<String, Object>> results) throws IOException {
-            retrieveAndParseStream("pubsub/sub?arg="+topic, res -> results.accept((Map)res));
+        public void sub(String topic, Consumer<Map<String, Object>> results, Consumer<Throwable> error) throws IOException {
+            retrieveAndParseStream("pubsub/sub?arg="+topic, res -> results.accept((Map)res), error);
         }
 
 
@@ -582,12 +583,23 @@ public class IPFS {
         return JSONParser.parse(new String(res));
     }
 
-    private Supplier<Object> retrieveAndParseStream(String path, ForkJoinPool executor) throws IOException {
-        BlockingQueue<byte[]> objects = new LinkedBlockingQueue<>();
-        executor.submit(() -> getObjectStream(path, objects::add));
+    private Supplier<CompletableFuture<Object>> retrieveAndParseStream(String path, ForkJoinPool executor) throws IOException {
+        BlockingQueue<CompletableFuture<byte[]>> futures = new LinkedBlockingQueue<>();
+        CompletableFuture<byte[]> first = new CompletableFuture<>();
+        futures.add(first);
+        executor.submit(() -> getObjectStream(path,
+                res -> {
+                    futures.peek().complete(res);
+                    futures.add(new CompletableFuture<>());
+                },
+                err -> {
+                    futures.peek().completeExceptionally(err);
+                    futures.add(new CompletableFuture<>());
+                })
+        );
         return () -> {
             try {
-                return JSONParser.parse(new String(objects.take()));
+                return futures.take().thenApply(arr -> JSONParser.parse(new String(arr)));
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
@@ -600,8 +612,8 @@ public class IPFS {
      * @param results
      * @throws IOException
      */
-    private void retrieveAndParseStream(String path, Consumer<Object> results) throws IOException {
-        getObjectStream(path, d -> results.accept(JSONParser.parse(new String(d))));
+    private void retrieveAndParseStream(String path, Consumer<Object> results, Consumer<Throwable> err) throws IOException {
+        getObjectStream(path, d -> results.accept(JSONParser.parse(new String(d))), err);
     }
 
     private byte[] retrieve(String path) throws IOException {
@@ -631,7 +643,7 @@ public class IPFS {
         }
     }
 
-    private void getObjectStream(String path, Consumer<byte[]> processor) {
+    private void getObjectStream(String path, Consumer<byte[]> processor, Consumer<Throwable> error) {
         byte LINE_FEED = (byte)10;
 
         try {
@@ -648,7 +660,7 @@ public class IPFS {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            error.accept(e);
         }
     }
 

@@ -9,6 +9,7 @@ import org.junit.*;
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.function.*;
 import java.util.stream.*;
 
@@ -381,12 +382,12 @@ public class APITest {
     }
 
     @Test
-    public void pubsubSynchronous() throws IOException {
+    public void pubsubSynchronous() throws Exception {
         String topic = "topic" + System.nanoTime();
         List<Map<String, Object>> res = Collections.synchronizedList(new ArrayList<>());
         new Thread(() -> {
             try {
-                ipfs.pubsub.sub(topic, res::add);
+                ipfs.pubsub.sub(topic, res::add, t -> t.printStackTrace());
             } catch (IOException e) {
                 throw new RuntimeException(e);}
         }).start();
@@ -406,17 +407,16 @@ public class APITest {
     }
 
     @Test
-    public void pubsub() throws IOException {
+    public void pubsub() throws Exception {
         Object ls = ipfs.pubsub.ls();
         Object peers = ipfs.pubsub.peers();
         String topic = "topic" + System.nanoTime();
-        Supplier<Map<String, Object>> sub = ipfs.pubsub.sub(topic);
-        Map<String, Object> first = sub.get();
-        Assert.assertTrue(first.equals(Collections.emptyMap()));
+        Supplier<CompletableFuture<Map<String, Object>>> sub = ipfs.pubsub.sub(topic);
+        Thread.sleep(100); // There's a race condition in ipfs
         String data = "Hello!";
         Object pub = ipfs.pubsub.pub(topic, data);
-        Map second = sub.get();
-        Assert.assertTrue( ! second.equals(Collections.emptyMap()));
+        Map result = sub.get().get();
+        Assert.assertTrue( ! result.equals(Collections.emptyMap()));
     }
 
     private static String toEscapedHex(byte[] in) throws IOException {
