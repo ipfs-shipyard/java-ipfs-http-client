@@ -423,7 +423,15 @@ public class IPFS {
     // Network commands
 
     public List<MultiAddress> bootstrap() throws IOException {
-        return ((List<String>)retrieveMap("bootstrap/").get("Peers")).stream().map(x -> new MultiAddress(x)).collect(Collectors.toList());
+        return ((List<String>)retrieveMap("bootstrap/").get("Peers"))
+                .stream()
+                .flatMap(x -> {
+                    try {
+                        return Stream.of(new MultiAddress(x));
+                    } catch (Exception e) {
+                        return Stream.empty();
+                    }
+                }).collect(Collectors.toList());
     }
 
     public class Bootstrap {
