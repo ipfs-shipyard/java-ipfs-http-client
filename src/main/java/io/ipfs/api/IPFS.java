@@ -459,7 +459,14 @@ public class IPFS {
     public class Swarm {
         public List<Peer> peers() throws IOException {
             Map m = retrieveMap("swarm/peers?stream-channels=true");
-            return ((List<Object>)m.get("Peers")).stream().map(Peer::fromJSON).collect(Collectors.toList());
+            return ((List<Object>)m.get("Peers")).stream()
+                    .flatMap(json -> {
+                        try {
+                            return Stream.of(Peer.fromJSON(json));
+                        } catch (Exception e) {
+                            return Stream.empty();
+                        }
+                    }).collect(Collectors.toList());
         }
 
         public Map addrs() throws IOException {
