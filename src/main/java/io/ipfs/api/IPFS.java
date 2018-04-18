@@ -246,14 +246,12 @@ public class IPFS {
             return retrieveAndParse("pubsub/pub?arg="+topic + "&arg=" + data);
         }
 
-        public Supplier<CompletableFuture<Map<String, Object>>> sub(String topic) throws Exception {
+        public Stream<Map<String, Object>> sub(String topic) throws Exception {
             return sub(topic, ForkJoinPool.commonPool());
         }
 
-        public Supplier<CompletableFuture<Map<String, Object>>> sub(String topic, ForkJoinPool threadSupplier) throws Exception {
-            Supplier<CompletableFuture<Object>> sup = retrieveAndParseStream("pubsub/sub?arg=" + topic, threadSupplier);
-            return () -> sup.get()
-                    .thenApply(obj -> (Map)obj);
+        public Stream<Map<String, Object>> sub(String topic, ForkJoinPool threadSupplier) throws Exception {
+            return retrieveAndParseStream("pubsub/sub?arg=" + topic, threadSupplier).map(obj -> (Map)obj);
         }
 
         /**
@@ -262,7 +260,7 @@ public class IPFS {
          * @param results
          * @throws IOException
          */
-        public void sub(String topic, Consumer<Map<String, Object>> results, Consumer<Throwable> error) throws IOException {
+        public void sub(String topic, Consumer<Map<String, Object>> results, Consumer<IOException> error) throws IOException {
             retrieveAndParseStream("pubsub/sub?arg="+topic, res -> results.accept((Map)res), error);
         }
 
@@ -598,27 +596,25 @@ public class IPFS {
         return JSONParser.parse(new String(res));
     }
 
-    private Supplier<CompletableFuture<Object>> retrieveAndParseStream(String path, ForkJoinPool executor) throws IOException {
-        BlockingQueue<CompletableFuture<byte[]>> futures = new LinkedBlockingQueue<>();
-        CompletableFuture<byte[]> first = new CompletableFuture<>();
-        futures.add(first);
+    private Stream<Object> retrieveAndParseStream(String path, ForkJoinPool executor) {
+        BlockingQueue<CompletableFuture<byte[]>> results = new LinkedBlockingQueue<>();
         executor.submit(() -> getObjectStream(path,
                 res -> {
-                    futures.peek().complete(res);
-                    futures.add(new CompletableFuture<>());
+                    results.add(CompletableFuture.completedFuture(res));
                 },
                 err -> {
-                    futures.peek().completeExceptionally(err);
-                    futures.add(new CompletableFuture<>());
+                    CompletableFuture<byte[]> fut = new CompletableFuture<>();
+                    fut.completeExceptionally(err);
+                    results.add(fut);
                 })
         );
-        return () -> {
+        return Stream.generate(() -> {
             try {
-                return futures.take().thenApply(arr -> JSONParser.parse(new String(arr)));
-            } catch (InterruptedException e) {
+                return JSONParser.parse(new String(results.take().get()));
+            } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-        };
+        });
     }
 
     /**
@@ -627,7 +623,7 @@ public class IPFS {
      * @param results
      * @throws IOException
      */
-    private void retrieveAndParseStream(String path, Consumer<Object> results, Consumer<Throwable> err) throws IOException {
+    private void retrieveAndParseStream(String path, Consumer<Object> results, Consumer<IOException> err) throws IOException {
         getObjectStream(path, d -> results.accept(JSONParser.parse(new String(d))), err);
     }
 
@@ -658,7 +654,7 @@ public class IPFS {
         }
     }
 
-    private void getObjectStream(String path, Consumer<byte[]> processor, Consumer<Throwable> error) {
+    private void getObjectStream(String path, Consumer<byte[]> processor, Consumer<IOException> error) {
         byte LINE_FEED = (byte)10;
 
         try {

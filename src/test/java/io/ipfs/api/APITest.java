@@ -408,15 +408,14 @@ public class APITest {
 
     @Test
     public void pubsub() throws Exception {
-        Object ls = ipfs.pubsub.ls();
-        Object peers = ipfs.pubsub.peers();
         String topic = "topic" + System.nanoTime();
-        Supplier<CompletableFuture<Map<String, Object>>> sub = ipfs.pubsub.sub(topic);
+        Stream<Map<String, Object>> sub = ipfs.pubsub.sub(topic);
         Thread.sleep(100); // There's a race condition in ipfs
         String data = "Hello!";
         Object pub = ipfs.pubsub.pub(topic, data);
-        Map result = sub.get().get();
-        Assert.assertTrue( ! result.equals(Collections.emptyMap()));
+        Object pub2 = ipfs.pubsub.pub(topic, "G'day");
+        List<Map> results = sub.limit(2).collect(Collectors.toList());
+        Assert.assertTrue( ! results.get(0).equals(Collections.emptyMap()));
     }
 
     private static String toEscapedHex(byte[] in) throws IOException {
