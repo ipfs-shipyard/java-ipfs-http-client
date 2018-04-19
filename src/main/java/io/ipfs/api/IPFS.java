@@ -596,9 +596,10 @@ public class IPFS {
         return JSONParser.parse(new String(res));
     }
 
-    private Stream<Object> retrieveAndParseStream(String path, ForkJoinPool executor) {
+    private Stream<Object> retrieveAndParseStream(String path, ForkJoinPool executor) throws IOException {
         BlockingQueue<CompletableFuture<byte[]>> results = new LinkedBlockingQueue<>();
-        executor.submit(() -> getObjectStream(path,
+        InputStream in = retrieveStream(path);
+        executor.submit(() -> getObjectStream(in,
                 res -> {
                     results.add(CompletableFuture.completedFuture(res));
                 },
@@ -624,7 +625,7 @@ public class IPFS {
      * @throws IOException
      */
     private void retrieveAndParseStream(String path, Consumer<Object> results, Consumer<IOException> err) throws IOException {
-        getObjectStream(path, d -> results.accept(JSONParser.parse(new String(d))), err);
+        getObjectStream(retrieveStream(path), d -> results.accept(JSONParser.parse(new String(d))), err);
     }
 
     private byte[] retrieve(String path) throws IOException {
@@ -654,11 +655,10 @@ public class IPFS {
         }
     }
 
-    private void getObjectStream(String path, Consumer<byte[]> processor, Consumer<IOException> error) {
+    private void getObjectStream(InputStream in, Consumer<byte[]> processor, Consumer<IOException> error) {
         byte LINE_FEED = (byte)10;
 
         try {
-            InputStream in = retrieveStream(path);
             ByteArrayOutputStream resp = new ByteArrayOutputStream();
 
             byte[] buf = new byte[4096];
@@ -684,7 +684,6 @@ public class IPFS {
         HttpURLConnection conn = (HttpURLConnection) target.openConnection();
         conn.setRequestMethod("GET");
         conn.setRequestProperty("Content-Type", "application/json");
-
         return conn.getInputStream();
     }
 

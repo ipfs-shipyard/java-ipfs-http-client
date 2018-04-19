@@ -410,7 +410,6 @@ public class APITest {
     public void pubsub() throws Exception {
         String topic = "topic" + System.nanoTime();
         Stream<Map<String, Object>> sub = ipfs.pubsub.sub(topic);
-        Thread.sleep(100); // There's a race condition in ipfs
         String data = "Hello!";
         Object pub = ipfs.pubsub.pub(topic, data);
         Object pub2 = ipfs.pubsub.pub(topic, "G'day");
