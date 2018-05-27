@@ -93,12 +93,12 @@ public class IPFS {
     }
 
     public List<MerkleNode> ls(Multihash hash) throws IOException {
-        Map res = retrieveMap("ls/" + hash);
+        Map res = retrieveMap("ls?arg=" + hash);
         return ((List<Object>) res.get("Objects")).stream().map(x -> MerkleNode.fromJSON((Map) x)).collect(Collectors.toList());
     }
 
     public byte[] cat(Multihash hash) throws IOException {
-        return retrieve("cat/" + hash);
+        return retrieve("cat?arg=" + hash);
     }
 
     public byte[] cat(Multihash hash, String subPath) throws IOException {
@@ -106,11 +106,11 @@ public class IPFS {
     }
 
     public byte[] get(Multihash hash) throws IOException {
-        return retrieve("get/" + hash);
+        return retrieve("get?arg=" + hash);
     }
 
     public InputStream catStream(Multihash hash) throws IOException {
-        return retrieveStream("cat/" + hash);
+        return retrieveStream("cat?arg=" + hash);
     }
 
     public List<Multihash> refs(Multihash hash, boolean recursive) throws IOException {
