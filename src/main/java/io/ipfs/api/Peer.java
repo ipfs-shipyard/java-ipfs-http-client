@@ -30,4 +30,9 @@ public class Peer {
         long latency = val.apply("Latency").length() > 0 ? Long.parseLong(val.apply("Latency")) : -1;
         return new Peer(new MultiAddress(val.apply("Addr")), Cid.decode(val.apply("Peer")), latency, val.apply("Muxer"), val.apply("Streams"));
     }
+
+    @Override
+    public String toString() {
+        return id + "@" + address;
+    }
 }
