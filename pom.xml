@@ -59,7 +59,7 @@
 		<dependency>
 			<groupId>com.github.multiformats</groupId>
 			<artifactId>java-multiaddr</artifactId>
-			<version>v1.1.1</version>
+			<version>v1.3.0</version>
 			<scope>system</scope>
 			<systemPath>${project.basedir}/lib/multiaddr.jar</systemPath>
 		</dependency>
