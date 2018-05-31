@@ -52,6 +52,14 @@ for Maven, add the following sections to your pom.xml (replacing $LATEST_VERSION
 * Copy `dist/ipfs.jar` into your project. Appropriate versions of other [dependencies](#Dependencies) are also included in `dist/lib/`.
 * Run tests using `ant test`.
 
+### Running tests
+
+To run tests, IPFS daemon must be running on `127.0.0.1` interface. Here are some ways to make setting it up easier.
+
+#### Docker Compose
+
+Run `docker-compose up` from the project's root directory. Check [docker-compose.yml](docker-compose.yml) for more details.
+
 ## Usage
 
 Create an IPFS instance with:

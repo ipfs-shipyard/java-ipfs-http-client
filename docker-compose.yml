@@ -1,0 +1,9 @@
+version: '2'
+services:
+  ipfs-daemon:
+    image: 'ipfs/go-ipfs'
+    ports:
+      - "4001:4001"
+      - "5001:5001"
+    user: "ipfs"
+    command: [ "daemon", "--enable-pubsub-experiment" ]
