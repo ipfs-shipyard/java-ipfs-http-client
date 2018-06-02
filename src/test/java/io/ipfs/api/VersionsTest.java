@@ -5,7 +5,7 @@ import org.junit.*;
 import java.util.*;
 import java.util.stream.*;
 
-public class Versions {
+public class VersionsTest {
 
     @Test
     public void sorting(){
