@@ -9,6 +9,7 @@ import org.junit.*;
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.function.*;
 import java.util.stream.*;
 
@@ -381,12 +382,12 @@ public class APITest {
     }
 
     @Test
-    public void pubsubSynchronous() throws IOException {
+    public void pubsubSynchronous() throws Exception {
         String topic = "topic" + System.nanoTime();
         List<Map<String, Object>> res = Collections.synchronizedList(new ArrayList<>());
         new Thread(() -> {
             try {
-                ipfs.pubsub.sub(topic, res::add);
+                ipfs.pubsub.sub(topic, res::add, t -> t.printStackTrace());
             } catch (IOException e) {
                 throw new RuntimeException(e);}
         }).start();
@@ -406,17 +407,14 @@ public class APITest {
     }
 
     @Test
-    public void pubsub() throws IOException {
-        Object ls = ipfs.pubsub.ls();
-        Object peers = ipfs.pubsub.peers();
+    public void pubsub() throws Exception {
         String topic = "topic" + System.nanoTime();
-        Supplier<Map<String, Object>> sub = ipfs.pubsub.sub(topic);
-        Map<String, Object> first = sub.get();
-        Assert.assertTrue(first.equals(Collections.emptyMap()));
+        Stream<Map<String, Object>> sub = ipfs.pubsub.sub(topic);
         String data = "Hello!";
         Object pub = ipfs.pubsub.pub(topic, data);
-        Map second = sub.get();
-        Assert.assertTrue( ! second.equals(Collections.emptyMap()));
+        Object pub2 = ipfs.pubsub.pub(topic, "G'day");
+        List<Map> results = sub.limit(2).collect(Collectors.toList());
+        Assert.assertTrue( ! results.get(0).equals(Collections.emptyMap()));
     }
 
     private static String toEscapedHex(byte[] in) throws IOException {
@@ -613,7 +611,7 @@ public class APITest {
         Map put = ipfs.dht.put("somekey", "somevalue");
         Map findprovs = ipfs.dht.findprovs(pointer);
         List<Peer> peers = ipfs.swarm.peers();
-        Map query = ipfs.dht.query(peers.get(0).address);
+        Map query = ipfs.dht.query(peers.get(0).id);
         Map find = ipfs.dht.findpeer(peers.get(0).id);
     }
 

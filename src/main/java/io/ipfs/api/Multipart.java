@@ -82,7 +82,7 @@ public class Multipart {
     }
 
     public void addFilePart(String fieldName, Path parent, NamedStreamable uploadFile) {
-        Optional<String> fileName = uploadFile.getName().map(n -> encode(parent.resolve(n).toString()));
+        Optional<String> fileName = uploadFile.getName().map(n -> encode(parent.resolve(n).toString().replace('\\','/')));
         writer.append("--").append(boundary).append(LINE_FEED);
         if (!fileName.isPresent())
             writer.append("Content-Disposition: file; name=\"").append(fieldName).append("\";").append(LINE_FEED);

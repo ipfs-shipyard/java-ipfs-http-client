@@ -114,12 +114,12 @@ public class IPFS {
     }
 
     public List<MerkleNode> ls(Multihash hash) throws IOException {
-        Map res = retrieveMap("ls/" + hash);
+        Map res = retrieveMap("ls?arg=" + hash);
         return ((List<Object>) res.get("Objects")).stream().map(x -> MerkleNode.fromJSON((Map) x)).collect(Collectors.toList());
     }
 
     public byte[] cat(Multihash hash) throws IOException {
-        return retrieve("cat/" + hash);
+        return retrieve("cat?arg=" + hash);
     }
 
     public byte[] cat(Multihash hash, String subPath) throws IOException {
@@ -127,11 +127,11 @@ public class IPFS {
     }
 
     public byte[] get(Multihash hash) throws IOException {
-        return retrieve("get/" + hash);
+        return retrieve("get?arg=" + hash);
     }
 
     public InputStream catStream(Multihash hash) throws IOException {
-        return retrieveStream("cat/" + hash);
+        return retrieveStream("cat?arg=" + hash);
     }
 
     public List<Multihash> refs(Multihash hash, boolean recursive) throws IOException {
@@ -263,17 +263,16 @@ public class IPFS {
          * @return
          * @throws IOException
          */
-        public Object pub(String topic, String data) throws IOException {
+        public Object pub(String topic, String data) throws Exception {
             return retrieveAndParse("pubsub/pub?arg="+topic + "&arg=" + data);
         }
 
-        public Supplier<Map<String, Object>> sub(String topic) throws IOException {
+        public Stream<Map<String, Object>> sub(String topic) throws Exception {
             return sub(topic, ForkJoinPool.commonPool());
         }
 
-        public Supplier<Map<String, Object>> sub(String topic, ForkJoinPool threadSupplier) throws IOException {
-            Supplier<Object> sup = retrieveAndParseStream("pubsub/sub?arg=" + topic, threadSupplier);
-            return () -> (Map) sup.get();
+        public Stream<Map<String, Object>> sub(String topic, ForkJoinPool threadSupplier) throws Exception {
+            return retrieveAndParseStream("pubsub/sub?arg=" + topic, threadSupplier).map(obj -> (Map)obj);
         }
 
         /**
@@ -282,8 +281,8 @@ public class IPFS {
          * @param results
          * @throws IOException
          */
-        public void sub(String topic, Consumer<Map<String, Object>> results) throws IOException {
-            retrieveAndParseStream("pubsub/sub?arg="+topic, res -> results.accept((Map)res));
+        public void sub(String topic, Consumer<Map<String, Object>> results, Consumer<IOException> error) throws IOException {
+            retrieveAndParseStream("pubsub/sub?arg="+topic, res -> results.accept((Map)res), error);
         }
 
 
@@ -417,8 +416,8 @@ public class IPFS {
             return retrieveMap("dht/findprovs?arg=" + hash);
         }
 
-        public Map query(MultiAddress addr) throws IOException {
-            return retrieveMap("dht/query?arg=" + addr.toString());
+        public Map query(Multihash peerId) throws IOException {
+            return retrieveMap("dht/query?arg=" + peerId.toString());
         }
 
         public Map findpeer(Multihash id) throws IOException {
@@ -443,7 +442,15 @@ public class IPFS {
     // Network commands
 
     public List<MultiAddress> bootstrap() throws IOException {
-        return ((List<String>)retrieveMap("bootstrap/").get("Peers")).stream().map(x -> new MultiAddress(x)).collect(Collectors.toList());
+        return ((List<String>)retrieveMap("bootstrap/").get("Peers"))
+                .stream()
+                .flatMap(x -> {
+                    try {
+                        return Stream.of(new MultiAddress(x));
+                    } catch (Exception e) {
+                        return Stream.empty();
+                    }
+                }).collect(Collectors.toList());
     }
 
     public class Bootstrap {
@@ -471,7 +478,14 @@ public class IPFS {
     public class Swarm {
         public List<Peer> peers() throws IOException {
             Map m = retrieveMap("swarm/peers?stream-channels=true");
-            return ((List<Object>)m.get("Peers")).stream().map(Peer::fromJSON).collect(Collectors.toList());
+            return ((List<Object>)m.get("Peers")).stream()
+                    .flatMap(json -> {
+                        try {
+                            return Stream.of(Peer.fromJSON(json));
+                        } catch (Exception e) {
+                            return Stream.empty();
+                        }
+                    }).collect(Collectors.toList());
         }
 
         public Map addrs() throws IOException {
@@ -603,16 +617,26 @@ public class IPFS {
         return JSONParser.parse(new String(res));
     }
 
-    private Supplier<Object> retrieveAndParseStream(String path, ForkJoinPool executor) throws IOException {
-        BlockingQueue<byte[]> objects = new LinkedBlockingQueue<>();
-        executor.submit(() -> getObjectStream(path, objects::add));
-        return () -> {
+    private Stream<Object> retrieveAndParseStream(String path, ForkJoinPool executor) throws IOException {
+        BlockingQueue<CompletableFuture<byte[]>> results = new LinkedBlockingQueue<>();
+        InputStream in = retrieveStream(path);
+        executor.submit(() -> getObjectStream(in,
+                res -> {
+                    results.add(CompletableFuture.completedFuture(res));
+                },
+                err -> {
+                    CompletableFuture<byte[]> fut = new CompletableFuture<>();
+                    fut.completeExceptionally(err);
+                    results.add(fut);
+                })
+        );
+        return Stream.generate(() -> {
             try {
-                return JSONParser.parse(new String(objects.take()));
-            } catch (InterruptedException e) {
+                return JSONParser.parse(new String(results.take().get()));
+            } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-        };
+        });
     }
 
     /**
@@ -621,8 +645,8 @@ public class IPFS {
      * @param results
      * @throws IOException
      */
-    private void retrieveAndParseStream(String path, Consumer<Object> results) throws IOException {
-        getObjectStream(path, d -> results.accept(JSONParser.parse(new String(d))));
+    private void retrieveAndParseStream(String path, Consumer<Object> results, Consumer<IOException> err) throws IOException {
+        getObjectStream(retrieveStream(path), d -> results.accept(JSONParser.parse(new String(d))), err);
     }
 
     private byte[] retrieve(String path) throws IOException {
@@ -652,11 +676,10 @@ public class IPFS {
         }
     }
 
-    private void getObjectStream(String path, Consumer<byte[]> processor) {
+    private void getObjectStream(InputStream in, Consumer<byte[]> processor, Consumer<IOException> error) {
         byte LINE_FEED = (byte)10;
 
         try {
-            InputStream in = retrieveStream(path);
             ByteArrayOutputStream resp = new ByteArrayOutputStream();
 
             byte[] buf = new byte[4096];
@@ -669,7 +692,7 @@ public class IPFS {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            error.accept(e);
         }
     }
 
@@ -682,7 +705,6 @@ public class IPFS {
         HttpURLConnection conn = (HttpURLConnection) target.openConnection();
         conn.setRequestMethod("GET");
         conn.setRequestProperty("Content-Type", "application/json");
-
         return conn.getInputStream();
     }
 
