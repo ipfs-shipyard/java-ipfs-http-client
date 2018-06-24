@@ -41,30 +41,17 @@ public class IPFS {
     public final Name name = new Name();
     public final Pubsub pubsub = new Pubsub();
     
-    
     public IPFS(String host, int port) {
-        this(host, port, "/api/v0/");
+        this(host, port, "/api/v0/", false);
     }
 
-    public IPFS(String host, int port, boolean ssl) {
-        this(host, port, "/api/v0/", ssl);
-    }
-    
     public IPFS(String multiaddr) {
         this(new MultiAddress(multiaddr));
     }
 
     public IPFS(MultiAddress addr) {
-        this(addr.getHost(), addr.getTCPPort(), "/api/v0/");
-    }
-    
-    public IPFS(MultiAddress addr, boolean ssl) {
-        this(addr.getHost(), addr.getTCPPort(), "/api/v0/", ssl);
-    }
-
-    public IPFS(String host, int port, String version) {
-        this(host, port, version, false);
-    }
+        this(addr.getHost(), addr.getTCPPort(), "/api/v0/", detectSSL(addr));
+}
 
     public IPFS(String host, int port, String version, boolean ssl) {
         this.host = host;
@@ -736,5 +723,9 @@ public class IPFS {
         while ((r=in.read(buf)) >= 0)
             resp.write(buf, 0, r);
         return resp.toByteArray();
+    }
+    
+    private static boolean detectSSL(MultiAddress multiaddress) {
+        return multiaddress.toString().contains("https");
     }
 }
