@@ -50,8 +50,8 @@ public class IPFS {
     }
 
     public IPFS(MultiAddress addr) {
-        this(addr.getHost(), addr.getTCPPort(), "/api/v0/", detectSSL(addr));
-}
+        this(addr.getHost(), addr.getTCPPort(), "/api/v0/", addr.isHTTPOverSSL());
+    }
 
     public IPFS(String host, int port, String version, boolean ssl) {
         this.host = host;
@@ -723,9 +723,5 @@ public class IPFS {
         while ((r=in.read(buf)) >= 0)
             resp.write(buf, 0, r);
         return resp.toByteArray();
-    }
-    
-    private static boolean detectSSL(MultiAddress multiaddress) {
-        return multiaddress.toString().contains("https");
     }
 }
