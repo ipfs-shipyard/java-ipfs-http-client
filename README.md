@@ -54,7 +54,13 @@ for Maven, add the following sections to your pom.xml (replacing $LATEST_VERSION
 
 ### Running tests
 
-To run tests, IPFS daemon must be running on `127.0.0.1` interface. Here are some ways to make setting it up easier.
+To run tests, IPFS daemon must be running on `127.0.0.1` interface. 
+
+### IPFS installation
+
+#### Command line
+
+Download ipfs from https://dist.ipfs.io/#go-ipfs and run with `ipfs daemon --enable-pubsub-experiment`
 
 #### Docker Compose
 
