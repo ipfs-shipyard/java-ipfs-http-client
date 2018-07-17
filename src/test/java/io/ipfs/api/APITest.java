@@ -585,6 +585,7 @@ public class APITest {
     }
 
     @Test
+    @Ignore("name test may hang forever")
     public void nameTest() throws IOException {
         MerkleNode pointer = new MerkleNode("QmPZ9gcCEpqKTo6aq61g2nXGUhM4iCL3ewB6LDXZCtioEB");
         Map pub = ipfs.name.publish(pointer.hash);
@@ -605,6 +606,7 @@ public class APITest {
     }
 
     @Test
+    @Ignore("dht test may hang forever")
     public void dhtTest() throws IOException {
         Multihash pointer = Multihash.fromBase58("QmPZ9gcCEpqKTo6aq61g2nXGUhM4iCL3ewB6LDXZCtioEB");
         Map get = ipfs.dht.get(pointer);
