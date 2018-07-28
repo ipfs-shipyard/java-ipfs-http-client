@@ -38,7 +38,7 @@ for Maven, add the following sections to your pom.xml (replacing $LATEST_VERSION
 
   <dependencies>
     <dependency>
-      <groupId>com.github.ipfs</groupId>
+      <groupId>io.ipfs</groupId>
       <artifactId>java-ipfs-api</artifactId>
       <version>$LATEST_VERSION</version>
     </dependency>
@@ -49,7 +49,7 @@ for Maven, add the following sections to your pom.xml (replacing $LATEST_VERSION
 
 * Clone this repository
 * Run `ant dist`
-* Copy `dist/ipfs.jar` into your project. Appropriate versions of other [dependencies](#Dependencies) are also included in `dist/lib/`.
+* Copy `dist/ipfs.jar` into your project. Appropriate versions of other [dependencies](#dependencies) are also included in `dist/lib/`.
 * Run tests using `ant test`.
 
 ### Running tests
