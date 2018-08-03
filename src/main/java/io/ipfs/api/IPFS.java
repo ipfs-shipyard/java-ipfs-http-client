@@ -1,16 +1,31 @@
 package io.ipfs.api;
 
-import io.ipfs.cid.*;
-import io.ipfs.multihash.Multihash;
-import io.ipfs.multiaddr.MultiAddress;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.ConnectException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import java.io.*;
-import java.net.*;
-import java.nio.file.*;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.function.*;
-import java.util.stream.*;
+import io.ipfs.api.NamedStreamable.ByteArrayWrapper;
+import io.ipfs.cid.Cid;
+import io.ipfs.multiaddr.MultiAddress;
+import io.ipfs.multihash.Multihash;
 
 public class IPFS {
 
@@ -87,17 +102,11 @@ public class IPFS {
     }
 
     public List<MerkleNode> add(List<NamedStreamable> files, boolean wrap, boolean hashOnly) throws IOException {
-        Multipart m = new Multipart(protocol + "://" + host + ":" + port + version + "add?w="+wrap + "&n="+hashOnly, "UTF-8");
-        for (NamedStreamable file: files) {
-            if (file.isDirectory()) {
-                m.addSubtree(Paths.get(""), file);
-            } else
-                m.addFilePart("file", Paths.get(""), file);
-        };
-        String res = m.finish();
-        return JSONParser.parseStream(res).stream()
-                .map(x -> MerkleNode.fromJSON((Map<String, Object>) x))
-                .collect(Collectors.toList());
+        URL url = new URL(protocol + "://" + host + ":" + port + version + "add?w=" + wrap + "&n=" + hashOnly);
+        List<MerkleNode> tree = new HttpMultipartClient(url)
+                .addBodyParts(files)
+                .execute();
+        return tree;
     }
 
     public List<MerkleNode> ls(Multihash hash) throws IOException {
@@ -288,15 +297,22 @@ public class IPFS {
 
         public List<MerkleNode> put(List<byte[]> data, Optional<String> format) throws IOException {
             // N.B. Once IPFS implements a bulk put this can become a single multipart call with multiple 'files'
-            return data.stream().map(array -> put(array, format)).collect(Collectors.toList());
+            return data.stream().map(array -> {
+                try {
+                    return put(array, format);
+                } catch (IOException e) {
+                    throw new IllegalStateException(e);
+                }
+            }).collect(Collectors.toList());
         }
 
-        public MerkleNode put(byte[] data, Optional<String> format) {
-            String fmt = format.map(f -> "&format=" + f).orElse("");
-            Multipart m = new Multipart(protocol +"://" + host + ":" + port + version+"block/put?stream-channels=true" + fmt, "UTF-8");
-            m.addFilePart("file", Paths.get(""), new NamedStreamable.ByteArrayWrapper(data));
-            String res = m.finish();
-            return JSONParser.parseStream(res).stream().map(x -> MerkleNode.fromJSON((Map<String, Object>) x)).findFirst().get();
+        public MerkleNode put(byte[] data, Optional<String> format) throws IOException {
+            String fmt = format.map(f -> "?format=" + f).orElse("");
+            URL url = new URL(protocol + "://" + host + ":" + port + version + "block/put" + fmt);
+            List<MerkleNode> tree = new HttpMultipartClient(url)
+                    .addBodyPart(new ByteArrayWrapper(data))
+                    .execute();
+            return tree.get(0);
         }
 
         public Map stat(Multihash hash) throws IOException {
@@ -307,22 +323,25 @@ public class IPFS {
     /* 'ipfs object' is a plumbing command used to manipulate DAG objects directly. {Object} is a subset of {Block}
      */
     public class IPFSObject {
+        
         public List<MerkleNode> put(List<byte[]> data) throws IOException {
-            Multipart m = new Multipart(protocol +"://" + host + ":" + port + version+"object/put?stream-channels=true", "UTF-8");
-            for (byte[] f : data)
-                m.addFilePart("file", Paths.get(""), new NamedStreamable.ByteArrayWrapper(f));
-            String res = m.finish();
-            return JSONParser.parseStream(res).stream().map(x -> MerkleNode.fromJSON((Map<String, Object>) x)).collect(Collectors.toList());
+            URL url = new URL(protocol + "://" + host + ":" + port + version + "object/put");
+            HttpMultipartClient client = new HttpMultipartClient(url);
+            for (byte[] f : data) {
+                client.addBodyPart(new ByteArrayWrapper(f));
+            }
+            return client.execute();
         }
 
         public List<MerkleNode> put(String encoding, List<byte[]> data) throws IOException {
             if (!"json".equals(encoding) && !"protobuf".equals(encoding))
                 throw new IllegalArgumentException("Encoding must be json or protobuf");
-            Multipart m = new Multipart(protocol +"://" + host + ":" + port + version+"object/put?stream-channels=true&encoding="+encoding, "UTF-8");
-            for (byte[] f : data)
-                m.addFilePart("file", Paths.get(""), new NamedStreamable.ByteArrayWrapper(f));
-            String res = m.finish();
-            return JSONParser.parseStream(res).stream().map(x -> MerkleNode.fromJSON((Map<String, Object>) x)).collect(Collectors.toList());
+            URL url = new URL(protocol + "://" + host + ":" + port + version + "object/put?encoding=" + encoding);
+            HttpMultipartClient client = new HttpMultipartClient(url);
+            for (byte[] f : data) {
+                client.addBodyPart(new ByteArrayWrapper(f));
+            }
+            return client.execute();
         }
 
         public MerkleNode get(Multihash hash) throws IOException {
@@ -372,10 +391,11 @@ public class IPFS {
                 case "append-data":
                     if (!data.isPresent())
                         throw new IllegalStateException("set-data requires data!");
-                    Multipart m = new Multipart(protocol +"://" + host + ":" + port + version+"object/patch/"+command+"?arg="+base.toBase58()+"&stream-channels=true", "UTF-8");
-                    m.addFilePart("file", Paths.get(""), new NamedStreamable.ByteArrayWrapper(data.get()));
-                    String res = m.finish();
-                    return MerkleNode.fromJSON(JSONParser.parse(res));
+                    URL url = new URL(protocol + "://" + host + ":" + port + version + "object/patch/" + command + "?arg=" + base.toBase58());
+                    List<MerkleNode> tree = new HttpMultipartClient(url)
+                            .addBodyPart(new ByteArrayWrapper(data.get()))
+                            .execute();
+                    return tree.get(0);
 
                 default:
                     throw new IllegalStateException("Unimplemented");
@@ -509,11 +529,11 @@ public class IPFS {
         }
 
         public MerkleNode put(String inputFormat, byte[] object, String outputFormat) throws IOException {
-            String prefix = protocol + "://" + host + ":" + port + version;
-            Multipart m = new Multipart(prefix + "dag/put/?stream-channels=true&input-enc=" + inputFormat + "&f=" + outputFormat, "UTF-8");
-            m.addFilePart("file", Paths.get(""), new NamedStreamable.ByteArrayWrapper(object));
-            String res = m.finish();
-            return MerkleNode.fromJSON(JSONParser.parse(res));
+            URL url = new URL(protocol + "://" + host + ":" + port + version + "dag/put?input-enc=" + inputFormat + "&f=" + outputFormat);
+            List<MerkleNode> tree = new HttpMultipartClient(url)
+                    .addBodyPart(new ByteArrayWrapper(object))
+                    .execute();
+            return tree.get(0);
         }
     }
 
@@ -565,9 +585,10 @@ public class IPFS {
         }
 
         public void replace(NamedStreamable file) throws IOException {
-            Multipart m = new Multipart(protocol +"://" + host + ":" + port + version+"config/replace?stream-channels=true", "UTF-8");
-            m.addFilePart("file", Paths.get(""), file);
-            String res = m.finish();
+            URL url = new URL(protocol + "://" + host + ":" + port + version + "config/replace");
+            new HttpMultipartClient(url)
+                    .addBodyPart(file)
+                    .execute();
         }
 
         public String get(String key) throws IOException {
