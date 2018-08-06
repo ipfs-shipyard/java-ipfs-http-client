@@ -36,8 +36,9 @@ public class APITest {
 
     @Test
     public void dagCbor() throws IOException {
-        Map<String, CborObject> tmp = new TreeMap<>();
-        tmp.put("data", new CborObject.CborByteArray("G'day mate!".getBytes()));
+        Map<String, CborObject> tmp = new LinkedHashMap<>();
+        String value = "G'day mate!";
+        tmp.put("data", new CborObject.CborString(value));
         CborObject original = CborObject.CborMap.build(tmp);
         byte[] object = original.toByteArray();
         MerkleNode put = ipfs.dag.put("cbor", object);
@@ -45,10 +46,9 @@ public class APITest {
         Cid cid = (Cid) put.hash;
 
         byte[] get = ipfs.dag.get(cid);
-        CborObject cborObject = CborObject.fromByteArray(get);
-        Assert.assertTrue("Raw data equal", Arrays.equals(object, get));
+        Assert.assertTrue("Raw data equal", ((Map)JSONParser.parse(new String(get))).get("data").equals(value));
 
-        Cid expected = Cid.decode("zdpuB2RwxeC5eC7oxiyzzhuZwAPd26YNRxXHvcTvgm4MbXwsC");
+        Cid expected = Cid.decode("zdpuApemz4XMURSCkBr9W5y974MXkSbeDfLeZmiQTPpvkatFF");
         Assert.assertTrue("Correct cid returned", cid.equals(expected));
     }
 
