@@ -60,6 +60,8 @@ public class MerkleNode {
         String hash = (String)json.get("Hash");
         if (hash == null)
             hash = (String)json.get("Key");
+        if (hash == null)
+            hash = (String)(((Map)json.get("Cid")).get("/"));
         Optional<String> name = json.containsKey("Name") ?
                 Optional.of((String) json.get("Name")) :
                 Optional.empty();

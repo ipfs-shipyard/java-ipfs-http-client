@@ -40,7 +40,7 @@ public class IPFS {
     public final Stats stats = new Stats();
     public final Name name = new Name();
     public final Pubsub pubsub = new Pubsub();
-    
+
     public IPFS(String host, int port) {
         this(host, port, "/api/v0/", false);
     }
@@ -56,13 +56,13 @@ public class IPFS {
     public IPFS(String host, int port, String version, boolean ssl) {
         this.host = host;
         this.port = port;
-        
+
         if(ssl) {
             this.protocol = "https";
         } else {
             this.protocol = "http";
         }
-        
+
         this.version = version;
         // Check IPFS is sufficiently recent
         try {
@@ -73,7 +73,7 @@ public class IPFS {
             throw new RuntimeException(e);
         }
     }
-    
+
     public List<MerkleNode> add(NamedStreamable file) throws IOException {
         return add(file, false);
     }
@@ -493,7 +493,7 @@ public class IPFS {
 
     public class Dag {
         public byte[] get(Cid cid) throws IOException {
-            return retrieve("block/get?stream-channels=true&arg=" + cid);
+            return retrieve("dag/get?stream-channels=true&arg=" + cid);
         }
 
         public MerkleNode put(byte[] object) throws IOException {
@@ -509,9 +509,8 @@ public class IPFS {
         }
 
         public MerkleNode put(String inputFormat, byte[] object, String outputFormat) throws IOException {
-            block.put(Arrays.asList(object));
-            String prefix = protocol +"://" + host + ":" + port + version;
-            Multipart m = new Multipart(prefix + "block/put/?stream-channels=true&input-enc=" + inputFormat + "&f=" + outputFormat, "UTF-8");
+            String prefix = protocol + "://" + host + ":" + port + version;
+            Multipart m = new Multipart(prefix + "dag/put/?stream-channels=true&input-enc=" + inputFormat + "&f=" + outputFormat, "UTF-8");
             m.addFilePart("file", Paths.get(""), new NamedStreamable.ByteArrayWrapper(object));
             String res = m.finish();
             return MerkleNode.fromJSON(JSONParser.parse(res));
@@ -724,7 +723,7 @@ public class IPFS {
             resp.write(buf, 0, r);
         return resp.toByteArray();
     }
-    
+
     private static boolean detectSSL(MultiAddress multiaddress) {
         return multiaddress.toString().contains("/https");
     }

@@ -382,6 +382,27 @@ public class APITest {
     }
 
     @Test
+    public void publish() throws Exception {
+        // JSON document
+        String json = "{\"name\":\"blogpost\",\"documents\":[]}";
+
+        // Add a DAG node to IPFS
+        MerkleNode merkleNode = ipfs.dag.put("json", json.getBytes());
+        Assert.assertEquals("expected to be zdpuAknRh1Kro2r2xBDKiXyTiwA3Nu5XcmvjRPA1VNjH41NF7" , "zdpuAknRh1Kro2r2xBDKiXyTiwA3Nu5XcmvjRPA1VNjH41NF7", merkleNode.hash.toString());
+
+        // Get a DAG node
+        byte[] res = ipfs.dag.get((Cid) merkleNode.hash);
+        Assert.assertEquals("Should be equals", JSONParser.parse(json), JSONParser.parse(new String(res)));
+
+        // Publish to IPNS
+        Map result = ipfs.name.publish(merkleNode.hash);
+
+        // Resolve from IPNS
+        String resolved = ipfs.name.resolve(Multihash.fromBase58((String) result.get("Name")));
+        Assert.assertEquals("Should be equals", resolved, "/ipfs/" + merkleNode.hash.toString());
+    }
+
+    @Test
     public void pubsubSynchronous() throws Exception {
         String topic = "topic" + System.nanoTime();
         List<Map<String, Object>> res = Collections.synchronizedList(new ArrayList<>());
