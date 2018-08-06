@@ -29,6 +29,8 @@ public interface NamedStreamable
         private final File source;
 
         public FileWrapper(File source) {
+            if (! source.exists())
+                throw new IllegalStateException("File does not exist: " + source);
             this.source = source;
         }
 

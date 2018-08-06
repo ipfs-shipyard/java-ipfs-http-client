@@ -22,16 +22,17 @@ public class APITest {
 
     @Test
     public void dag() throws IOException {
-        byte[] object = "{\"data\":1234}".getBytes();
+        String original = "{\"data\":1234}";
+        byte[] object = original.getBytes();
         MerkleNode put = ipfs.dag.put("json", object);
 
-        Cid expected = Cid.decode("zdpuB2CbdLrUK5AgZusm4hraisDDDC135ugdmZWvMHhhsSYTb");
+        Cid expected = Cid.decode("zdpuAs3whHmb9T1NkHSLGF45ykcKrEBxSLiEx6YpLzmKbQLEB");
 
         Multihash result = put.hash;
         Assert.assertTrue("Correct cid returned", result.equals(expected));
 
         byte[] get = ipfs.dag.get(expected);
-        Assert.assertTrue("Raw data equal", Arrays.equals(object, get));
+        Assert.assertTrue("Raw data equal", original.equals(new String(get).trim()));
     }
 
     @Test
