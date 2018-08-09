@@ -657,18 +657,28 @@ public class APITest {
 
     @Test
     public void swarmTest() throws IOException {
-        String multiaddr = "/ip4/127.0.0.1/tcp/4001/ipfs/QmaCpDMGvV2BGHeYERUEnRQAwe3N8SzbUtfsmvsqQLuvuJ";
-        Map connect = ipfs.swarm.connect(multiaddr);
-        Map disconnect = ipfs.swarm.disconnect(multiaddr);
-        Map<String, Object> addrs = ipfs.swarm.addrs();
+        Map<Multihash, List<MultiAddress>> addrs = ipfs.swarm.addrs();
         if (addrs.size() > 0) {
-            boolean contacted = addrs.keySet().stream()
-                    .anyMatch(target -> {
+            boolean contacted = addrs.entrySet().stream()
+                    .anyMatch(e -> {
+                        Multihash target = e.getKey();
+                        List<MultiAddress> nodeAddrs = e.getValue();
+                        boolean contactable = nodeAddrs.stream()
+                                .anyMatch(addr -> {
+                                    try {
+                                        MultiAddress peer = new MultiAddress(addr.toString() + "/ipfs/" + target.toBase58());
+                                        Map connect = ipfs.swarm.connect(peer);
+                                        Map disconnect = ipfs.swarm.disconnect(peer);
+                                        return true;
+                                    } catch (Exception ex) {
+                                        return false;
+                                    }
+                                });
                         try {
                             Map id = ipfs.id(target);
                             Map ping = ipfs.ping(target);
-                            return true;
-                        } catch (Exception e) {
+                            return contactable;
+                        } catch (Exception ex) {
                             // not all nodes have to be contactable
                             return false;
                         }

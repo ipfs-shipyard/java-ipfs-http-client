@@ -475,17 +475,24 @@ public class IPFS {
                     }).collect(Collectors.toList());
         }
 
-        public Map addrs() throws IOException {
+        public Map<Multihash, List<MultiAddress>> addrs() throws IOException {
             Map m = retrieveMap("swarm/addrs?stream-channels=true");
-            return (Map<String, Object>)m.get("Addrs");
+            return ((Map<String, Object>)m.get("Addrs")).entrySet()
+                    .stream()
+                    .collect(Collectors.toMap(
+                            e -> Multihash.fromBase58(e.getKey()),
+                            e -> ((List<String>)e.getValue())
+                                    .stream()
+                                    .map(MultiAddress::new)
+                                    .collect(Collectors.toList())));
         }
 
-        public Map connect(String multiAddr) throws IOException {
+        public Map connect(MultiAddress multiAddr) throws IOException {
             Map m = retrieveMap("swarm/connect?arg="+multiAddr);
             return m;
         }
 
-        public Map disconnect(String multiAddr) throws IOException {
+        public Map disconnect(MultiAddress multiAddr) throws IOException {
             Map m = retrieveMap("swarm/disconnect?arg="+multiAddr);
             return m;
         }
@@ -527,12 +534,12 @@ public class IPFS {
         }
     }
 
-    public Map ping(String target) throws IOException {
-        return retrieveMap("ping/" + target);
+    public Map ping(Multihash target) throws IOException {
+        return retrieveMap("ping/" + target.toBase58());
     }
 
-    public Map id(String target) throws IOException {
-        return retrieveMap("id/" + target);
+    public Map id(Multihash target) throws IOException {
+        return retrieveMap("id/" + target.toBase58());
     }
 
     public Map id() throws IOException {
