@@ -1,7 +1,7 @@
 package io.ipfs.api;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.*;
+import java.nio.file.*;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -18,6 +18,7 @@ public class RecursiveAddTest {
         String TEST_HASH = "QmWVMRbFTrA6pMhsfXzsyoWqmrhy5FPd4VitfX79R5bguw";
         
         System.out.println("ipfs version: " + ipfs.version());
+        System.out.println("pwd: " + new File("").getPath());
         
         Path path = Paths.get("src/test/resources/html");
         MerkleNode node = ipfs.add(new NamedStreamable.FileWrapper(path.toFile())).get(0);
