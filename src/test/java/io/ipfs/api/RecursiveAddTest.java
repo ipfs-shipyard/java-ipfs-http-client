@@ -68,4 +68,27 @@ public class RecursiveAddTest {
         MerkleNode node = add.get(add.size() - 1);
         Assert.assertEquals(EXPECTED, node.hash.toBase58());
     }
+
+    @Test
+    public void largeBinaryInSubdirRecursiveAdd() throws Exception {
+        String EXPECTED = "QmUYuMwCpgaxJhNxRA5Pmje8EfpEgU3eQSB9t3VngbxYJk";
+
+        Path base = Paths.get("tmplargebininsubdirdata");
+        base.toFile().mkdirs();
+        Path bindir = base.resolve("moredata");
+        bindir.toFile().mkdirs();
+        byte[] bindata = new byte[100 * 1024*1024];
+        new Random(28).nextBytes(bindata);
+        Files.write(bindir.resolve("data.bin"), bindata);
+        new Random(496).nextBytes(bindata);
+        Files.write(bindir.resolve("data2.bin"), bindata);
+
+        Path js = base.resolve("js");
+        js.toFile().mkdirs();
+        Files.write(js.resolve("func.js"), "function() {console.log('Hey');}".getBytes());
+
+        List<MerkleNode> add = ipfs.add(new NamedStreamable.FileWrapper(base.toFile()));
+        MerkleNode node = add.get(add.size() - 1);
+        Assert.assertEquals(EXPECTED, node.hash.toBase58());
+    }
 }
