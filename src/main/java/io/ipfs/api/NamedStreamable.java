@@ -58,6 +58,10 @@ public interface NamedStreamable
                 throw new RuntimeException(e);
             }
         }
+        
+        public String toString() {
+            return String.format("[src=%s]", source);
+        }
     }
 
     class ByteArrayWrapper implements NamedStreamable {
