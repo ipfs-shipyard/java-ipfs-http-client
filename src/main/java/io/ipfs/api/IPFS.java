@@ -288,15 +288,23 @@ public class IPFS {
 
         public List<MerkleNode> put(List<byte[]> data, Optional<String> format) throws IOException {
             // N.B. Once IPFS implements a bulk put this can become a single multipart call with multiple 'files'
-            return data.stream().map(array -> put(array, format)).collect(Collectors.toList());
+            List<MerkleNode> res = new ArrayList<>();
+            for (byte[] value : data) {
+                res.add(put(value, format));
+            }
+            return res;
         }
 
-        public MerkleNode put(byte[] data, Optional<String> format) {
+        public MerkleNode put(byte[] data, Optional<String> format) throws IOException {
             String fmt = format.map(f -> "&format=" + f).orElse("");
             Multipart m = new Multipart(protocol +"://" + host + ":" + port + version+"block/put?stream-channels=true" + fmt, "UTF-8");
-            m.addFilePart("file", Paths.get(""), new NamedStreamable.ByteArrayWrapper(data));
-            String res = m.finish();
-            return JSONParser.parseStream(res).stream().map(x -> MerkleNode.fromJSON((Map<String, Object>) x)).findFirst().get();
+            try {
+                m.addFilePart("file", Paths.get(""), new NamedStreamable.ByteArrayWrapper(data));
+                String res = m.finish();
+                return JSONParser.parseStream(res).stream().map(x -> MerkleNode.fromJSON((Map<String, Object>) x)).findFirst().get();
+            } catch (IOException e) {
+                throw new RuntimeException(e.getMessage(), e);
+            }
         }
 
         public Map stat(Multihash hash) throws IOException {
