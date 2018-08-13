@@ -57,11 +57,13 @@ public class MerkleNode {
         if (rawjson instanceof String)
             return new MerkleNode((String)rawjson);
         Map json = (Map)rawjson;
+        if ("error".equals(json.get("Type")))
+            throw new IllegalStateException("Remote IPFS error: " + json.get("Message"));
         String hash = (String)json.get("Hash");
         if (hash == null)
             hash = (String)json.get("Key");
-        if (hash == null)
-            hash = (String)(((Map)json.get("Cid")).get("/"));
+        if (hash == null && json.containsKey("Cid"))
+            hash = (String) (((Map) json.get("Cid")).get("/"));
         Optional<String> name = json.containsKey("Name") ?
                 Optional.of((String) json.get("Name")) :
                 Optional.empty();
@@ -72,8 +74,6 @@ public class MerkleNode {
         Optional<String> largeSize = rawSize instanceof String ?
                 Optional.of((String) json.get("Size")) :
                 Optional.empty();
-        if ("error".equals(json.get("Type")))
-            throw new IllegalStateException("Remote IPFS error: " + json.get("Message"));
         Optional<Integer> type = json.containsKey("Type") ?
                 Optional.of((Integer) json.get("Type")) :
                 Optional.empty();
