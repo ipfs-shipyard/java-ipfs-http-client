@@ -265,7 +265,7 @@ public class APITest {
     public void rawLeafNodePinUpdate() throws IOException {
         MerkleNode child1 = ipfs.block.put("some data".getBytes(), Optional.of("raw"));
         Multihash hashChild1 = child1.hash;
-        System.out.println("child1: " + hashChild1.type);
+        System.out.println("child1: " + hashChild1);
 
         CborObject.CborMerkleLink root1 = new CborObject.CborMerkleLink(hashChild1);
         MerkleNode root1Res = ipfs.block.put(Collections.singletonList(root1.toByteArray()), Optional.of("cbor")).get(0);
