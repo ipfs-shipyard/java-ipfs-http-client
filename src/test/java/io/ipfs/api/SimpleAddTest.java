@@ -68,7 +68,6 @@ public class SimpleAddTest {
     }
 
     @Test
-    @Ignore("[#95] NPE in simple recursive ipfs add scenario")
     public void testRecursive() throws Exception {
 
         Path path = Paths.get("src/test/resources/html");
@@ -81,7 +80,6 @@ public class SimpleAddTest {
     }
 
     @Test
-    @Ignore("[#95] NPE in simple recursive ipfs add scenario")
     public void testRecursiveOnlyHash() throws Exception {
 
         Path path = Paths.get("src/test/resources/html");
