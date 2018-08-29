@@ -87,7 +87,7 @@ public class IPFS {
     }
 
     public List<MerkleNode> add(List<NamedStreamable> files, boolean wrap, boolean hashOnly) throws IOException {
-        Multipart m = new Multipart(protocol + "://" + host + ":" + port + version + "add?w="+wrap + "&n="+hashOnly, "UTF-8");
+        Multipart m = new Multipart(protocol + "://" + host + ":" + port + version + "add?stream-channels=true&w="+wrap + "&n="+hashOnly, "UTF-8");
         for (NamedStreamable file: files) {
             if (file.isDirectory()) {
                 m.addSubtree(Paths.get(""), file);
