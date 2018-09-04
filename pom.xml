@@ -32,8 +32,9 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<junit.version>4.12</junit.version>
-		<hamcrest.version>1.3</hamcrest.version>
+        <version.junit>4.12</version.junit>
+        <version.hamcrest>1.3</version.hamcrest>
+        <version.multiaddr>v1.3.0</version.multiaddr>
 	</properties>
 
 	<repositories>
@@ -44,46 +45,23 @@
 	</repositories>
 
 	<dependencies>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>${junit.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.hamcrest</groupId>
-			<artifactId>hamcrest-core</artifactId>
-			<version>${hamcrest.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.github.multiformats</groupId>
-			<artifactId>java-multiaddr</artifactId>
-			<version>v1.3.1</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/lib/multiaddr.jar</systemPath>
-		</dependency>
-		<dependency>
-			<groupId>com.github.multiformats</groupId>
-			<artifactId>java-multihash</artifactId>
-			<version>v1.2.1</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/lib/multihash.jar</systemPath>
-		</dependency>
-		<dependency>
-			<groupId>com.github.multiformats</groupId>
-			<artifactId>java-multibase</artifactId>
-			<version>v1.0.1</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/lib/multibase.jar</systemPath>
-		</dependency>
-		<dependency>
-			<groupId>com.github.ipld</groupId>
-			<artifactId>java-cid</artifactId>
-			<version>v1.1.1</version>
-			<scope>system</scope>
-			<systemPath>${project.basedir}/lib/cid.jar</systemPath>
-		</dependency>
+        <dependency>
+            <groupId>com.github.multiformats</groupId>
+            <artifactId>java-multiaddr</artifactId>
+            <version>${version.multiaddr}</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${version.junit}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest-core</artifactId>
+            <version>${version.hamcrest}</version>
+            <scope>test</scope>
+        </dependency>
 	</dependencies>
 
 	<build>
