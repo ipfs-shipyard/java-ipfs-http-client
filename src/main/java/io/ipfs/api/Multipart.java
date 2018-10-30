@@ -69,7 +69,7 @@ public class Multipart {
 
     public void addDirectoryPart(Path path) throws IOException {
         append("--").append(boundary).append(LINE_FEED);
-        append("Content-Disposition: file; filename=\"").append(encode(path.toString())).append("\"").append(LINE_FEED);
+        append("Content-Disposition: file; filename=\"").append(path.toString().replace("/","%2F")).append("\"").append(LINE_FEED);
         append("Content-Type: application/x-directory").append(LINE_FEED);
         append("Content-Transfer-Encoding: binary").append(LINE_FEED);
         append(LINE_FEED);
@@ -86,7 +86,7 @@ public class Multipart {
     }
 
     public void addFilePart(String fieldName, Path parent, NamedStreamable uploadFile) throws IOException {
-        Optional<String> fileName = uploadFile.getName().map(n -> encode(parent.resolve(n).toString().replace('\\','/')));
+        Optional<String> fileName = uploadFile.getName().map(n -> parent.resolve(n).toString().replace('\\','/').replace("/","%2F"));
         append("--").append(boundary).append(LINE_FEED);
         if (!fileName.isPresent())
             append("Content-Disposition: file; name=\"").append(fieldName).append("\";").append(LINE_FEED);
