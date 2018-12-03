@@ -3,28 +3,28 @@
 	<modelVersion>4.0.0</modelVersion>
 
     <groupId>com.github.ipfs</groupId>
-    <artifactId>java-ipfs-api</artifactId>
+    <artifactId>java-ipfs-http-client</artifactId>
 	<version>v1.2.2</version>
 	<packaging>jar</packaging>
 
-	<name>java-ipfs-api</name>
-	<url>https://github.com/ipfs/java-ipfs-api</url>
+	<name>java-ipfs-http-client</name>
+	<url>https://github.com/ipfs/java-ipfs-http-client</url>
 
 	<issueManagement>
- 		<url>https://github.com/ipfs/java-ipfs-api/issues</url>
+ 		<url>https://github.com/ipfs/java-ipfs-http-client/issues</url>
  		<system>GitHub Issues</system>
  	</issueManagement>
 
  	<scm>
- 		<url>https://github.com/ipfs/java-ipfs-api</url>
- 		<connection>scm:git:git://github.com/ipfs/java-ipfs-api.git</connection>
- 		<developerConnection>scm:git:git@github.com:ipfs/java-ipfs-api.git</developerConnection>
+ 		<url>https://github.com/ipfs/java-ipfs-http-client</url>
+ 		<connection>scm:git:git://github.com/ipfs/java-ipfs-http-client.git</connection>
+ 		<developerConnection>scm:git:git@github.com:ipfs/java-ipfs-http-client.git</developerConnection>
  	</scm>
 
  	<licenses>
  		<license>
  			<name>MIT License</name>
- 			<url>https://github.com/ipfs/java-ipfs-api/blob/master/LICENSE</url>
+ 			<url>https://github.com/ipfs/java-ipfs-http-client/blob/master/LICENSE</url>
  			<distribution>repo</distribution>
  		</license>
  	</licenses>
