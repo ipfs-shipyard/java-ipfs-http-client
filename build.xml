@@ -1,4 +1,4 @@
-<project name="java-ipfs-api" default="dist" basedir=".">
+<project name="java-ipfs-http-client" default="dist" basedir=".">
   <description>
     Java IPFS api
   </description>
