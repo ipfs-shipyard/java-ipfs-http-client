@@ -585,12 +585,12 @@ public class IPFS {
             String res = m.finish();
         }
 
-        public String get(String key) throws IOException {
+        public Object get(String key) throws IOException {
             Map m = (Map)retrieveAndParse("config?arg="+key);
-            return (String)m.get("Value");
+            return m.get("Value");
         }
 
-        public Map set(String key, String value) throws IOException {
+        public Map set(String key, Object value) throws IOException {
             return retrieveMap("config?arg=" + key + "&arg=" + value);
         }
     }
