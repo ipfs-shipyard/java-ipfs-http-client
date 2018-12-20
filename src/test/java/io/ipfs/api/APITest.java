@@ -629,12 +629,11 @@ public class APITest {
     }
 
     @Test
-    @Ignore("dht test may hang forever")
     public void dhtTest() throws IOException {
-        Multihash pointer = Multihash.fromBase58("QmPZ9gcCEpqKTo6aq61g2nXGUhM4iCL3ewB6LDXZCtioEB");
-        Map get = ipfs.dht.get(pointer);
-        Map put = ipfs.dht.put("somekey", "somevalue");
-        Map findprovs = ipfs.dht.findprovs(pointer);
+        MerkleNode raw = ipfs.block.put("Mathematics is wonderful".getBytes(), Optional.of("raw"));
+//        Map get = ipfs.dht.get(raw.hash);
+//        Map put = ipfs.dht.put("somekey", "somevalue");
+        List<Map<String, Object>> findprovs = ipfs.dht.findprovs(raw.hash);
         List<Peer> peers = ipfs.swarm.peers();
         Map query = ipfs.dht.query(peers.get(0).id);
         Map find = ipfs.dht.findpeer(peers.get(0).id);
@@ -703,7 +702,8 @@ public class APITest {
     @Test
     public void diagTest() throws IOException {
         Map config = ipfs.config.show();
-        String val = ipfs.config.get("Datastore.GCPeriod");
+        Object mdns = ipfs.config.get("Discovery.MDNS.Interval");
+        Object val = ipfs.config.get("Datastore.GCPeriod");
         Map setResult = ipfs.config.set("Datastore.GCPeriod", val);
         ipfs.config.replace(new NamedStreamable.ByteArrayWrapper(JSONParser.toString(config).getBytes()));
 //            Object log = ipfs.log();
