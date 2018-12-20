@@ -407,8 +407,10 @@ public class IPFS {
     }
 
     public class DHT {
-        public Map findprovs(Multihash hash) throws IOException {
-            return retrieveMap("dht/findprovs?arg=" + hash);
+        public List<Map<String, Object>> findprovs(Multihash hash) throws IOException {
+            return getAndParseStream("dht/findprovs?arg=" + hash).stream()
+                    .map(x -> (Map<String, Object>) x)
+                    .collect(Collectors.toList());
         }
 
         public Map query(Multihash peerId) throws IOException {
@@ -695,6 +697,25 @@ public class IPFS {
         } catch (IOException e) {
             error.accept(e);
         }
+    }
+
+    private List<Object> getAndParseStream(String path) throws IOException {
+        InputStream in = retrieveStream(path);
+        byte LINE_FEED = (byte)10;
+
+        ByteArrayOutputStream resp = new ByteArrayOutputStream();
+
+        byte[] buf = new byte[4096];
+        int r;
+        List<Object> res = new ArrayList<>();
+        while ((r = in.read(buf)) >= 0) {
+            resp.write(buf, 0, r);
+            if (buf[r - 1] == LINE_FEED) {
+                res.add(JSONParser.parse(new String(resp.toByteArray())));
+                resp.reset();
+            }
+        }
+        return res;
     }
 
     private InputStream retrieveStream(String path) throws IOException {
