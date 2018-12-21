@@ -618,10 +618,9 @@ public class APITest {
     }
 
     @Test
-    @Ignore("[#103] DNS test cannot resolve name")
     public void dnsTest() throws IOException {
         String domain = "ipfs.io";
-        String dns = ipfs.dns(domain);
+        String dns = ipfs.dns(domain, true);
     }
 
     public void mountTest() throws IOException {

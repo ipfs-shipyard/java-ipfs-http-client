@@ -134,8 +134,8 @@ public class IPFS {
     }
 
 
-    public String dns(String domain) throws IOException {
-        Map res = retrieveMap("dns?arg=" + domain);
+    public String dns(String domain, boolean recursive) throws IOException {
+        Map res = retrieveMap("dns?arg=" + domain + "&r=" + recursive);
         return (String)res.get("Path");
     }
 
