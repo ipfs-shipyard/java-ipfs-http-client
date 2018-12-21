@@ -101,8 +101,13 @@ public class IPFS {
     }
 
     public List<MerkleNode> ls(Multihash hash) throws IOException {
-        Map res = retrieveMap("ls?arg=" + hash);
-        return ((List<Object>) res.get("Objects")).stream().map(x -> MerkleNode.fromJSON((Map) x)).collect(Collectors.toList());
+        Map reply = retrieveMap("ls?arg=" + hash);
+        return ((List<Object>) reply.get("Objects"))
+                .stream()
+                .flatMap(x -> ((List<Object>)((Map) x).get("Links"))
+                        .stream()
+                        .map(MerkleNode::fromJSON))
+                .collect(Collectors.toList());
     }
 
     public byte[] cat(Multihash hash) throws IOException {

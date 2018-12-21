@@ -102,8 +102,9 @@ public class APITest {
 
     @Test
     public void dirTest() throws IOException {
-        NamedStreamable.DirWrapper dir = new NamedStreamable.DirWrapper("root", Arrays.asList());
-        MerkleNode addResult = ipfs.add(dir).get(0);
+        NamedStreamable dir = new NamedStreamable.FileWrapper(new File("java"));
+        List<MerkleNode> add = ipfs.add(dir);
+        MerkleNode addResult = add.get(add.size() - 1);
         List<MerkleNode> ls = ipfs.ls(addResult.hash);
         Assert.assertTrue(ls.size() > 0);
     }

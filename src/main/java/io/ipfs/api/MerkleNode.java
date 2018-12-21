@@ -103,4 +103,9 @@ public class MerkleNode {
     public String toJSONString() {
         return JSONParser.toString(toJSON());
     }
+
+    @Override
+    public String toString() {
+        return hash + "-" + name.orElse("");
+    }
 }
