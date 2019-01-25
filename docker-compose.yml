@@ -1,7 +1,7 @@
 version: '2'
 services:
   ipfs-daemon:
-    image: 'ipfs/go-ipfs'
+    image: 'ipfs/go-ipfs:v0.4.16'
     ports:
       - "4001:4001"
       - "5001:5001"
