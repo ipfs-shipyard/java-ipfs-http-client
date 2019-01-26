@@ -4,7 +4,7 @@
 
     <groupId>com.github.ipfs</groupId>
     <artifactId>java-ipfs-http-client</artifactId>
-	<version>v1.2.2</version>
+	<version>v1.2.3</version>
 	<packaging>jar</packaging>
 
 	<name>java-ipfs-http-client</name>
