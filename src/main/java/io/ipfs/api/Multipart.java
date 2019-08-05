@@ -3,6 +3,7 @@ package io.ipfs.api;
 import java.io.*;
 import java.net.*;
 import java.nio.file.*;
+import java.security.SecureRandom;
 import java.util.*;
 
 public class Multipart {
@@ -33,7 +34,7 @@ public class Multipart {
     }
 
     public static String createBoundary() {
-        Random r = new Random();
+        SecureRandom r = new SecureRandom();
         String allowed = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
         StringBuilder b = new StringBuilder();
         for (int i=0; i < 32; i++)
