@@ -18,11 +18,13 @@ public class IPFS {
     public enum PinType {all, direct, indirect, recursive}
     public List<String> ObjectTemplates = Arrays.asList("unixfs-dir");
     public List<String> ObjectPatchTypes = Arrays.asList("add-link", "rm-link", "set-data", "append-data");
+    private static final int DEFAULT_TIMEOUT = 0;
 
     public final String host;
     public final int port;
     public final String protocol;
     private final String version;
+    private int timeout = DEFAULT_TIMEOUT;
     public final Key key = new Key();
     public final Pin pin = new Pin();
     public final Repo repo = new Repo();
@@ -72,6 +74,17 @@ public class IPFS {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+    
+    /**
+     * Configure a HTTP client timeout
+     * @param timeout (default 0: infinite timeout)
+     * @return current IPFS object with configured timeout
+     */
+    public IPFS timeout(int timeout) {
+        if(timeout < 0) throw new IllegalArgumentException("timeout must be zero or positive");
+        this.timeout = timeout;
+        return this;
     }
 
     public List<MerkleNode> add(NamedStreamable file) throws IOException {
@@ -659,13 +672,11 @@ public class IPFS {
 
     private byte[] retrieve(String path) throws IOException {
         URL target = new URL(protocol, host, port, version + path);
-        return IPFS.get(target);
+        return IPFS.get(target, timeout);
     }
 
-    private static byte[] get(URL target) throws IOException {
-        HttpURLConnection conn = (HttpURLConnection) target.openConnection();
-        conn.setRequestMethod("GET");
-        conn.setRequestProperty("Content-Type", "application/json");
+    private static byte[] get(URL target, int timeout) throws IOException {
+        HttpURLConnection conn = configureConnection(target, "GET", timeout);
 
         try {
             InputStream in = conn.getInputStream();
@@ -678,8 +689,12 @@ public class IPFS {
             return resp.toByteArray();
         } catch (ConnectException e) {
             throw new RuntimeException("Couldn't connect to IPFS daemon at "+target+"\n Is IPFS running?");
+        } catch (SocketTimeoutException e) {
+            throw new RuntimeException(String.format("timeout (%d ms) has been exceeded", timeout));
         } catch (IOException e) {
-            String err = new String(readFully(conn.getErrorStream()));
+            String err = Optional.ofNullable(conn.getErrorStream())
+                    .map(s->new String(readFully(s)))
+                    .orElse(e.getMessage());
             throw new RuntimeException("IOException contacting IPFS daemon.\nTrailer: " + conn.getHeaderFields().get("Trailer") + " " + err, e);
         }
     }
@@ -725,28 +740,24 @@ public class IPFS {
 
     private InputStream retrieveStream(String path) throws IOException {
         URL target = new URL(protocol, host, port, version + path);
-        return IPFS.getStream(target);
+        return IPFS.getStream(target, timeout);
     }
 
-    private static InputStream getStream(URL target) throws IOException {
-        HttpURLConnection conn = (HttpURLConnection) target.openConnection();
-        conn.setRequestMethod("GET");
-        conn.setRequestProperty("Content-Type", "application/json");
+    private static InputStream getStream(URL target, int timeout) throws IOException {
+        HttpURLConnection conn = configureConnection(target, "GET", timeout);
         return conn.getInputStream();
     }
 
     private Map postMap(String path, byte[] body, Map<String, String> headers) throws IOException {
         URL target = new URL(protocol, host, port, version + path);
-        return (Map) JSONParser.parse(new String(post(target, body, headers)));
+        return (Map) JSONParser.parse(new String(post(target, body, headers, timeout)));
     }
 
-    private static byte[] post(URL target, byte[] body, Map<String, String> headers) throws IOException {
-        HttpURLConnection conn = (HttpURLConnection) target.openConnection();
+    private static byte[] post(URL target, byte[] body, Map<String, String> headers, int timeout) throws IOException {
+        HttpURLConnection conn = configureConnection(target, "POST", timeout);
         for (String key: headers.keySet())
             conn.setRequestProperty(key, headers.get(key));
         conn.setDoOutput(true);
-        conn.setRequestMethod("POST");
-        conn.setRequestProperty("Content-Type", "application/json");
         OutputStream out = conn.getOutputStream();
         out.write(body);
         out.flush();
@@ -756,16 +767,29 @@ public class IPFS {
         return readFully(in);
     }
 
-    private static final byte[] readFully(InputStream in) throws IOException {
-        ByteArrayOutputStream resp = new ByteArrayOutputStream();
-        byte[] buf = new byte[4096];
-        int r;
-        while ((r=in.read(buf)) >= 0)
-            resp.write(buf, 0, r);
-        return resp.toByteArray();
+    private static final byte[] readFully(InputStream in) {
+        try {
+            ByteArrayOutputStream resp = new ByteArrayOutputStream();
+            byte[] buf = new byte[4096];
+            int r;
+            while ((r=in.read(buf)) >= 0)
+                resp.write(buf, 0, r);
+            return resp.toByteArray();
+            
+        } catch(IOException ex) {
+            throw new RuntimeException("Error reading InputStrean", ex);
+        }
     }
 
     private static boolean detectSSL(MultiAddress multiaddress) {
         return multiaddress.toString().contains("/https");
+    }
+    
+    private static HttpURLConnection configureConnection(URL target, String method, int timeout) throws IOException {
+        HttpURLConnection conn = (HttpURLConnection) target.openConnection();
+        conn.setRequestMethod(method);
+        conn.setRequestProperty("Content-Type", "application/json");
+        conn.setReadTimeout(timeout);
+        return conn;
     }
 }

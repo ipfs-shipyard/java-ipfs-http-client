@@ -720,6 +720,18 @@ public class APITest {
         Map commands = ipfs.commands();
     }
 
+    @Test(expected = RuntimeException.class)
+    public void testTimeoutFail() throws IOException {
+        IPFS ipfs = new IPFS(new MultiAddress("/ip4/127.0.0.1/tcp/5001")).timeout(1000);
+        ipfs.cat(Multihash.fromBase58("QmYpbSXyiCTYCbyMpzrQNix72nBYB8WRv6i39JqRc8C1ry"));
+    }
+
+    @Test
+    public void testTimeoutOK() throws IOException {
+        IPFS ipfs = new IPFS(new MultiAddress("/ip4/127.0.0.1/tcp/5001")).timeout(1000);
+        ipfs.cat(Multihash.fromBase58("Qmaisz6NMhDB51cCvNWa1GMS7LU1pAxdF4Ld6Ft9kZEP2a"));
+    }
+
     // this api is disabled until deployment over IPFS is enabled
     public void updateTest() throws IOException {
         Object check = ipfs.update.check();
