@@ -739,7 +739,7 @@ public class IPFS {
     }
 
     private InputStream retrieveStream(String path) throws IOException {
-        URL target = new URL("http", host, port, version + path);
+        URL target = new URL(protocol, host, port, version + path);
         return IPFS.getStream(target, timeout);
     }
 
