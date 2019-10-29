@@ -692,7 +692,9 @@ public class IPFS {
         } catch (SocketTimeoutException e) {
             throw new RuntimeException(String.format("timeout (%d ms) has been exceeded", timeout));
         } catch (IOException e) {
-            String err = new String(readFully(conn.getErrorStream()));
+            String err = Optional.ofNullable(conn.getErrorStream())
+                    .map(s->new String(readFully(s)))
+                    .orElse(e.getMessage());
             throw new RuntimeException("IOException contacting IPFS daemon.\nTrailer: " + conn.getHeaderFields().get("Trailer") + " " + err, e);
         }
     }
@@ -765,13 +767,18 @@ public class IPFS {
         return readFully(in);
     }
 
-    private static final byte[] readFully(InputStream in) throws IOException {
-        ByteArrayOutputStream resp = new ByteArrayOutputStream();
-        byte[] buf = new byte[4096];
-        int r;
-        while ((r=in.read(buf)) >= 0)
-            resp.write(buf, 0, r);
-        return resp.toByteArray();
+    private static final byte[] readFully(InputStream in) {
+        try {
+            ByteArrayOutputStream resp = new ByteArrayOutputStream();
+            byte[] buf = new byte[4096];
+            int r;
+            while ((r=in.read(buf)) >= 0)
+                resp.write(buf, 0, r);
+            return resp.toByteArray();
+            
+        } catch(IOException ex) {
+            throw new RuntimeException("Error reading InputStrean", ex);
+        }
     }
 
     private static boolean detectSSL(MultiAddress multiaddress) {
