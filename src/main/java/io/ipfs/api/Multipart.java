@@ -20,6 +20,7 @@ public class Multipart {
         try {
             URL url = new URL(requestURL);
             httpConn = (HttpURLConnection) url.openConnection();
+            httpConn.setRequestMethod("POST");
             httpConn.setUseCaches(false);
             httpConn.setDoOutput(true);
             httpConn.setDoInput(true);

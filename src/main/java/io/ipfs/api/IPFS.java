@@ -676,7 +676,7 @@ public class IPFS {
     }
 
     private static byte[] get(URL target, int timeout) throws IOException {
-        HttpURLConnection conn = configureConnection(target, "GET", timeout);
+        HttpURLConnection conn = configureConnection(target, "POST", timeout);
 
         try {
             InputStream in = conn.getInputStream();
@@ -744,7 +744,7 @@ public class IPFS {
     }
 
     private static InputStream getStream(URL target, int timeout) throws IOException {
-        HttpURLConnection conn = configureConnection(target, "GET", timeout);
+        HttpURLConnection conn = configureConnection(target, "POST", timeout);
         return conn.getInputStream();
     }
 
