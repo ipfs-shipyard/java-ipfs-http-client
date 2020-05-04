@@ -75,7 +75,7 @@ public class IPFS {
             throw new RuntimeException(e);
         }
     }
-    
+
     /**
      * Configure a HTTP client timeout
      * @param timeout (default 0: infinite timeout)
@@ -676,7 +676,7 @@ public class IPFS {
     }
 
     private static byte[] get(URL target, int timeout) throws IOException {
-        HttpURLConnection conn = configureConnection(target, "GET", timeout);
+        HttpURLConnection conn = configureConnection(target, timeout);
 
         try {
             InputStream in = conn.getInputStream();
@@ -744,7 +744,7 @@ public class IPFS {
     }
 
     private static InputStream getStream(URL target, int timeout) throws IOException {
-        HttpURLConnection conn = configureConnection(target, "GET", timeout);
+        HttpURLConnection conn = configureConnection(target, timeout);
         return conn.getInputStream();
     }
 
@@ -754,7 +754,7 @@ public class IPFS {
     }
 
     private static byte[] post(URL target, byte[] body, Map<String, String> headers, int timeout) throws IOException {
-        HttpURLConnection conn = configureConnection(target, "POST", timeout);
+        HttpURLConnection conn = configureConnection(target, timeout);
         for (String key: headers.keySet())
             conn.setRequestProperty(key, headers.get(key));
         conn.setDoOutput(true);
@@ -775,7 +775,7 @@ public class IPFS {
             while ((r=in.read(buf)) >= 0)
                 resp.write(buf, 0, r);
             return resp.toByteArray();
-            
+
         } catch(IOException ex) {
             throw new RuntimeException("Error reading InputStrean", ex);
         }
@@ -784,10 +784,10 @@ public class IPFS {
     private static boolean detectSSL(MultiAddress multiaddress) {
         return multiaddress.toString().contains("/https");
     }
-    
-    private static HttpURLConnection configureConnection(URL target, String method, int timeout) throws IOException {
+
+    private static HttpURLConnection configureConnection(URL target, int timeout) throws IOException {
         HttpURLConnection conn = (HttpURLConnection) target.openConnection();
-        conn.setRequestMethod(method);
+        conn.setRequestMethod("POST");
         conn.setRequestProperty("Content-Type", "application/json");
         conn.setReadTimeout(timeout);
         return conn;
