@@ -2,7 +2,7 @@ language: java
 jdk:
   - openjdk8
 before_script:
-  - wget https://dist.ipfs.io/go-ipfs/v0.4.16/go-ipfs_v0.4.16_linux-amd64.tar.gz -O /tmp/go-ipfs_linux-amd64.tar.gz
+  - wget https://dist.ipfs.io/go-ipfs/v0.5.1/go-ipfs_v0.5.1_linux-amd64.tar.gz -O /tmp/go-ipfs_linux-amd64.tar.gz
   - tar -xvf /tmp/go-ipfs_linux-amd64.tar.gz
   - export PATH=$PATH:$PWD/go-ipfs/
   - ipfs init
