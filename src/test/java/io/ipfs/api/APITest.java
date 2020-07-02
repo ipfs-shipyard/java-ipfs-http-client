@@ -359,7 +359,6 @@ public class APITest {
         }
     }
 
-    @Ignore
     @Test
     public void objectTest() throws IOException {
         MerkleNode _new = ipfs.object._new(Optional.empty());
