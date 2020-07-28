@@ -248,7 +248,7 @@ public class APITest {
 
         CborObject.CborList root2 = new CborObject.CborList(Arrays.asList(new CborObject.CborMerkleLink(hashChild1), new CborObject.CborLong(42)));
         MerkleNode root2Res = ipfs.block.put(Collections.singletonList(root2.toByteArray()), Optional.of("cbor")).get(0);
-        List<MultiAddress> update = ipfs.pin.update(root1Res.hash, root2Res.hash, true);
+        List<Multihash> update = ipfs.pin.update(root1Res.hash, root2Res.hash, true);
 
         Map<Multihash, Object> ls = ipfs.pin.ls(IPFS.PinType.all);
         boolean childPresent = ls.containsKey(hashChild1);
@@ -282,7 +282,7 @@ public class APITest {
                 new CborObject.CborLong(42))
         );
         MerkleNode root2Res = ipfs.block.put(Collections.singletonList(root2.toByteArray()), Optional.of("cbor")).get(0);
-        List<MultiAddress> update = ipfs.pin.update(root1Res.hash, root2Res.hash, false);
+        List<Multihash> update = ipfs.pin.update(root1Res.hash, root2Res.hash, false);
     }
 
     @Test
