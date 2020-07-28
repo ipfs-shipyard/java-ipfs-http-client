@@ -30,8 +30,7 @@ public interface IpldNode extends Cborable {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
             md.update(raw);
             byte[] digest = md.digest();
-            Multihash h = new Multihash(Multihash.Type.sha2_256, digest);
-            return new Cid(1, Cid.Codec.DagCbor, h);
+            return new Cid(1, Cid.Codec.DagCbor, Multihash.Type.sha2_256, digest);
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
