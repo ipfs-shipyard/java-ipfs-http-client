@@ -60,6 +60,9 @@
 	<formatter type="xml"/>
       </test>
     </junit>
+    <exec executable="./print_test_errors.sh" failonerror="true">
+      <arg value="."/>
+    </exec>
   </target>
 
   <target name="clean" description="clean up">
