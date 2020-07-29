@@ -55,10 +55,12 @@
 	<pathelement location="lib/multiaddr.jar" />
 	<pathelement location="dist/ipfs.jar" />
       </classpath>
-      <test name="io.ipfs.api.APITest" haltonfailure="yes">
+      <batchtest haltonfailure="yes">
+	<fileset dir="src/test/java">
+	</fileset>
 	<formatter type="plain"/>
 	<formatter type="xml"/>
-      </test>
+      </batchtest>
     </junit>
     <exec executable="./print_test_errors.sh" failonerror="true">
       <arg value="./TEST*"/>

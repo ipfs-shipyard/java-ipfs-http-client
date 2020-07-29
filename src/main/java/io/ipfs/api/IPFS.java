@@ -678,7 +678,7 @@ public class IPFS {
     private static byte[] get(URL target, int timeout) throws IOException {
         HttpURLConnection conn = configureConnection(target, "POST", timeout);
         conn.setDoOutput(true);
-        /* See IFFS commit for why this is a POST and not a GET https://github.com/ipfs/go-ipfs/pull/7097
+        /* See IPFS commit for why this is a POST and not a GET https://github.com/ipfs/go-ipfs/pull/7097
            This commit upgrades go-ipfs-cmds and configures the commands HTTP API Handler
            to only allow POST/OPTIONS, disallowing GET and others in the handling of
            command requests in the IPFS HTTP API (where before every type of request
