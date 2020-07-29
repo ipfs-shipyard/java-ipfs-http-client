@@ -61,7 +61,7 @@
       </test>
     </junit>
     <exec executable="./print_test_errors.sh" failonerror="true">
-      <arg value="."/>
+      <arg value="./TEST*"/>
     </exec>
   </target>
 
