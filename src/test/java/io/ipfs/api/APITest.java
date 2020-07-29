@@ -385,6 +385,7 @@ public class APITest {
         System.out.println();
     }
 
+    @Ignore // Ignored because ipfs frequently times out internally in the publish call
     @Test
     public void publish() throws Exception {
         // JSON document
