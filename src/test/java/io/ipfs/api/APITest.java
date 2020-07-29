@@ -426,7 +426,7 @@ public class APITest {
             }
         }
         long duration = System.currentTimeMillis() - start;
-        Assert.assertTrue("Fast synchronous pub-sub", duration < 1000);
+        Assert.assertTrue("Fast synchronous pub-sub", duration < 4000);
     }
 
     @Test
