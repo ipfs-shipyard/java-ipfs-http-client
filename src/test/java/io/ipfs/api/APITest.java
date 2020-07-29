@@ -137,16 +137,16 @@ public class APITest {
         List<MerkleNode> addParts = ipfs.add(new NamedStreamable.FileWrapper(tmpDir.toFile()));
         MerkleNode addResult = addParts.get(addParts.size() - 1);
         List<MerkleNode> lsResult = ipfs.ls(addResult.hash);
-        if (lsResult.size() != 1)
+        if (lsResult.size() != 2)
             throw new IllegalStateException("Incorrect number of objects in ls!");
-        if (!lsResult.get(0).equals(addResult))
-            throw new IllegalStateException("Object not returned in ls!");
+        if (! lsResult.stream().map(x -> x.name.get()).collect(Collectors.toSet()).equals(Set.of(subdirName, fileName)))
+            throw new IllegalStateException("Dir not returned in ls!");
         byte[] catResult = ipfs.cat(addResult.hash, "/" + fileName);
-        if (!Arrays.equals(catResult, fileContents))
+        if (! Arrays.equals(catResult, fileContents))
             throw new IllegalStateException("Different contents!");
 
         byte[] catResult2 = ipfs.cat(addResult.hash, "/" + subdirName + "/" + subfileName);
-        if (!Arrays.equals(catResult2, file2Contents))
+        if (! Arrays.equals(catResult2, file2Contents))
             throw new IllegalStateException("Different contents!");
     }
 
