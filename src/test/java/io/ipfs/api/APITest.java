@@ -102,7 +102,9 @@ public class APITest {
 
     @Test
     public void dirTest() throws IOException {
-        NamedStreamable dir = new NamedStreamable.FileWrapper(new File("java"));
+        Path test = Files.createTempDirectory("test");
+        Files.write(test.resolve("file.txt"), "G'day IPFS!".getBytes());
+        NamedStreamable dir = new NamedStreamable.FileWrapper(test.toFile());
         List<MerkleNode> add = ipfs.add(dir);
         MerkleNode addResult = add.get(add.size() - 1);
         List<MerkleNode> ls = ipfs.ls(addResult.hash);
