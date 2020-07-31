@@ -46,7 +46,7 @@
   </target>
 
   <target name="test" depends="compile,dist">
-    <junit printsummary="yes" fork="true" haltonfailure="yes">
+    <junit printsummary="yes" fork="true">
       <jvmarg value="-Xmx1g"/>
       <classpath>
 	<pathelement location="lib/junit-4.12.jar" />
