@@ -1,6 +1,5 @@
 package io.ipfs.api;
 
-import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 
@@ -21,8 +20,7 @@ public class RecursiveAddTest {
 
         String EXPECTED = "QmX5fZ6aUxNTAS7ZfYc8f4wPoMx6LctuNbMjuJZ9EmUSr6";
 
-        Path base = TMPDATA;
-        base.toFile().mkdirs();
+        Path base = Files.createTempDirectory("test");
         Files.write(base.resolve("index.html"), "<html></html>".getBytes());
         Path js = base.resolve("js");
         js.toFile().mkdirs();

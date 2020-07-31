@@ -40,26 +40,29 @@
         <attribute name="Class-Path" value="${manifest_cp}"/>
         <attribute name="Implementation-Vendor" value="io.ipfs"/>
         <attribute name="Implementation-Title" value="api"/>
-        <attribute name="Implementation-Version" value="1.2.0"/>
+        <attribute name="Implementation-Version" value="1.3.0"/>
       </manifest>
     </jar>
   </target>
 
   <target name="test" depends="compile,dist">
-    <junit printsummary="yes" fork="true" haltonfailure="yes">
+    <junit printsummary="yes" fork="true">
       <jvmarg value="-Xmx1g"/>
       <classpath>
-	<pathelement location="lib/junit-4.11.jar" />
+	<pathelement location="lib/junit-4.12.jar" />
 	<pathelement location="lib/hamcrest-core-1.3.jar" />
-	<pathelement location="lib/multihash.jar" />
-	<pathelement location="lib/multiaddr.jar" />
 	<pathelement location="dist/ipfs.jar" />
       </classpath>
-      <test name="io.ipfs.api.APITest" haltonfailure="yes">
+      <batchtest haltonfailure="yes">
+	<fileset dir="src/test/java">
+	</fileset>
 	<formatter type="plain"/>
 	<formatter type="xml"/>
-      </test>
+      </batchtest>
     </junit>
+    <exec executable="./print_test_errors.sh" failonerror="true">
+      <arg value="./TEST*"/>
+    </exec>
   </target>
 
   <target name="clean" description="clean up">
