@@ -418,18 +418,14 @@ public class APITest {
                 throw new RuntimeException(e);}
         }).start();
 
-        long start = System.currentTimeMillis();
-        for (int i=1; i < 100; ) {
-            long t1 = System.currentTimeMillis();
+        int nMessages = 100;
+        for (int i = 1; i < nMessages; ) {
             ipfs.pubsub.pub(topic, "Hello!");
             if (res.size() >= i) {
-                long t2 = System.currentTimeMillis();
-                System.out.println("pub => sub took " + (t2 - t1));
                 i++;
             }
         }
-        long duration = System.currentTimeMillis() - start;
-        Assert.assertTrue("Fast synchronous pub-sub", duration < 4000);
+        Assert.assertTrue(res.size() > nMessages - 5); // pubsub is not reliable so it loses messages
     }
 
     @Test
