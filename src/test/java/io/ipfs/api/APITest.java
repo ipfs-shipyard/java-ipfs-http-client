@@ -141,7 +141,7 @@ public class APITest {
         List<MerkleNode> lsResult = ipfs.ls(addResult.hash);
         if (lsResult.size() != 2)
             throw new IllegalStateException("Incorrect number of objects in ls!");
-        if (! lsResult.stream().map(x -> x.name.get()).collect(Collectors.toSet()).equals(Set.of(subdirName, fileName)))
+        if (! lsResult.stream().map(x -> x.name.get()).collect(Collectors.toSet()).equals(new HashSet<>(Arrays.asList(subdirName, fileName))))
             throw new IllegalStateException("Dir not returned in ls!");
         byte[] catResult = ipfs.cat(addResult.hash, "/" + fileName);
         if (! Arrays.equals(catResult, fileContents))
