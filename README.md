@@ -105,6 +105,9 @@ Current versions of dependencies are included in the `./lib` directory.
 * [multihash](https://github.com/multiformats/java-multihash)
 * [cid](https://github.com/ipld/java-cid)
 
+## Releasing
+The version number is specified in `build.xml` and `pom.xml` and must be changed in both places in order to be accurately reflected in the JAR file manifest. A git tag must be added in the format `vx.x.x` for [JitPack](https://jitpack.io/#ipfs/java-ipfs-http-client/) to work.
+
 ## Contribute
 
 Feel free to join in. All welcome. Open an [issue](https://github.com/ipfs/java-ipfs-api/issues)!
