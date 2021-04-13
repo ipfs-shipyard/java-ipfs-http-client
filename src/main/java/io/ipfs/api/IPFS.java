@@ -31,6 +31,7 @@ public class IPFS {
     public final Pin pin = new Pin();
     public final Repo repo = new Repo();
     public final IPFSObject object = new IPFSObject();
+    public final Bitswap bitswap = new Bitswap();
     public final Swarm swarm = new Swarm();
     public final Bootstrap bootstrap = new Bootstrap();
     public final Block block = new Block();
@@ -59,6 +60,10 @@ public class IPFS {
 
     public IPFS(String host, int port, String version, boolean ssl) {
         this(host, port, version, DEFAULT_CONNECT_TIMEOUT_MILLIS, DEFAULT_READ_TIMEOUT_MILLIS, ssl);
+    }
+    
+    public void get() {
+    	
     }
 
     public IPFS(String host, int port, String version, int connectTimeoutMillis, int readTimeoutMillis, boolean ssl) {
@@ -497,6 +502,18 @@ public class IPFS {
             return ((List<String>)retrieveMap("bootstrap/rm?"+(all ? "all=true&":"")+"arg="+addr).get("Peers")).stream().map(x -> new MultiAddress(x)).collect(Collectors.toList());
         }
     }
+    
+    /*  ipfs swarm is a tool to manipulate the network swarm. The swarm is the
+	    component that opens, listens for, and maintains connections to other
+	    ipfs peers in the internet.
+	 */
+	public class Bitswap {
+		
+	    public Map ledger(Multihash multihash) throws IOException {
+	        Map m = retrieveMap("bitswap/ledger?arg="+multihash);
+	        return m;
+	    }
+	}
 
     /*  ipfs swarm is a tool to manipulate the network swarm. The swarm is the
         component that opens, listens for, and maintains connections to other
