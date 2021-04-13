@@ -503,14 +503,31 @@ public class IPFS {
         }
     }
     
-    /*  ipfs swarm is a tool to manipulate the network swarm. The swarm is the
-	    component that opens, listens for, and maintains connections to other
-	    ipfs peers in the internet.
-	 */
-	public class Bitswap {
+    /**
+     * ipfs bitswap is a core module of IPFS for exchanging blocks of data. 
+     * It directs the requesting and sending of blocks to and from other 
+     * peers in the network.
+     * Bitswap is a message-based protocol where all messages contain want-lists or blocks.
+     * @author Renato Eschini  r.eschini@inera.it 
+     *
+     */
+    public class Bitswap {
 		
-	    public Map ledger(Multihash multihash) throws IOException {
-	        Map m = retrieveMap("bitswap/ledger?arg="+multihash);
+		/**
+		 * Show the current ledger for a peer.
+		 * @param multihash The PeerID (B58) of the ledger to inspect. Required: yes
+		 * @return On success, the call to this endpoint will return with 200 and the following body:
+		 * {
+			  "Exchanged": "<uint64>",
+			  "Peer": "<string>",
+			  "Recv": "<uint64>",
+			  "Sent": "<uint64>",
+			  "Value": "<float64>"
+			}
+		 * @throws IOException
+		 */
+		public Map ledger(Multihash multihash) throws IOException {
+	        Map m = retrieveMap("bitswap/ledger?arg=" + multihash);
 	        return m;
 	    }
 	}
