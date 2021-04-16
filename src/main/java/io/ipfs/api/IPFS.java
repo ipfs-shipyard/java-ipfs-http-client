@@ -530,6 +530,22 @@ public class IPFS {
 	        Map m = retrieveMap("bitswap/ledger?arg=" + multihash);
 	        return m;
 	    }
+		
+		public Map stat(Boolean verbose, Boolean human) throws IOException {
+			
+			String targetPath = "bitswap/stat";
+			if (verbose != null || human != null)
+				targetPath += "?";
+            if (verbose != null)
+                targetPath += "verbose=" + verbose.toString();
+            if (human != null)
+            	if (!targetPath.endsWith("?")) targetPath += "&";
+                targetPath += "human=" + human.toString();
+
+			
+	        Map m = retrieveMap(targetPath);
+	        return m;
+	    }
 	}
 
     /*  ipfs swarm is a tool to manipulate the network swarm. The swarm is the
