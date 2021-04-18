@@ -736,7 +736,9 @@ public class IPFS {
         URL target = new URL(protocol, host, port, version + path);
         return IPFS.get(target, connectTimeoutMillis, readTimeoutMillis);
     }
-
+    
+    public static boolean closeget = false;
+    
     private static byte[] get(URL target, int connectTimeoutMillis, int readTimeoutMillis) throws IOException {
         HttpURLConnection conn = configureConnection(target, "POST", connectTimeoutMillis, readTimeoutMillis);
         conn.setDoOutput(true);
@@ -770,8 +772,12 @@ public class IPFS {
 
             byte[] buf = new byte[4096];
             int r;
-            while ((r = in.read(buf)) >= 0)
-                resp.write(buf, 0, r);
+            while ((r = in.read(buf)) >= 0) {
+            	if (closeget) {
+            		return new byte[0];
+            	}
+            	resp.write(buf, 0, r);
+            }
             return resp.toByteArray();
         } catch (ConnectException e) {
             throw new RuntimeException("Couldn't connect to IPFS daemon at "+target+"\n Is IPFS running?");
