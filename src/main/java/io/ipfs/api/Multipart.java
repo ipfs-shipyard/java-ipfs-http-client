@@ -26,6 +26,7 @@ public class Multipart {
             httpConn.setRequestProperty("Expect", "100-continue");
             httpConn.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
             httpConn.setRequestProperty("User-Agent", "Java IPFS CLient");
+            httpConn.setChunkedStreamingMode(4096);
             out = httpConn.getOutputStream();
         } catch (IOException e) {
             throw new RuntimeException(e.getMessage(), e);
