@@ -1,6 +1,7 @@
 package io.ipfs.api;
 
 import io.ipfs.cid.*;
+import io.ipfs.multibase.binary.StringUtils;
 import io.ipfs.multihash.Multihash;
 import io.ipfs.multiaddr.MultiAddress;
 
@@ -107,8 +108,32 @@ public class IPFS {
         return add(Collections.singletonList(file), wrap, hashOnly);
     }
 
+    public List<MerkleNode> add(NamedStreamable file, Map<String, Object> arguments) throws IOException {
+        return add(file, false, arguments);
+    }
+
+    public List<MerkleNode> add(NamedStreamable file, boolean wrap, Map<String, Object> arguments) throws IOException {
+        return add(file, wrap, false, arguments);
+    }
+
+    public List<MerkleNode> add(NamedStreamable file, boolean wrap, boolean hashOnly, Map<String, Object> arguments) throws IOException {
+        return add(Collections.singletonList(file), wrap, hashOnly, arguments);
+    }
+
     public List<MerkleNode> add(List<NamedStreamable> files, boolean wrap, boolean hashOnly) throws IOException {
-        Multipart m = new Multipart(protocol + "://" + host + ":" + port + version + "add?stream-channels=true&w="+wrap + "&n="+hashOnly, "UTF-8");
+        return add(files, wrap, hashOnly, null);
+    }
+
+    public List<MerkleNode> add(List<NamedStreamable> files, boolean wrap, boolean hashOnly, Map<String, Object> arguments) throws IOException {
+        StringBuilder extraArgsBuilder = new StringBuilder();
+        if ( arguments != null ){
+            for (Map.Entry<String, Object> entry: arguments.entrySet()) {
+                extraArgsBuilder.append("&").append(entry.getKey()).append("=").append(entry.getValue());
+            }
+        }
+        String extraArgs = extraArgsBuilder.toString().trim();
+
+        Multipart m = new Multipart(protocol + "://" + host + ":" + port + version + "add?stream-channels=true&w="+wrap + "&n="+hashOnly + extraArgs, "UTF-8");
         for (NamedStreamable file: files) {
             if (file.isDirectory()) {
                 m.addSubtree(Paths.get(""), file);
@@ -117,8 +142,8 @@ public class IPFS {
         };
         String res = m.finish();
         return JSONParser.parseStream(res).stream()
-                .map(x -> MerkleNode.fromJSON((Map<String, Object>) x))
-                .collect(Collectors.toList());
+            .map(x -> MerkleNode.fromJSON((Map<String, Object>) x))
+            .collect(Collectors.toList());
     }
 
     public List<MerkleNode> ls(Multihash hash) throws IOException {
