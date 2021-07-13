@@ -125,12 +125,12 @@ public class IPFS {
     }
 
     public List<MerkleNode> add(List<NamedStreamable> files, boolean wrap, boolean hashOnly, Map<String, Object> arguments) throws IOException {
-        StringBuilder extraArgsBuilder = new StringBuilder();
-        if ( arguments != null ){
-            for (Map.Entry<String, Object> entry: arguments.entrySet()) {
+        final StringBuilder extraArgsBuilder = new StringBuilder();
+        Optional.ofNullable(arguments).ifPresent( args -> {
+            for (Map.Entry<String, Object> entry: args.entrySet()) {
                 extraArgsBuilder.append("&").append(entry.getKey()).append("=").append(entry.getValue());
             }
-        }
+        });
         String extraArgs = extraArgsBuilder.toString().trim();
 
         Multipart m = new Multipart(protocol + "://" + host + ":" + port + version + "add?stream-channels=true&w="+wrap + "&n="+hashOnly + extraArgs, "UTF-8");
