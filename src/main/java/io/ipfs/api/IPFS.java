@@ -1,16 +1,26 @@
 package io.ipfs.api;
 
-import io.ipfs.cid.*;
-import io.ipfs.multihash.Multihash;
+import io.ipfs.cid.Cid;
 import io.ipfs.multiaddr.MultiAddress;
+import io.ipfs.multihash.Multihash;
 
-import java.io.*;
-import java.net.*;
-import java.nio.file.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.ConnectException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.file.Paths;
 import java.util.*;
-import java.util.concurrent.*;
-import java.util.function.*;
-import java.util.stream.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class IPFS {
 
@@ -41,6 +51,7 @@ public class IPFS {
     public final Update update = new Update();
     public final DHT dht = new DHT();
     public final File file = new File();
+    public final Files files = new Files();
     public final Stats stats = new Stats();
     public final Name name = new Name();
     public final Pubsub pubsub = new Pubsub();
@@ -463,6 +474,78 @@ public class IPFS {
     public class File {
         public Map ls(Multihash path) throws IOException {
             return retrieveMap("file/ls?arg=" + path);
+        }
+    }
+
+    // Files commands
+    public class Files {
+
+        public Map chcid() throws IOException {
+            return retrieveMap("files/chcid");
+        }
+
+        public Map chcid(String path) throws IOException {
+            return retrieveMap("files/chcid?args=" + path);
+        }
+
+        public Map cp(String source, String dest) throws IOException {
+            return retrieveMap("files/cp?arg=" + source + "&arg=" + dest);
+        }
+
+        public Map cp(String source, String dest, boolean parents) throws IOException {
+            return retrieveMap("files/cp?arg=" + source + "&arg=" + dest + "&parents=" + parents);
+        }
+
+        public Map flush() throws IOException {
+            return retrieveMap("files/flush");
+        }
+
+        public Map flush(String path) throws IOException {
+            return retrieveMap("files/flush?arg=" + path);
+        }
+
+        public Map ls() throws IOException {
+            return retrieveMap("files/ls");
+        }
+
+        public Map ls(String path) throws IOException {
+            return retrieveMap("files/ls?arg=" + path);
+        }
+
+        public Map ls(String path, boolean longListing, boolean u) throws IOException {
+            return retrieveMap("files/ls?arg=" + path + "&long=" + longListing + "&U=" + u);
+        }
+
+        public Map mkdir(String path) throws IOException {
+            return retrieveMap("files/mkdir?arg=" + path);
+        }
+
+        public Map mkdir(String path, boolean parents, int cidVersion, Multihash hash) throws IOException {
+            return retrieveMap("files/mkdir?arg=" + path + "&parents=" + parents + "&cid-version=" + cidVersion + "&hash=" + hash);
+        }
+
+        public Map mv(String source, String dest) throws IOException {
+            return retrieveMap("files/mv?arg=" + source + "&arg=" + dest);
+        }
+
+        public Map read(String path) throws IOException {
+            return retrieveMap("files/read?arg=" + path);
+        }
+
+        public Map read(String path, int offset, int count) throws IOException {
+            return retrieveMap("files/read?arg=" + path + "&offset=" + offset + "&count=" + count);
+        }
+
+        public Map rm(String path) throws IOException {
+            return retrieveMap("files/rm?arg=" + path);
+        }
+
+        public Map rm(String path, boolean recursive, boolean force) throws IOException {
+            return retrieveMap("files/rm?arg=" + path + "&recursive=" + recursive + "&force=" + force);
+        }
+
+        public Map stat(String path) throws IOException {
+            return retrieveMap("files/stat?arg=" + path);
         }
     }
 
