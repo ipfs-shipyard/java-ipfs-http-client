@@ -436,7 +436,7 @@ public class IPFS {
         }
         
          public Map resolve(String ipns) throws IOException {
-            return retrieveAndParse("name/resolve?arg=" + ipns);
+            return (Map) retrieveAndParse("name/resolve?arg=" + ipns);
         }
         
     }
