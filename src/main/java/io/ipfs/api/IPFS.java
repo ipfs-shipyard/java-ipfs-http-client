@@ -430,13 +430,9 @@ public class IPFS {
             return retrieveMap("name/publish?arg=/ipfs/" + hash + id.map(name -> "&key=" + name).orElse(""));
         }
 
-        public String resolve(Multihash hash) throws IOException {
-            Map res = (Map) retrieveAndParse("name/resolve?arg=" + hash);
+        public String resolve(String ipns) throws IOException {
+            Map res = (Map) retrieveAndParse("name/resolve?arg=" + ipns);
             return (String)res.get("Path");
-        }
-        
-         public Map resolve(String ipns) throws IOException {
-            return (Map) retrieveAndParse("name/resolve?arg=" + ipns);
         }
         
     }
