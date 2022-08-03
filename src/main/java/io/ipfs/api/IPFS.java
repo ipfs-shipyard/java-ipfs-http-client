@@ -434,6 +434,11 @@ public class IPFS {
             Map res = (Map) retrieveAndParse("name/resolve?arg=" + hash);
             return (String)res.get("Path");
         }
+        
+         public Map resolve(String ipns) throws IOException {
+            return retrieveAndParse("name/resolve?arg=" + ipns);
+        }
+        
     }
 
     public class DHT {
