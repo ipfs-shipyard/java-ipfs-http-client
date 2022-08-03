@@ -403,7 +403,7 @@ public class APITest {
         Map result = ipfs.name.publish(merkleNode.hash);
 
         // Resolve from IPNS
-        String resolved = ipfs.name.resolve(Multihash.fromBase58((String) result.get("Name")));
+        String resolved = ipfs.name.resolve((String) result.get("Name"));
         Assert.assertEquals("Should be equals", resolved, "/ipfs/" + merkleNode.hash.toString());
     }
 
@@ -614,7 +614,7 @@ public class APITest {
         String name = "key" + System.nanoTime();
         Object gen = ipfs.key.gen(name, Optional.of("rsa"), Optional.of("2048"));
         Map mykey = ipfs.name.publish(pointer.hash, Optional.of(name));
-        String resolved = ipfs.name.resolve(Multihash.fromBase58((String) pub.get("Name")));
+        String resolved = ipfs.name.resolve((String) pub.get("Name"));
     }
 
     @Test
