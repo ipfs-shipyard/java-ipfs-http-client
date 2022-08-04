@@ -14,11 +14,8 @@ public class JSONParser {
     private static ObjectMapper mapper = new ObjectMapper();
     private static ObjectWriter printer;
 
-    public static Object parse(Object json) {
-        if (json == null) {
-            return null;
-        }
-        return parse(json.toString(), HashMap.class);
+    public static Object parse(String json) {
+        return parse(json, HashMap.class);
     }
 
     public static <T> T parse(String json, Class<T> clazz) {
@@ -35,6 +32,10 @@ public class JSONParser {
     }
 
     public static List<?> parseStream(String jsonStream) {
+        if ("".equals(jsonStream.trim())) {
+            return new ArrayList<>();
+        }
+
         return Arrays.stream(jsonStream.split("\n"))
                 .map(e -> parse(e, HashMap.class))
                 .collect(Collectors.toList());
