@@ -35,6 +35,7 @@
         <version.junit>4.12</version.junit>
         <version.hamcrest>1.3</version.hamcrest>
         <version.multiaddr>v1.4.2</version.multiaddr>
+		<version.jaxon>2.7.4</version.jaxon>
 	</properties>
 
 	<repositories>
@@ -62,6 +63,22 @@
             <version>${version.hamcrest}</version>
             <scope>test</scope>
         </dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-annotations</artifactId>
+			<version>${version.jaxon}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-core</artifactId>
+			<version>${version.jaxon}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>${version.jaxon}</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>
