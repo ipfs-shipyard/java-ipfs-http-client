@@ -1,11 +1,11 @@
 package io.ipfs.api;
 
-import io.ipfs.cid.*;
-import io.ipfs.multiaddr.*;
-import io.ipfs.multihash.*;
+import io.ipfs.cid.Cid;
+import io.ipfs.multiaddr.MultiAddress;
+import io.ipfs.multihash.Multihash;
 
-import java.util.*;
-import java.util.function.*;
+import java.util.Map;
+import java.util.function.Function;
 
 public class Peer {
     public final MultiAddress address;
