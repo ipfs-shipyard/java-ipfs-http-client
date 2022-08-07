@@ -1,17 +1,20 @@
 package io.ipfs.api;
 
-import io.ipfs.api.cbor.*;
-import io.ipfs.cid.*;
-import io.ipfs.multihash.Multihash;
+import io.ipfs.api.cbor.CborObject;
+import io.ipfs.cid.Cid;
 import io.ipfs.multiaddr.MultiAddress;
-import org.junit.*;
+import io.ipfs.multihash.Multihash;
+import org.junit.Assert;
+import org.junit.Ignore;
+import org.junit.Test;
 
 import java.io.*;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
-import java.util.concurrent.*;
-import java.util.function.*;
-import java.util.stream.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.junit.Assert.assertTrue;
 
@@ -47,7 +50,7 @@ public class APITest {
         Cid cid = (Cid) put.hash;
 
         byte[] get = ipfs.dag.get(cid);
-        Assert.assertTrue("Raw data equal", ((Map)JSONParser.parse(new String(get))).get("data").equals(value));
+        Assert.assertTrue("Raw data equal", ((Map) JSONParser.parse(new String(get))).get("data").equals(value));
 
         Cid expected = Cid.decode("zdpuApemz4XMURSCkBr9W5y974MXkSbeDfLeZmiQTPpvkatFF");
         Assert.assertTrue("Correct cid returned", cid.equals(expected));
@@ -141,28 +144,28 @@ public class APITest {
         List<MerkleNode> lsResult = ipfs.ls(addResult.hash);
         if (lsResult.size() != 2)
             throw new IllegalStateException("Incorrect number of objects in ls!");
-        if (! lsResult.stream().map(x -> x.name.get()).collect(Collectors.toSet()).equals(new HashSet<>(Arrays.asList(subdirName, fileName))))
+        if (!lsResult.stream().map(x -> x.name.get()).collect(Collectors.toSet()).equals(new HashSet<>(Arrays.asList(subdirName, fileName))))
             throw new IllegalStateException("Dir not returned in ls!");
         byte[] catResult = ipfs.cat(addResult.hash, "/" + fileName);
-        if (! Arrays.equals(catResult, fileContents))
+        if (!Arrays.equals(catResult, fileContents))
             throw new IllegalStateException("Different contents!");
 
         byte[] catResult2 = ipfs.cat(addResult.hash, "/" + subdirName + "/" + subfileName);
-        if (! Arrays.equals(catResult2, file2Contents))
+        if (!Arrays.equals(catResult2, file2Contents))
             throw new IllegalStateException("Different contents!");
     }
 
-//    @Test
+    //    @Test
     public void largeFileTest() throws IOException {
-        byte[] largerData = new byte[100*1024*1024];
+        byte[] largerData = new byte[100 * 1024 * 1024];
         new Random(1).nextBytes(largerData);
         NamedStreamable.ByteArrayWrapper largeFile = new NamedStreamable.ByteArrayWrapper("nontrivial.txt", largerData);
         fileTest(largeFile);
     }
 
-//    @Test
+    //    @Test
     public void hugeFileStreamTest() throws IOException {
-        byte[] hugeData = new byte[1000*1024*1024];
+        byte[] hugeData = new byte[1000 * 1024 * 1024];
         new Random(1).nextBytes(hugeData);
         NamedStreamable.ByteArrayWrapper largeFile = new NamedStreamable.ByteArrayWrapper("massive.txt", hugeData);
         MerkleNode addResult = ipfs.add(largeFile).get(0);
@@ -176,7 +179,7 @@ public class APITest {
             try {
                 System.arraycopy(buf, 0, res, offset, r);
                 offset += r;
-            }catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
@@ -205,7 +208,7 @@ public class APITest {
             throw new IllegalStateException("Object shouldn't be present!");
     }
 
-    public void fileTest(NamedStreamable file)  throws IOException{
+    public void fileTest(NamedStreamable file) throws IOException {
         MerkleNode addResult = ipfs.add(file).get(0);
         byte[] catResult = ipfs.cat(addResult.hash);
         byte[] getResult = ipfs.get(addResult.hash);
@@ -312,7 +315,7 @@ public class APITest {
         boolean childPresentAfterGC = ls2.containsKey(child);
         if (!childPresentAfterGC)
             throw new IllegalStateException("Child not present!");
-}
+    }
 
     @Test
     public void objectPatch() throws IOException {
@@ -339,9 +342,9 @@ public class APITest {
 
         MerkleNode twicePatched = ipfs.object.patch(patched.hash, "append-data", Optional.of(data), Optional.empty(), Optional.empty());
         byte[] twicePatchedResult = ipfs.object.data(twicePatched.hash);
-        byte[] twice = new byte[2*data.length];
-        for (int i=0; i < 2; i++)
-            System.arraycopy(data, 0, twice, i*data.length, data.length);
+        byte[] twice = new byte[2 * data.length];
+        for (int i = 0; i < 2; i++)
+            System.arraycopy(data, 0, twice, i * data.length, data.length);
         if (!Arrays.equals(twicePatchedResult, twice))
             throw new RuntimeException("object.patch: returned data after append != stored data!");
 
@@ -350,7 +353,7 @@ public class APITest {
     @Test
     public void refsTest() throws IOException {
         List<Multihash> local = ipfs.refs.local();
-        for (Multihash ref: local) {
+        for (Multihash ref : local) {
             Object refs = ipfs.refs(ref, false);
         }
     }
@@ -393,7 +396,7 @@ public class APITest {
 
         // Add a DAG node to IPFS
         MerkleNode merkleNode = ipfs.dag.put("json", json.getBytes());
-        Assert.assertEquals("expected to be zdpuAknRh1Kro2r2xBDKiXyTiwA3Nu5XcmvjRPA1VNjH41NF7" , "zdpuAknRh1Kro2r2xBDKiXyTiwA3Nu5XcmvjRPA1VNjH41NF7", merkleNode.hash.toString());
+        Assert.assertEquals("expected to be zdpuAknRh1Kro2r2xBDKiXyTiwA3Nu5XcmvjRPA1VNjH41NF7", "zdpuAknRh1Kro2r2xBDKiXyTiwA3Nu5XcmvjRPA1VNjH41NF7", merkleNode.hash.toString());
 
         // Get a DAG node
         byte[] res = ipfs.dag.get((Cid) merkleNode.hash);
@@ -413,9 +416,10 @@ public class APITest {
         List<Map<String, Object>> res = Collections.synchronizedList(new ArrayList<>());
         new Thread(() -> {
             try {
-                ipfs.pubsub.sub(topic, res::add, t -> t.printStackTrace());
+                ipfs.pubsub.sub(topic, res::add, Throwable::printStackTrace);
             } catch (IOException e) {
-                throw new RuntimeException(e);}
+                throw new RuntimeException(e);
+            }
         }).start();
 
         int nMessages = 100;
@@ -436,7 +440,7 @@ public class APITest {
         Object pub = ipfs.pubsub.pub(topic, data);
         Object pub2 = ipfs.pubsub.pub(topic, "G'day");
         List<Map> results = sub.limit(2).collect(Collectors.toList());
-        Assert.assertTrue( ! results.get(0).equals(Collections.emptyMap()));
+        Assert.assertTrue(!results.get(0).equals(Collections.emptyMap()));
     }
 
     private static String toEscapedHex(byte[] in) throws IOException {
@@ -449,7 +453,7 @@ public class APITest {
     }
 
     /**
-     *  Test that merkle links in values of a cbor map are followed during recursive pins
+     * Test that merkle links in values of a cbor map are followed during recursive pins
      */
     @Test
     public void merkleLinkInMap() throws IOException {
@@ -518,7 +522,7 @@ public class APITest {
     }
 
     /**
-     *  Test that merkle links as a root object are followed during recursive pins
+     * Test that merkle links as a root object are followed during recursive pins
      */
     @Test
     public void rootMerkleLink() throws IOException {
@@ -549,7 +553,7 @@ public class APITest {
     }
 
     /**
-     *  Test that a cbor null is allowed as an object root
+     * Test that a cbor null is allowed as an object root
      */
     @Test
     public void rootNull() throws IOException {
@@ -569,7 +573,7 @@ public class APITest {
     }
 
     /**
-     *  Test that merkle links in a cbor list are followed during recursive pins
+     * Test that merkle links in a cbor list are followed during recursive pins
      */
     @Test
     public void merkleLinkInList() throws IOException {
@@ -598,11 +602,12 @@ public class APITest {
     public void fileContentsTest() throws IOException {
         ipfs.repo.gc();
         List<Multihash> local = ipfs.refs.local();
-        for (Multihash hash: local) {
+        for (Multihash hash : local) {
             try {
                 Map ls = ipfs.file.ls(hash);
                 return;
-            } catch (Exception e) {} // non unixfs files will throw an exception here
+            } catch (Exception e) {
+            } // non unixfs files will throw an exception here
         }
     }
 
