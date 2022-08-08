@@ -5,10 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class JSONParser {
@@ -16,7 +13,7 @@ public class JSONParser {
     private static ObjectWriter printer;
     private static final ObjectMapper mapper = new ObjectMapper();
 
-    public static Object parse(String json) {
+    public static Map<String, Object> parse(String json) {
         return parse(json, HashMap.class);
     }
 
