@@ -6,7 +6,10 @@ import io.ipfs.multihash.Multihash;
 import kong.unirest.RawResponse;
 import kong.unirest.Unirest;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.file.Paths;
@@ -223,7 +226,9 @@ public class IPFS {
         }
 
         public List<Multihash> update(Multihash existing, Multihash modified, boolean unpin) throws IOException {
-            return ((List<Object>) ((Map) retrieveAndParse("pin/update?stream-channels=true&arg=" + existing + "&arg=" + modified + "&unpin=" + unpin)).get("Pins"))
+            return ((List<Object>) ((Map) retrieveAndParse(
+                    "pin/update?stream-channels=true&arg=" + existing + "&arg=" + modified + "&unpin=" + unpin))
+                    .getOrDefault("Pins", new ArrayList<>()))
                     .stream()
                     .map(x -> Cid.decode((String) x))
                     .collect(Collectors.toList());
@@ -660,21 +665,20 @@ public class IPFS {
     }
 
     private Stream<Object> retrieveAndParseStream(String path, ForkJoinPool executor) throws IOException {
-        BlockingQueue<CompletableFuture<byte[]>> results = new LinkedBlockingQueue<>();
-        InputStream in = retrieveStream(path);
-        executor.submit(() -> getObjectStream(in,
-                res -> {
-                    results.add(CompletableFuture.completedFuture(res));
-                },
-                err -> {
-                    CompletableFuture<byte[]> fut = new CompletableFuture<>();
-                    fut.completeExceptionally(err);
-                    results.add(fut);
-                })
-        );
+//        BlockingQueue<CompletableFuture<byte[]>> results = new LinkedBlockingQueue<>();
+//        InputStream stream =
+//        executor.submit(() -> getObjectStream(stream,
+//                res -> results.add(CompletableFuture.completedFuture(res)),
+//                err -> {
+//                    CompletableFuture<byte[]> fut = new CompletableFuture<>();
+//                    fut.completeExceptionally(err);
+//                    results.add(fut);
+//                })
+//        );
         return Stream.generate(() -> {
             try {
-                return JSONParser.parse(new String(results.take().get()));
+                String json = new String(retrieve(path));
+                return JSONParser.parse(json);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -748,7 +752,6 @@ public class IPFS {
     }
 
     private static InputStream getStream(URL target, int connectTimeoutMillis, int readTimeoutMillis) throws IOException {
-
         try {
             return Unirest.post(target.toString())
                     .header("accept", "application/json")
@@ -763,9 +766,9 @@ public class IPFS {
         }
     }
 
-    private Map postMap(String path, byte[] body, Map<String, String> headers) throws IOException {
+    private Map<String, Object> postMap(String path, byte[] body, Map<String, String> headers) throws IOException {
         URL target = new URL(protocol, host, port, version + path);
-        return (Map) JSONParser.parse(new String(post(target, body, headers, connectTimeoutMillis, readTimeoutMillis)));
+        return (Map<String, Object>) JSONParser.parse(new String(post(target, body, headers, connectTimeoutMillis, readTimeoutMillis)));
     }
 
     private static byte[] post(URL target, byte[] body, Map<String, String> headers, int connectTimeoutMillis, int readTimeoutMillis) throws IOException {

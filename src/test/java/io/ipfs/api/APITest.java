@@ -423,10 +423,16 @@ public class APITest {
         }).start();
 
         int nMessages = 100;
+        int maxCount = 100;
         for (int i = 1; i < nMessages; ) {
             ipfs.pubsub.pub(topic, "Hello!");
             if (res.size() >= i) {
                 i++;
+            } else {
+                maxCount--;
+            }
+            if (maxCount <= 0) {
+                break;
             }
         }
         Assert.assertTrue(res.size() > nMessages - 5); // pubsub is not reliable so it loses messages
