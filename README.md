@@ -1,7 +1,3 @@
-> #  ⚠️ THIS PROJECT IS LOOKING FOR A MAINTAINER 
-> 
-> See https://github.com/ipfs-shipyard/java-ipfs-http-client/issues/194
-
 # java-ipfs-http-client
 
 [![](https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square)](http://ipn.io)
