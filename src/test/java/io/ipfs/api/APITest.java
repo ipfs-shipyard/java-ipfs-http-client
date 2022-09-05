@@ -701,7 +701,7 @@ public class APITest {
     @Test
     public void diagTest() throws IOException {
         Map config = ipfs.config.show();
-        Object mdns = ipfs.config.get("Discovery.MDNS.Interval");
+        Object api = ipfs.config.get("Addresses.API");
         Object val = ipfs.config.get("Datastore.GCPeriod");
         Map setResult = ipfs.config.set("Datastore.GCPeriod", val);
         ipfs.config.replace(new NamedStreamable.ByteArrayWrapper(JSONParser.toString(config).getBytes()));
