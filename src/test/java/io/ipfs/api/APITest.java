@@ -248,7 +248,7 @@ public class APITest {
         System.out.println("root1: " + root1Res.hash);
         ipfs.pin.add(root1Res.hash);
 
-        CborObject.CborList root2 = new CborObject.CborList(Arrays.asList(new CborObject.CborMerkleLink(hashChild1), new CborObject.CborLong(42)));
+        CborObject.CborList root2 = new CborObject.CborList(Arrays.asList(new CborObject.CborMerkleLink(hashChild1), new CborObject.CborLong(System.currentTimeMillis())));
         MerkleNode root2Res = ipfs.block.put(Collections.singletonList(root2.toByteArray()), Optional.of("cbor")).get(0);
         List<Multihash> update = ipfs.pin.update(root1Res.hash, root2Res.hash, true);
 
@@ -281,7 +281,7 @@ public class APITest {
         CborObject.CborList root2 = new CborObject.CborList(Arrays.asList(
                 new CborObject.CborMerkleLink(hashChild1),
                 new CborObject.CborMerkleLink(hashChild2),
-                new CborObject.CborLong(42))
+                new CborObject.CborLong(System.currentTimeMillis()))
         );
         MerkleNode root2Res = ipfs.block.put(Collections.singletonList(root2.toByteArray()), Optional.of("cbor")).get(0);
         List<Multihash> update = ipfs.pin.update(root1Res.hash, root2Res.hash, false);
