@@ -544,20 +544,20 @@ public class IPFS {
         }
 
         public MerkleNode put(byte[] object) throws IOException {
-            return put("json", object, "cbor");
+            return put("dag-json", object, "dag-cbor");
         }
 
         public MerkleNode put(String inputFormat, byte[] object) throws IOException {
-            return put(inputFormat, object, "cbor");
+            return put(inputFormat, object, "dag-cbor");
         }
 
         public MerkleNode put(byte[] object, String outputFormat) throws IOException {
-            return put("json", object, outputFormat);
+            return put("dag-json", object, outputFormat);
         }
 
         public MerkleNode put(String inputFormat, byte[] object, String outputFormat) throws IOException {
             String prefix = protocol + "://" + host + ":" + port + version;
-            Multipart m = new Multipart(prefix + "dag/put/?stream-channels=true&input-enc=" + inputFormat + "&f=" + outputFormat, "UTF-8");
+            Multipart m = new Multipart(prefix + "dag/put/?stream-channels=true&input-codec=" + inputFormat + "&store-codec=" + outputFormat, "UTF-8");
             m.addFilePart("file", Paths.get(""), new NamedStreamable.ByteArrayWrapper(object));
             String res = m.finish();
             return MerkleNode.fromJSON(JSONParser.parse(res));

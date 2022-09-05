@@ -42,7 +42,7 @@ public class APITest {
         tmp.put("data", new CborObject.CborString(value));
         CborObject original = CborObject.CborMap.build(tmp);
         byte[] object = original.toByteArray();
-        MerkleNode put = ipfs.dag.put("cbor", object);
+        MerkleNode put = ipfs.dag.put("dag-cbor", object);
 
         Cid cid = (Cid) put.hash;
 
