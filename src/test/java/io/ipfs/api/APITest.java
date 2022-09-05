@@ -385,7 +385,7 @@ public class APITest {
         System.out.println();
     }
 
-    @Ignore // Ignored because ipfs frequently times out internally in the publish call
+//    @Ignore // Ignored because ipfs frequently times out internally in the publish call
     @Test
     public void publish() throws Exception {
         // JSON document
@@ -393,7 +393,7 @@ public class APITest {
 
         // Add a DAG node to IPFS
         MerkleNode merkleNode = ipfs.dag.put("json", json.getBytes());
-        Assert.assertEquals("expected to be zdpuAknRh1Kro2r2xBDKiXyTiwA3Nu5XcmvjRPA1VNjH41NF7" , "zdpuAknRh1Kro2r2xBDKiXyTiwA3Nu5XcmvjRPA1VNjH41NF7", merkleNode.hash.toString());
+        Assert.assertEquals("expected to be bafyreiafmbgul64c4nyybvgivswmkuhifamc24cdfuj4ij5xtnhpsfelky" , "bafyreiafmbgul64c4nyybvgivswmkuhifamc24cdfuj4ij5xtnhpsfelky", merkleNode.hash.toString());
 
         // Get a DAG node
         byte[] res = ipfs.dag.get((Cid) merkleNode.hash);
@@ -403,7 +403,7 @@ public class APITest {
         Map result = ipfs.name.publish(merkleNode.hash);
 
         // Resolve from IPNS
-        String resolved = ipfs.name.resolve(Multihash.fromBase58((String) result.get("Name")));
+        String resolved = ipfs.name.resolve(Cid.decode((String) result.get("Name")));
         Assert.assertEquals("Should be equals", resolved, "/ipfs/" + merkleNode.hash.toString());
     }
 
