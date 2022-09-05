@@ -26,7 +26,7 @@ public class APITest {
         byte[] object = original.getBytes();
         MerkleNode put = ipfs.dag.put("json", object);
 
-        Cid expected = Cid.decode("zdpuAs3whHmb9T1NkHSLGF45ykcKrEBxSLiEx6YpLzmKbQLEB");
+        Cid expected = Cid.decode("bafyreidbm2zncsc3j25zn7lofgd4woeh6eygdy73thfosuni2rwr3bhcvu");
 
         Multihash result = put.hash;
         Assert.assertTrue("Correct cid returned", result.equals(expected));
