@@ -607,14 +607,14 @@ public class APITest {
     }
 
     @Test
-    @Ignore("name test may hang forever")
+//    @Ignore("name test may hang forever")
     public void nameTest() throws IOException {
         MerkleNode pointer = new MerkleNode("QmPZ9gcCEpqKTo6aq61g2nXGUhM4iCL3ewB6LDXZCtioEB");
         Map pub = ipfs.name.publish(pointer.hash);
         String name = "key" + System.nanoTime();
         Object gen = ipfs.key.gen(name, Optional.of("rsa"), Optional.of("2048"));
         Map mykey = ipfs.name.publish(pointer.hash, Optional.of(name));
-        String resolved = ipfs.name.resolve(Multihash.fromBase58((String) pub.get("Name")));
+        String resolved = ipfs.name.resolve(Cid.decode((String) pub.get("Name")));
     }
 
     @Test

@@ -49,8 +49,8 @@
     <junit printsummary="yes" fork="true">
       <jvmarg value="-Xmx1g"/>
       <classpath>
-	<pathelement location="lib/junit-4.12.jar" />
-	<pathelement location="lib/hamcrest-core-1.3.jar" />
+	<pathelement location="lib/junit-4.13.2.jar" />
+	<pathelement location="lib/hamcrest-2.2.jar" />
 	<pathelement location="dist/ipfs.jar" />
       </classpath>
       <batchtest haltonfailure="yes">

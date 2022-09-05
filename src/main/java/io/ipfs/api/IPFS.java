@@ -222,7 +222,7 @@ public class IPFS {
         }
     }
 
-    /* 'ipfs repo' is a plumbing command used to manipulate the repo.
+    /* 'ipfs key' is a command for dealing with IPNS keys.
      */
     public class Key {
         public KeyInfo gen(String name, Optional<String> type, Optional<String> size) throws IOException {
