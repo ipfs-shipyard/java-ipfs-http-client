@@ -734,10 +734,14 @@ public class IPFS {
         } catch (ConnectException e) {
             throw new RuntimeException("Couldn't connect to IPFS daemon at "+target+"\n Is IPFS running?");
         } catch (IOException e) {
-            InputStream errorStream = conn.getErrorStream();
-            String err = errorStream == null ? e.getMessage() : new String(readFully(errorStream));
-            throw new RuntimeException("IOException contacting IPFS daemon.\n"+err+"\nTrailer: " + conn.getHeaderFields().get("Trailer"), e);
+            throw extractError(e, conn);
         }
+    }
+
+    public static RuntimeException extractError(IOException e, HttpURLConnection conn) {
+        InputStream errorStream = conn.getErrorStream();
+        String err = errorStream == null ? e.getMessage() : new String(readFully(errorStream));
+        return new RuntimeException("IOException contacting IPFS daemon.\n"+err+"\nTrailer: " + conn.getHeaderFields().get("Trailer"), e);
     }
 
     private void getObjectStream(InputStream in, Consumer<byte[]> processor, Consumer<IOException> error) {
@@ -789,11 +793,7 @@ public class IPFS {
         try {
             return conn.getInputStream();
         } catch (IOException e) {
-            e.printStackTrace();
-            InputStream errorStream = conn.getErrorStream();
-            String err = errorStream == null ? e.getMessage() : new String(readFully(errorStream));
-            List<String> trailer = conn.getHeaderFields().get("Trailer");
-            throw new RuntimeException("IOException contacting IPFS daemon.\n"+err+"\nTrailer: " + trailer, e);
+            throw extractError(e, conn);
         }
     }
 
@@ -812,8 +812,12 @@ public class IPFS {
         out.flush();
         out.close();
 
-        InputStream in = conn.getInputStream();
-        return readFully(in);
+        try {
+            InputStream in = conn.getInputStream();
+            return readFully(in);
+        } catch (IOException e) {
+            throw extractError(e, conn);
+        }
     }
 
     private static final byte[] readFully(InputStream in) {
