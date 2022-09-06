@@ -9,7 +9,6 @@ import org.junit.*;
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
-import java.util.concurrent.*;
 import java.util.function.*;
 import java.util.stream.*;
 
@@ -408,7 +407,7 @@ public class APITest {
     }
 
     @Test
-    public void pubsubSynchronous() throws Exception {
+    public void pubsubSynchronous() {
         String topic = "topic" + System.nanoTime();
         List<Map<String, Object>> res = Collections.synchronizedList(new ArrayList<>());
         new Thread(() -> {
@@ -433,8 +432,8 @@ public class APITest {
         String topic = "topic" + System.nanoTime();
         Stream<Map<String, Object>> sub = ipfs.pubsub.sub(topic);
         String data = "Hello!";
-        Object pub = ipfs.pubsub.pub(topic, data);
-        Object pub2 = ipfs.pubsub.pub(topic, "G'day");
+        ipfs.pubsub.pub(topic, data);
+        ipfs.pubsub.pub(topic, "G'day");
         List<Map> results = sub.limit(2).collect(Collectors.toList());
         Assert.assertTrue( ! results.get(0).equals(Collections.emptyMap()));
     }
