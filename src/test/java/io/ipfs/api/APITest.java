@@ -686,10 +686,8 @@ public class APITest {
     @Test
     public void bootstrapTest() throws IOException {
         List<MultiAddress> bootstrap = ipfs.bootstrap.list();
-        System.out.println(bootstrap);
         List<MultiAddress> rm = ipfs.bootstrap.rm(bootstrap.get(0), false);
         List<MultiAddress> add = ipfs.bootstrap.add(bootstrap.get(0));
-        System.out.println();
     }
 
     @Test
