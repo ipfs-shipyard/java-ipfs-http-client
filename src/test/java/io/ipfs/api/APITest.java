@@ -240,11 +240,9 @@ public class APITest {
     public void pinUpdate() throws IOException {
         MerkleNode child1 = ipfs.add(new NamedStreamable.ByteArrayWrapper("some data".getBytes())).get(0);
         Multihash hashChild1 = child1.hash;
-        System.out.println("child1: " + hashChild1);
 
         CborObject.CborMerkleLink root1 = new CborObject.CborMerkleLink(hashChild1);
         MerkleNode root1Res = ipfs.block.put(Collections.singletonList(root1.toByteArray()), Optional.of("cbor")).get(0);
-        System.out.println("root1: " + root1Res.hash);
         ipfs.pin.add(root1Res.hash);
 
         CborObject.CborList root2 = new CborObject.CborList(Arrays.asList(new CborObject.CborMerkleLink(hashChild1), new CborObject.CborLong(System.currentTimeMillis())));
@@ -267,11 +265,9 @@ public class APITest {
     public void rawLeafNodePinUpdate() throws IOException {
         MerkleNode child1 = ipfs.block.put("some data".getBytes(), Optional.of("raw"));
         Multihash hashChild1 = child1.hash;
-        System.out.println("child1: " + hashChild1);
 
         CborObject.CborMerkleLink root1 = new CborObject.CborMerkleLink(hashChild1);
         MerkleNode root1Res = ipfs.block.put(Collections.singletonList(root1.toByteArray()), Optional.of("cbor")).get(0);
-        System.out.println("root1: " + root1Res.hash);
         ipfs.pin.add(root1Res.hash);
 
         MerkleNode child2 = ipfs.block.put("G'day new tree".getBytes(), Optional.of("raw"));
@@ -606,7 +602,7 @@ public class APITest {
     }
 
     @Test
-//    @Ignore("name test may hang forever")
+    @Ignore("name test may hang forever")
     public void nameTest() throws IOException {
         MerkleNode pointer = new MerkleNode("QmPZ9gcCEpqKTo6aq61g2nXGUhM4iCL3ewB6LDXZCtioEB");
         Map pub = ipfs.name.publish(pointer.hash);
@@ -685,7 +681,6 @@ public class APITest {
                 throw new IllegalStateException("Couldn't contact any node!");
         }
         List<Peer> peers = ipfs.swarm.peers();
-        System.out.println(peers);
     }
 
     @Test
