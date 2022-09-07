@@ -44,7 +44,9 @@ public class IPFS {
     public final Stats stats = new Stats();
     public final Name name = new Name();
     public final Pubsub pubsub = new Pubsub();
+    public final Files files = new Files();
 
+    
     public IPFS(String host, int port) {
         this(host, port, "/api/v0/", false);
     }
@@ -640,6 +642,210 @@ public class IPFS {
             return retrieveAndParse("update/log");
         }
     }
+
+    // Files commands related classes
+    public class Files {
+
+        public Map chcid() throws IOException {
+            return retrieveMap("files/chcid");
+        }
+
+        public Map chcid(String path) throws IOException {
+            return retrieveMap("files/chcid?args=" + path);
+        }
+
+        public Map cp(String source, String dest) throws IOException {
+            return retrieveMap("files/cp?arg=" + source + "&arg=" + dest);
+        }
+
+        public Map cp(String source, String dest, boolean parents) throws IOException {
+            return retrieveMap("files/cp?arg=" + source + "&arg=" + dest + "&parents=" + parents);
+        }
+
+        public Map flush() throws IOException {
+            return retrieveMap("files/flush");
+        }
+       public Map flush(String path) throws IOException {
+            return retrieveMap("files/flush?arg=" + path);
+        }
+
+        public Map ls() throws IOException {
+            return retrieveMap("files/ls");
+        }
+
+        public Map ls(String path) throws IOException {
+            return retrieveMap("files/ls?arg=" + path);
+        }
+
+        public Map ls(String path, boolean longListing, boolean u) throws IOException {
+            return retrieveMap("files/ls?arg=" + path + "&long=" + longListing + "&U=" + u);
+        }
+
+        public Map mkdir(String path) throws IOException {
+            return retrieveMap("files/mkdir?arg=" + path);
+        }
+
+        public Map mkdir(String path, boolean parents, int cidVersion, Multihash hash) throws IOException {
+            return retrieveMap("files/mkdir?arg=" + path + "&parents=" + parents + "&cid-version=" + cidVersion + "&hash=" + hash);
+        }
+
+        public Map mv(String source, String dest) throws IOException {
+            return retrieveMap("files/mv?arg=" + source + "&arg=" + dest);
+        }
+
+        public Map read(String path) throws IOException {
+            return retrieveMap("files/read?arg=" + path);
+        }
+       public Map read(String path, int offset, int count) throws IOException {
+            return retrieveMap("files/read?arg=" + path + "&offset=" + offset + "&count=" + count);
+        }
+
+        public Map rm(String path) throws IOException {
+            return retrieveMap("files/rm?arg=" + path);
+        }
+
+        public Map rm(String path, boolean recursive, boolean force) throws IOException {
+            return retrieveMap("files/rm?arg=" + path + "&recursive=" + recursive + "&force=" + force);
+        }
+
+        public Map stat(String path) throws IOException {
+            return retrieveMap("files/stat?arg=" + path);
+        }
+
+    }
+
+    public abstract class FilesArgs {
+        private Map<String,List<String>> args = new LinkedHashMap<String,List<String>>(); // store in order added
+
+        public String toString() {
+
+            // create list to store query param name/value pairs
+            List<String> qParamList = new ArrayList<String>();
+          
+ 
+            for (Map.Entry<String,List<String>> e: args.entrySet()) {
+                final String paramName; 
+                List<String> paramValues;
+                // encode param name and its value(s)
+                paramName = URLEncoder.encode(e.getKey());
+                paramValues = e.getValue();
+                
+                for (String v: paramValues) {
+                    String paramValue = URLEncoder.encode(v);
+                    qParamList.add( String.format("%s=%s",paramName, paramValue) );
+                } 
+            }
+
+            return String.join("&",qParamList);
+
+       
+        }
+
+        protected void add(String paramName,String paramValue) {
+
+            List<String> values = args.get(paramName);
+            if (values != null) {
+                // param name has been assigned at least one value before.
+                // add another value to existing list 
+                values.add(paramValue);
+            } else {
+                // param name not found. make new List
+                List<String> l = new ArrayList<String>();
+
+                // add single entry
+                l.add(paramValue);
+               // add list as value to param name in map
+                args.put(paramName,l);
+            }
+           
+          
+        }
+
+    }
+
+
+
+    /** 
+     *  Defined here: https://docs.ipfs.tech/reference/kubo/rpc/#api-v0-files-chcid
+    */
+    public class FilesChCIDArgs extends FilesArgs {
+        public FilesChCIDArgs() {
+               
+        }
+
+        public FilesChCIDArgs path(String mfsPath) {
+            add("arg",mfsPath);
+        
+            return (this);
+        }
+
+        public FilesChCIDArgs cidVersion(int cidVersion) {
+            add("cid-version",Integer.toString(cidVersion));
+
+            return (this);
+        }
+
+        public FilesChCIDArgs hash(String hashFunction) {
+            add("hash",hashFunction);
+
+            return (this);
+        }
+
+        
+    }
+
+    /**
+     * Defined here: https://docs.ipfs.tech/reference/kubo/rpc/#api-v0-files-cp
+    */
+    public class FilesCpArgs extends FilesArgs {
+        public FilesCpArgs(String srcIPFSOrMFSPath, String dstMFSPath) {
+            add("arg",srcIPFSOrMFSPath);
+            add("arg",dstMFSPath);
+        } 
+
+        public FilesCpArgs makeParentDirs(boolean parents) {
+            add("parents",Boolean.toString(parents));
+
+            return (this);
+        } 
+    }
+
+    
+
+    public class FilesFlushArgs extends FilesArgs {
+
+    }
+
+    public class FilesLsArgs extends FilesArgs {
+
+    }
+
+    public class FilesMkdirArgs extends FilesArgs {
+
+    }
+
+    public class FilesMvArgs extends FilesArgs {
+
+    }
+
+    public class FilesReadArgs extends FilesArgs {
+
+    }
+
+    public class FilesRmArgs extends FilesArgs {
+
+    }
+
+    public class FilesStatArgs extends FilesArgs {
+
+    }
+
+    public class FilesWriteArgs extends FilesArgs {
+
+    }
+
+    // End Files Command Classes
+    
 
     private Map retrieveMap(String path) throws IOException {
         return (Map)retrieveAndParse(path);
