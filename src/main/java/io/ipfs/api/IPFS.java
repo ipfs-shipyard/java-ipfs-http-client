@@ -1,6 +1,7 @@
 package io.ipfs.api;
 
 import io.ipfs.cid.*;
+import io.ipfs.multibase.*;
 import io.ipfs.multihash.Multihash;
 import io.ipfs.multiaddr.MultiAddress;
 
@@ -278,8 +279,15 @@ public class IPFS {
          * @return
          * @throws IOException
          */
-        public Object pub(String topic, String data) throws Exception {
-            return retrieveAndParse("pubsub/pub?arg="+topic + "&arg=" + data);
+        public void pub(String topic, String data) {
+            String encodedTopic = Multibase.encode(Multibase.Base.Base64Url, topic.getBytes());
+            Multipart m = new Multipart(protocol +"://" + host + ":" + port + version+"pubsub/pub?arg=" + encodedTopic, "UTF-8");
+            try {
+                m.addFilePart("file", Paths.get(""), new NamedStreamable.ByteArrayWrapper(data.getBytes()));
+                String res = m.finish();
+            } catch (IOException e) {
+                throw new RuntimeException(e.getMessage(), e);
+            }
         }
 
         public Stream<Map<String, Object>> sub(String topic) throws Exception {
@@ -287,7 +295,8 @@ public class IPFS {
         }
 
         public Stream<Map<String, Object>> sub(String topic, ForkJoinPool threadSupplier) throws Exception {
-            return retrieveAndParseStream("pubsub/sub?arg=" + topic, threadSupplier).map(obj -> (Map)obj);
+            String encodedTopic = Multibase.encode(Multibase.Base.Base64Url, topic.getBytes());
+            return retrieveAndParseStream("pubsub/sub?arg=" + encodedTopic, threadSupplier).map(obj -> (Map)obj);
         }
 
         /**
@@ -297,10 +306,9 @@ public class IPFS {
          * @throws IOException
          */
         public void sub(String topic, Consumer<Map<String, Object>> results, Consumer<IOException> error) throws IOException {
-            retrieveAndParseStream("pubsub/sub?arg="+topic, res -> results.accept((Map)res), error);
+            String encodedTopic = Multibase.encode(Multibase.Base.Base64Url, topic.getBytes());
+            retrieveAndParseStream("pubsub/sub?arg="+encodedTopic, res -> results.accept((Map)res), error);
         }
-
-
     }
 
     /* 'ipfs block' is a plumbing command used to manipulate raw ipfs blocks.
@@ -932,10 +940,14 @@ public class IPFS {
         } catch (ConnectException e) {
             throw new RuntimeException("Couldn't connect to IPFS daemon at "+target+"\n Is IPFS running?");
         } catch (IOException e) {
-            InputStream errorStream = conn.getErrorStream();
-            String err = errorStream == null ? e.getMessage() : new String(readFully(errorStream));
-            throw new RuntimeException("IOException contacting IPFS daemon.\n"+err+"\nTrailer: " + conn.getHeaderFields().get("Trailer"), e);
+            throw extractError(e, conn);
         }
+    }
+
+    public static RuntimeException extractError(IOException e, HttpURLConnection conn) {
+        InputStream errorStream = conn.getErrorStream();
+        String err = errorStream == null ? e.getMessage() : new String(readFully(errorStream));
+        return new RuntimeException("IOException contacting IPFS daemon.\n"+err+"\nTrailer: " + conn.getHeaderFields().get("Trailer"), e);
     }
 
     private void getObjectStream(InputStream in, Consumer<byte[]> processor, Consumer<IOException> error) {
@@ -984,7 +996,11 @@ public class IPFS {
 
     private static InputStream getStream(URL target, int connectTimeoutMillis, int readTimeoutMillis) throws IOException {
         HttpURLConnection conn = configureConnection(target, "POST", connectTimeoutMillis, readTimeoutMillis);
-        return conn.getInputStream();
+        try {
+            return conn.getInputStream();
+        } catch (IOException e) {
+            throw extractError(e, conn);
+        }
     }
 
     private Map postMap(String path, byte[] body, Map<String, String> headers) throws IOException {
@@ -1002,8 +1018,12 @@ public class IPFS {
         out.flush();
         out.close();
 
-        InputStream in = conn.getInputStream();
-        return readFully(in);
+        try {
+            InputStream in = conn.getInputStream();
+            return readFully(in);
+        } catch (IOException e) {
+            throw extractError(e, conn);
+        }
     }
 
     private static final byte[] readFully(InputStream in) {

@@ -35,7 +35,6 @@ public class AddTest {
         }
         if (b.toString().contains("rror"))
              throw new IllegalStateException("Error returned from IPFS: " + b.toString());
-        System.out.println(b.toString());
     }
 
     public static void main(String[] a) throws Exception {

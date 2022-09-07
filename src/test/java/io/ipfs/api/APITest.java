@@ -9,7 +9,6 @@ import org.junit.*;
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
-import java.util.concurrent.*;
 import java.util.function.*;
 import java.util.stream.*;
 
@@ -241,11 +240,9 @@ public class APITest {
     public void pinUpdate() throws IOException {
         MerkleNode child1 = ipfs.add(new NamedStreamable.ByteArrayWrapper("some data".getBytes())).get(0);
         Multihash hashChild1 = child1.hash;
-        System.out.println("child1: " + hashChild1);
 
         CborObject.CborMerkleLink root1 = new CborObject.CborMerkleLink(hashChild1);
         MerkleNode root1Res = ipfs.block.put(Collections.singletonList(root1.toByteArray()), Optional.of("cbor")).get(0);
-        System.out.println("root1: " + root1Res.hash);
         ipfs.pin.add(root1Res.hash);
 
         CborObject.CborList root2 = new CborObject.CborList(Arrays.asList(new CborObject.CborMerkleLink(hashChild1), new CborObject.CborLong(System.currentTimeMillis())));
@@ -268,11 +265,9 @@ public class APITest {
     public void rawLeafNodePinUpdate() throws IOException {
         MerkleNode child1 = ipfs.block.put("some data".getBytes(), Optional.of("raw"));
         Multihash hashChild1 = child1.hash;
-        System.out.println("child1: " + hashChild1);
 
         CborObject.CborMerkleLink root1 = new CborObject.CborMerkleLink(hashChild1);
         MerkleNode root1Res = ipfs.block.put(Collections.singletonList(root1.toByteArray()), Optional.of("cbor")).get(0);
-        System.out.println("root1: " + root1Res.hash);
         ipfs.pin.add(root1Res.hash);
 
         MerkleNode child2 = ipfs.block.put("G'day new tree".getBytes(), Optional.of("raw"));
@@ -408,7 +403,7 @@ public class APITest {
     }
 
     @Test
-    public void pubsubSynchronous() throws Exception {
+    public void pubsubSynchronous() {
         String topic = "topic" + System.nanoTime();
         List<Map<String, Object>> res = Collections.synchronizedList(new ArrayList<>());
         new Thread(() -> {
@@ -433,8 +428,8 @@ public class APITest {
         String topic = "topic" + System.nanoTime();
         Stream<Map<String, Object>> sub = ipfs.pubsub.sub(topic);
         String data = "Hello!";
-        Object pub = ipfs.pubsub.pub(topic, data);
-        Object pub2 = ipfs.pubsub.pub(topic, "G'day");
+        ipfs.pubsub.pub(topic, data);
+        ipfs.pubsub.pub(topic, "G'day");
         List<Map> results = sub.limit(2).collect(Collectors.toList());
         Assert.assertTrue( ! results.get(0).equals(Collections.emptyMap()));
     }
@@ -607,7 +602,7 @@ public class APITest {
     }
 
     @Test
-//    @Ignore("name test may hang forever")
+    @Ignore("name test may hang forever")
     public void nameTest() throws IOException {
         MerkleNode pointer = new MerkleNode("QmPZ9gcCEpqKTo6aq61g2nXGUhM4iCL3ewB6LDXZCtioEB");
         Map pub = ipfs.name.publish(pointer.hash);
@@ -686,16 +681,13 @@ public class APITest {
                 throw new IllegalStateException("Couldn't contact any node!");
         }
         List<Peer> peers = ipfs.swarm.peers();
-        System.out.println(peers);
     }
 
     @Test
     public void bootstrapTest() throws IOException {
         List<MultiAddress> bootstrap = ipfs.bootstrap.list();
-        System.out.println(bootstrap);
         List<MultiAddress> rm = ipfs.bootstrap.rm(bootstrap.get(0), false);
         List<MultiAddress> add = ipfs.bootstrap.add(bootstrap.get(0));
-        System.out.println();
     }
 
     @Test
