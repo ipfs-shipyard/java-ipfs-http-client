@@ -658,67 +658,51 @@ public class IPFS {
             return retrieveMap("files/chcid");
         }
 
-        public Map chcid(String path) throws IOException {
-            return retrieveMap("files/chcid?args=" + path);
+        public Map chcid(FilesChCIDArgs args) throws IOException {
+            return retrieveMap("files/chcid?" + args);
         }
 
-        public Map cp(String source, String dest) throws IOException {
-            return retrieveMap("files/cp?arg=" + source + "&arg=" + dest);
-        }
-
-        public Map cp(String source, String dest, boolean parents) throws IOException {
-            return retrieveMap("files/cp?arg=" + source + "&arg=" + dest + "&parents=" + parents);
+        public Map cp(FilesCpArgs args) throws IOException {
+            return retrieveMap("files/cp?" + args);
         }
 
         public Map flush() throws IOException {
             return retrieveMap("files/flush");
         }
-       public Map flush(String path) throws IOException {
-            return retrieveMap("files/flush?arg=" + path);
+
+       public Map flush(FilesFlushArgs args) throws IOException {
+            return retrieveMap("files/flush?" + args);
         }
 
         public Map ls() throws IOException {
             return retrieveMap("files/ls");
         }
 
-        public Map ls(String path) throws IOException {
-            return retrieveMap("files/ls?arg=" + path);
+        public Map ls(FilesLsArgs args) throws IOException {
+            return retrieveMap("files/ls?" + args);
         }
 
-        public Map ls(String path, boolean longListing, boolean u) throws IOException {
-            return retrieveMap("files/ls?arg=" + path + "&long=" + longListing + "&U=" + u);
+        public Map mkdir(FilesMkdirArgs args) throws IOException {
+            return retrieveMap("files/mkdir?" + args);
         }
 
-        public Map mkdir(String path) throws IOException {
-            return retrieveMap("files/mkdir?arg=" + path);
+        public Map mv(FilesMvArgs args) throws IOException {
+            return retrieveMap("files/mv?" + args);
         }
 
-        public Map mkdir(String path, boolean parents, int cidVersion, Multihash hash) throws IOException {
-            return retrieveMap("files/mkdir?arg=" + path + "&parents=" + parents + "&cid-version=" + cidVersion + "&hash=" + hash);
+        public Map read(FilesReadArgs args) throws IOException {
+            return retrieveMap("files/read?" + args);
         }
 
-        public Map mv(String source, String dest) throws IOException {
-            return retrieveMap("files/mv?arg=" + source + "&arg=" + dest);
+        public Map rm(FilesRmArgs args) throws IOException {
+            return retrieveMap("files/rm?" + args);
         }
 
-        public Map read(String path) throws IOException {
-            return retrieveMap("files/read?arg=" + path);
-        }
-       public Map read(String path, int offset, int count) throws IOException {
-            return retrieveMap("files/read?arg=" + path + "&offset=" + offset + "&count=" + count);
+        public Map stat(FilesStatArgs args) throws IOException {
+            return retrieveMap("files/stat?" + args);
         }
 
-        public Map rm(String path) throws IOException {
-            return retrieveMap("files/rm?arg=" + path);
-        }
 
-        public Map rm(String path, boolean recursive, boolean force) throws IOException {
-            return retrieveMap("files/rm?arg=" + path + "&recursive=" + recursive + "&force=" + force);
-        }
-
-        public Map stat(String path) throws IOException {
-            return retrieveMap("files/stat?arg=" + path);
-        }
 
     }
 
@@ -777,9 +761,6 @@ public class IPFS {
      *  Defined here: https://docs.ipfs.tech/reference/kubo/rpc/#api-v0-files-chcid
     */
     public class FilesChCIDArgs extends FilesArgs {
-        public FilesChCIDArgs() {
-               
-        }
 
         public FilesChCIDArgs path(String mfsPath) {
             add("arg",mfsPath);
@@ -787,8 +768,8 @@ public class IPFS {
             return (this);
         }
 
-        public FilesChCIDArgs cidVersion(int cidVersion) {
-            add("cid-version",Integer.toString(cidVersion));
+        public FilesChCIDArgs cidVersion(int cidVersionToUse) {
+            add("cid-version",Integer.toString(cidVersionToUse));
 
             return (this);
         }
@@ -807,11 +788,13 @@ public class IPFS {
     */
     public class FilesCpArgs extends FilesArgs {
         public FilesCpArgs(String srcIPFSOrMFSPath, String dstMFSPath) {
+
             add("arg",srcIPFSOrMFSPath);
             add("arg",dstMFSPath);
         } 
 
         public FilesCpArgs makeParentDirs(boolean parents) {
+
             add("parents",Boolean.toString(parents));
 
             return (this);
@@ -819,36 +802,233 @@ public class IPFS {
     }
 
     
-
+    /**
+     * Defined here: https://docs.ipfs.tech/reference/kubo/rpc/#api-v0-files-flush
+     *
+    */
     public class FilesFlushArgs extends FilesArgs {
+        public FilesFlushArgs path(String pathToFlush) {
 
+            add("arg",pathToFlush);
+            
+            return (this);
+        }
     }
 
+    /**
+      *
+      *
+    */
     public class FilesLsArgs extends FilesArgs {
 
+        public FilesLsArgs path(String pathToShowListing) {
+            add("arg",pathToShowListing);
+
+            return (this);
+        }
+
+        public FilesLsArgs longListingFormat(boolean useLongListingFormat) {
+            add("long",Boolean.toString(useLongListingFormat));
+
+            return (this);
+        }
+
+        public FilesLsArgs noSort(boolean noSort) {
+            add("U",Boolean.toString(noSort));
+
+            return (this);
+        }
     }
 
+    /**
+      *
+      *
+    */
     public class FilesMkdirArgs extends FilesArgs {
 
+        public FilesMkdirArgs(String path) {
+            add("arg",path);
+        }
+
+        public FilesMkdirArgs parents(boolean makeParentDirsAsNeeded) {
+            add("parents", Boolean.toString(makeParentDirsAsNeeded));
+
+            return (this);
+        }
+
+        public FilesMkdirArgs cidVersion(int cidVersionToUse) {
+            add("cid-version",Integer.toString(cidVersionToUse));
+
+            return (this);
+        }
+
+        public FilesMkdirArgs hash(String hashFunction) {
+            add("hash",hashFunction);
+
+            return (this);
+        } 
     }
 
+    /**
+      *
+      *
+    */
     public class FilesMvArgs extends FilesArgs {
 
+        public FilesMvArgs(String srcPath, String dstPath) {
+            add("arg",srcPath);
+            add("arg",dstPath);
+        }
+
     }
 
+    /**
+      *
+      *
+    */
     public class FilesReadArgs extends FilesArgs {
 
+        public FilesReadArgs(String pathToRead) {
+            add("arg",pathToRead);
+        }
+
+        public FilesReadArgs offset(int byteOffsetToStartReading) {
+            add("offset",Integer.toString(byteOffsetToStartReading)); 
+            
+            return (this);
+        
+        }
+
+        public FilesReadArgs count(long maxBytesToRead) {
+            add("count",Long.toString(maxBytesToRead));
+
+            return (this);
+        }
+
     }
 
+    /**
+      *
+      *
+    */
     public class FilesRmArgs extends FilesArgs {
 
+        public FilesRmArgs(String path, String... morePaths) {
+
+            add("arg",path);
+
+            for (String p: morePaths) {
+                add("arg",p);
+            }
+
+        }
+
+        public FilesRmArgs recursive(boolean recursivelyRemoveDirs) {
+            add("recursive",Boolean.toString(recursivelyRemoveDirs));
+
+            return (this);
+
+        }
+
+        public FilesRmArgs force(boolean forciblyRemoveTargetAtPath) {
+            add("force",Boolean.toString(forciblyRemoveTargetAtPath));
+
+            return (this);
+
+        }
     }
 
+    /**
+      * 
+      *
+    */
     public class FilesStatArgs extends FilesArgs {
+
+        public FilesStatArgs(String pathToNodeToStat) {
+            add("arg",pathToNodeToStat);
+        }
+
+        public FilesStatArgs format(String formatString) {
+            add("format",formatString);
+
+            return (this);
+        }
+
+        public FilesStatArgs hash(boolean printOnlyHash) {
+            add("hash",Boolean.toString(printOnlyHash));
+
+            return (this);
+        }
+
+        public FilesStatArgs size(boolean printOnlySize) {
+            add("size",Boolean.toString(printOnlySize));
+
+            return (this);
+        }
+
+        public FilesStatArgs withLocal(boolean computeAmountOfDagThatIsLocal) {
+
+            add("with-local",Boolean.toString(computeAmountOfDagThatIsLocal));
+
+            return (this);
+        }
+
 
     }
 
     public class FilesWriteArgs extends FilesArgs {
+
+        public FilesWriteArgs(String path) {
+            add("arg",path);
+        }
+
+        public FilesWriteArgs offset(long offsetToBeginWriting) {
+            add("offset",Long.toString(offsetToBeginWriting));
+
+            return (this);
+        }
+
+        public FilesWriteArgs create(boolean createFileIfNotExists)  {
+            add("create",Boolean.toString(createFileIfNotExists));
+
+            return (this);
+        }
+
+        public FilesWriteArgs parents(boolean makeParentDirsAsNeeded) {
+            add("parents",Boolean.toString(makeParentDirsAsNeeded));
+
+            return (this);
+        }
+
+        public FilesWriteArgs truncate(boolean truncateFileSizeToZeroBeforeWrite) {
+            add("truncate",Boolean.toString(truncateFileSizeToZeroBeforeWrite));
+
+            return (this);
+        }
+
+        public FilesWriteArgs count(long maxNumberBytesToRead) {
+            add("count",Long.toString(maxNumberBytesToRead));
+
+            return (this);
+        }
+
+        public FilesWriteArgs rawLeaves(boolean useRawBlocksForNewLeafNodes) {
+            add("raw-leaves",Boolean.toString(useRawBlocksForNewLeafNodes));
+
+            return (this);
+        }
+
+        public FilesWriteArgs cidVersion(int cidVersionToUse) {
+            add("cid-version",Integer.toString(cidVersionToUse));
+
+            return (this);
+        }
+
+        public FilesWriteArgs hash(String hashFunction) {
+            add("hash", hashFunction);
+
+            return (this);
+        }
 
     }
 
