@@ -32,6 +32,23 @@ public class Multipart {
         }
     }
 
+    public Multipart(String requestURL,String charset,int connectTimeoutMillis, int readTimeoutMillis) {
+
+        this(requestURL,charset);
+
+        // now set request/read timeouts supplied
+        if (httpConn != null) {
+            httpConn.setConnectTimeout(connectTimeoutMillis);
+            httpConn.setReadTimeout(readTimeoutMillis);
+            return;
+        }
+
+        // somehow httpConn not initialized!
+        throw new IllegalStateException("expected httpConn to be initialized, found " + httpConn);
+
+
+    }
+
     public static String createBoundary() {
         Random r = new Random();
         String allowed = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";

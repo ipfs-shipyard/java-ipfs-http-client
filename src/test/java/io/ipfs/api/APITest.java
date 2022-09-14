@@ -13,6 +13,7 @@ import java.util.function.*;
 import java.util.stream.*;
 
 import static org.junit.Assert.assertTrue;
+import java.net.URLEncoder;
 
 public class APITest {
 
@@ -729,6 +730,339 @@ public class APITest {
         Object update = ipfs.update();
     }
 
+    @Test
+    public void filesTest() throws IOException {
+
+        // Test Files*Args classes
+
+
+        // test chcid args
+        IPFS.Files.ChCIDArgs chCIDArgs = ipfs.files.new ChCIDArgs();
+        Assert.assertEquals(chCIDArgs.toString(), "");
+
+        String expected,actual;
+
+        expected = encodeQueryParam("arg","/mfs/path");
+        actual = chCIDArgs.path("/mfs/path").toString();
+        Assert.assertEquals(expected,actual);
+
+        expected = expected + '&' + encodeQueryParam("cid-version","1");
+        actual = chCIDArgs.cidVersion(1).toString();
+        Assert.assertEquals(expected,actual);
+
+
+        expected = expected + '&' + encodeQueryParam("hash","myHashName");
+        actual = chCIDArgs.hash("myHashName").toString();
+        Assert.assertEquals(expected,actual);
+
+        // test cp args
+        IPFS.Files.CpArgs cpArgs = ipfs.files.new CpArgs("/my/src","/my/dst");
+
+        expected = encodeQueryParam("arg","/my/src") + '&' + encodeQueryParam("arg","/my/dst");
+        actual = cpArgs.toString();
+        Assert.assertEquals(expected,actual);
+
+        expected = expected + '&' + encodeQueryParam("parents","true");
+        actual = cpArgs.makeParentDirs(true).toString();
+        Assert.assertEquals(expected,actual);
+
+        // test flush args
+        IPFS.Files.FlushArgs flushArgs = ipfs.files.new FlushArgs();
+
+        Assert.assertEquals("",flushArgs.toString());
+
+        expected = encodeQueryParam("arg", "/my/flush/path");
+        actual = flushArgs.path("/my/flush/path").toString();
+
+        Assert.assertEquals(expected,actual);
+
+        // test ls args
+        IPFS.Files.LsArgs lsArgs = ipfs.files.new LsArgs();
+
+        Assert.assertEquals("",lsArgs.toString());
+
+        expected = encodeQueryParam("arg","/ls/path");
+        actual = lsArgs.path("/ls/path").toString();
+
+        Assert.assertEquals(expected,actual);
+
+        expected = expected + '&' + encodeQueryParam("long","true");
+        actual = lsArgs.longListingFormat(true).toString();
+
+        Assert.assertEquals(expected,actual);
+
+        expected = expected + '&' + encodeQueryParam("U","false");
+        actual = lsArgs.noSort(false).toString();
+
+        Assert.assertEquals(expected,actual);
+
+        // test mkdir Args
+        IPFS.Files.MkdirArgs mkdirArgs = ipfs.files.new MkdirArgs("/mkdir/path");
+
+        expected = encodeQueryParam("arg","/mkdir/path");
+        actual = mkdirArgs.toString();
+
+        Assert.assertEquals(expected,actual);
+
+        expected = expected + '&' + encodeQueryParam("parents","true");
+        actual = mkdirArgs.parents(true).toString();
+
+        Assert.assertEquals(expected,actual);
+
+        expected = expected + '&' + encodeQueryParam("cid-version","5");
+        actual = mkdirArgs.cidVersion(5).toString();
+
+        Assert.assertEquals(expected,actual);
+
+        expected = expected + '&' + encodeQueryParam("hash","myHashName");
+        actual = mkdirArgs.hash("myHashName").toString();
+
+        Assert.assertEquals(expected,actual);
+
+        // test mv args
+        IPFS.Files.MvArgs mvArgs = ipfs.files.new MvArgs("/path/src","/path/dst");
+
+        expected = encodeQueryParam("arg","/path/src") + '&' + encodeQueryParam("arg","/path/dst");
+        actual = mvArgs.toString();
+
+        Assert.assertEquals(expected,actual);
+
+        // test read args
+        IPFS.Files.ReadArgs readArgs = ipfs.files.new ReadArgs("/path/read");
+
+        expected = encodeQueryParam("arg","/path/read");
+        actual = readArgs.toString();
+
+        Assert.assertEquals(expected,actual);
+
+        expected = expected + '&' + encodeQueryParam("offset","55");
+        actual = readArgs.offset(55).toString();
+
+        Assert.assertEquals(expected,actual);
+
+        expected = expected + '&' + encodeQueryParam("count","9898");
+        actual = readArgs.count(9898).toString();
+
+        Assert.assertEquals(expected,actual);
+
+        // test rm args
+        IPFS.Files.RmArgs rmArgs = ipfs.files.new RmArgs("/path/rm");
+
+        expected = encodeQueryParam("arg","/path/rm");
+        actual = rmArgs.toString();
+
+        Assert.assertEquals(expected,actual);
+
+        expected = expected + '&' + encodeQueryParam("recursive","false");
+        actual = rmArgs.recursive(false).toString();
+
+        Assert.assertEquals(expected,actual);
+
+        expected = expected + '&' + encodeQueryParam("force","true");
+        actual = rmArgs.force(true).toString();
+
+        Assert.assertEquals(expected,actual);
+
+        // test stat args
+        IPFS.Files.StatArgs statArgs = ipfs.files.new StatArgs("/path/stat");
+
+        expected =  encodeQueryParam("arg","/path/stat");
+        actual = statArgs.toString();
+
+        Assert.assertEquals(expected,actual);
+
+        expected = expected + '&' + encodeQueryParam("format","<hash>test<size>");
+        actual = statArgs.format("<hash>test<size>").toString();
+
+        Assert.assertEquals(expected,actual);
+
+        expected = expected + '&' + encodeQueryParam("hash","true");
+        actual = statArgs.hash(true).toString();
+
+        Assert.assertEquals(expected,actual);
+
+        expected = expected + '&' + encodeQueryParam("size","false");
+        actual = statArgs.size(false).toString();
+
+        Assert.assertEquals(expected,actual);
+
+        expected = expected + '&' + encodeQueryParam("with-local","true");
+        actual = statArgs.withLocal(true).toString();
+
+        Assert.assertEquals(expected,actual);
+
+        // test write args
+        IPFS.Files.WriteArgs writeArgs = ipfs.files.new WriteArgs("/path/write");
+
+        expected = encodeQueryParam("arg","/path/write");
+        actual = writeArgs.toString();
+
+        Assert.assertEquals(expected,actual);
+
+        expected = expected + '&' + encodeQueryParam("offset","1776");
+        actual = writeArgs.offset(1776).toString();
+
+        Assert.assertEquals(expected,actual);
+
+        expected = expected + '&' + encodeQueryParam("create","true");
+        actual = writeArgs.create(true).toString();
+
+        Assert.assertEquals(expected,actual);
+
+        expected = expected + '&' + encodeQueryParam("parents","true");
+        actual = writeArgs.parents(true).toString();
+
+        Assert.assertEquals(expected,actual);
+
+        expected = expected + '&' + encodeQueryParam("truncate","true");
+        actual = writeArgs.truncate(true).toString();
+
+        Assert.assertEquals(expected,actual);
+
+        expected = expected + '&' + encodeQueryParam("count","12");
+        actual = writeArgs.count(12).toString();
+
+        Assert.assertEquals(expected,actual);
+
+        expected = expected + '&' + encodeQueryParam("raw-leaves","true");
+        actual = writeArgs.rawLeaves(true).toString();
+
+        Assert.assertEquals(expected,actual);
+
+        expected = expected + '&' + encodeQueryParam("cid-version","3");
+        actual = writeArgs.cidVersion(3).toString();
+
+        Assert.assertEquals(expected,actual);
+
+        expected = expected + '&' + encodeQueryParam("hash","myhash1");
+        actual = writeArgs.hash("myhash1").toString();
+
+        Assert.assertEquals(expected,actual);
+
+
+        // test files api calls
+        String []mfsPathElements = {UUID.randomUUID().toString(),
+                                    UUID.randomUUID().toString(),
+                                    UUID.randomUUID().toString()};
+
+        String testMfsDir = String.format("/%s", String.join("/",mfsPathElements));
+
+
+        // test making dir with create parents
+
+        Map mapRsp = ipfs.files.mkdir( ipfs.files.new MkdirArgs(testMfsDir).parents(true));
+
+
+        //byte[] largerData = new byte[100*1024*1024];
+        //new Random(1).nextBytes(largerData);
+        //NamedStreamable.ByteArrayWrapper largeFile = new NamedStreamable.ByteArrayWrapper("nontrivial.txt", largerData);
+
+        String smallFilePart1 = "how much wood ";
+        String smallFilePart2 = "could a woodchuck chuck, ";
+        String smallFilePart3 = "if a woodchuck could chuck wood?";
+
+        String fileName = "woodchuck.txt";
+
+        NamedStreamable ns = new NamedStreamable.ByteArrayWrapper(fileName, smallFilePart1.getBytes());
+
+
+        String fileToWrite = String.format("%s/%s",testMfsDir,fileName);
+
+        // write chunk 1 of 3
+        ipfs.files.write( ipfs.files.new WriteArgs(fileToWrite).create(true),ns);
+        // write chunk 2 of 3
+        ns = new NamedStreamable.ByteArrayWrapper(fileName, smallFilePart2.getBytes());
+        ipfs.files.write( ipfs.files.new WriteArgs(fileToWrite).offset(smallFilePart1.length()),ns);
+        // write chunk 3 of 3
+        ns = new NamedStreamable.ByteArrayWrapper(fileName, smallFilePart3.getBytes());
+        ipfs.files.write( ipfs.files.new WriteArgs(fileToWrite).offset(smallFilePart1.length() + smallFilePart2.length()),ns);
+
+        // read whole file back
+        byte[] bytesRead = ipfs.files.read(ipfs.files.new ReadArgs(fileToWrite));
+
+        expected = smallFilePart1+smallFilePart2+smallFilePart3;
+        actual = new String(bytesRead);
+
+        Assert.assertEquals(expected, actual);
+
+        bytesRead = ipfs.files.read(ipfs.files.new ReadArgs(fileToWrite).offset(smallFilePart1.length() + smallFilePart2.length()));
+
+        expected = smallFilePart3;
+        actual = new String(bytesRead);
+
+        Assert.assertEquals(expected, actual);
+
+        bytesRead = ipfs.files.read(ipfs.files.new ReadArgs(fileToWrite).offset(smallFilePart1.length()).count(smallFilePart2.length()));
+
+        expected = smallFilePart2;
+        actual = new String(bytesRead);
+
+        Assert.assertEquals(expected, actual);
+
+        // test cp by copying woodchuck.txt to first dir path element
+        String src,dst;
+
+        src = fileToWrite;
+        dst = "/" + mfsPathElements[0] + "/" + fileName;
+
+        ipfs.files.cp(ipfs.files.new CpArgs(src,dst));
+
+        // test ls by listing woodchuck files
+        Map lsRsp1 = ipfs.files.ls( ipfs.files.new LsArgs().path(src));
+        Map lsRsp2 = ipfs.files.ls( ipfs.files.new LsArgs().path(dst));
+
+
+        Map rsp1LsEntry0 =  (Map) ((List)lsRsp1.get("Entries")).get(0);
+        Map rsp2LsEntry0 =  (Map) ((List)lsRsp2.get("Entries")).get(0);
+
+        // are hashes of woodchuck files equal (original and copy) ?
+        Assert.assertEquals( (String) rsp1LsEntry0.get("Hash"), (String) rsp2LsEntry0.get("Hash"));
+        Assert.assertEquals( (Integer) rsp1LsEntry0.get("Size"), (Integer) rsp2LsEntry0.get("Size"));
+        Assert.assertEquals( (Integer) rsp1LsEntry0.get("Type"), (Integer) rsp2LsEntry0.get("Type"));
+
+        // test stat by stat'ing  woodchuck files
+        Map statRsp1 = ipfs.files.stat( ipfs.files.new StatArgs(src));
+        Map statRsp2 = ipfs.files.stat( ipfs.files.new StatArgs(dst));
+
+        Assert.assertEquals( (Integer) statRsp1.get("Blocks"), (Integer) statRsp2.get("Blocks") );
+        Assert.assertEquals( (Integer) statRsp1.get("CumulativeSize"), (Integer) statRsp2.get("CumulativeSize") );
+        Assert.assertEquals( (String) statRsp1.get("Hash"), (String) statRsp2.get("Hash") );
+        Assert.assertEquals( (Boolean) statRsp1.get("Local"), (Boolean) statRsp2.get("Local") );
+        Assert.assertEquals( (Integer) statRsp1.get("Size"), (Integer) statRsp2.get("Size") );
+        Assert.assertEquals( (Integer) statRsp1.get("SizeLocal"), (Integer) statRsp2.get("SizeLocal") );
+        Assert.assertEquals( (String) statRsp1.get("Type"), (String) statRsp2.get("Type") );
+        Assert.assertEquals( (Integer) statRsp1.get("WithLocality"), (Integer) statRsp2.get("WithLocality") );
+
+
+
+        // test mv by moving testMfsDir as child of first path element
+        src = testMfsDir;
+        dst = String.format("/%s",mfsPathElements[0]);
+
+        byte[] rspMv = ipfs.files.mv ( ipfs.files.new MvArgs(src,dst));
+
+
+        // now mv dir by renaming it
+        src = dst + "/" + mfsPathElements[2] ;
+        dst = "/" + mfsPathElements[0] + "/" + "newDir";
+
+        rspMv = ipfs.files.mv ( ipfs.files.new MvArgs(src,dst));
+
+        // rm whole root dir  created in this test recursively removing its contents as well
+        src = "/" + mfsPathElements[0];
+
+        byte[] rspRm = ipfs.files.rm ( ipfs.files.new RmArgs(src).recursive(true));
+
+
+
+    }
+
+
+
+    private String encodeQueryParam(String name, String value) {
+        return URLEncoder.encode(name) + "=" + URLEncoder.encode(value);
+
+    }
     private byte[] randomBytes(int len) {
         byte[] res = new byte[len];
         r.nextBytes(res);

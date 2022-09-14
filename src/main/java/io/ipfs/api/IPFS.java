@@ -47,7 +47,7 @@ public class IPFS {
     public final Pubsub pubsub = new Pubsub();
     public final Files files = new Files();
 
-    
+
     public IPFS(String host, int port) {
         this(host, port, "/api/v0/", false);
     }
@@ -88,7 +88,7 @@ public class IPFS {
             throw new RuntimeException(e);
         }
     }
-    
+
     /**
      * Configure a HTTP client timeout
      * @param timeout (default 0: infinite timeout)
@@ -658,19 +658,19 @@ public class IPFS {
             return retrieveMap("files/chcid");
         }
 
-        public Map chcid(FilesChCIDArgs args) throws IOException {
+        public Map chcid(ChCIDArgs args) throws IOException {
             return retrieveMap("files/chcid?" + args);
         }
 
-        public Map cp(FilesCpArgs args) throws IOException {
-            return retrieveMap("files/cp?" + args);
+        public byte[] cp(CpArgs args) throws IOException {
+            return retrieve("files/cp?" + args);
         }
 
         public Map flush() throws IOException {
             return retrieveMap("files/flush");
         }
 
-       public Map flush(FilesFlushArgs args) throws IOException {
+       public Map flush(FlushArgs args) throws IOException {
             return retrieveMap("files/flush?" + args);
         }
 
@@ -678,370 +678,393 @@ public class IPFS {
             return retrieveMap("files/ls");
         }
 
-        public Map ls(FilesLsArgs args) throws IOException {
+        public Map ls(LsArgs args) throws IOException {
             return retrieveMap("files/ls?" + args);
         }
 
-        public Map mkdir(FilesMkdirArgs args) throws IOException {
+        public Map mkdir(MkdirArgs args) throws IOException {
             return retrieveMap("files/mkdir?" + args);
         }
 
-        public Map mv(FilesMvArgs args) throws IOException {
-            return retrieveMap("files/mv?" + args);
+        public byte[] mv(MvArgs args) throws IOException {
+            return retrieve("files/mv?" + args);
         }
 
-        public Map read(FilesReadArgs args) throws IOException {
-            return retrieveMap("files/read?" + args);
+        public byte[] read(ReadArgs args) throws IOException {
+            return retrieve("files/read?" + args);
         }
 
-        public Map rm(FilesRmArgs args) throws IOException {
-            return retrieveMap("files/rm?" + args);
+        public byte[] rm(RmArgs args) throws IOException {
+            return retrieve("files/rm?" + args);
         }
 
-        public Map stat(FilesStatArgs args) throws IOException {
+        public Map stat(StatArgs args) throws IOException {
             return retrieveMap("files/stat?" + args);
         }
 
+        public Map write(WriteArgs args, NamedStreamable uploadFile) throws IOException {
+
+            return retrieveMap("files/write?" + args,uploadFile);
+
+        }
+
+        /**
+        * files args classes
+        *
+        */
+        public abstract class Args {
+            private Map<String,List<String>> args = new LinkedHashMap<String,List<String>>(); // store in order added
+
+            public String toString() {
+
+                // create list to store query param name/value pairs
+                List<String> qParamList = new ArrayList<String>();
 
 
-    }
+                for (Map.Entry<String,List<String>> e: args.entrySet()) {
+                    final String paramName;
+                    List<String> paramValues;
+                    // encode param name and its value(s)
+                    paramName = URLEncoder.encode(e.getKey());
+                    paramValues = e.getValue();
 
-    public abstract class FilesArgs {
-        private Map<String,List<String>> args = new LinkedHashMap<String,List<String>>(); // store in order added
+                    for (String v: paramValues) {
+                        String paramValue = URLEncoder.encode(v);
+                        qParamList.add( String.format("%s=%s",paramName, paramValue) );
+                    }
+                }
 
-        public String toString() {
+                return String.join("&",qParamList);
 
-            // create list to store query param name/value pairs
-            List<String> qParamList = new ArrayList<String>();
-          
- 
-            for (Map.Entry<String,List<String>> e: args.entrySet()) {
-                final String paramName; 
-                List<String> paramValues;
-                // encode param name and its value(s)
-                paramName = URLEncoder.encode(e.getKey());
-                paramValues = e.getValue();
-                
-                for (String v: paramValues) {
-                    String paramValue = URLEncoder.encode(v);
-                    qParamList.add( String.format("%s=%s",paramName, paramValue) );
-                } 
+
             }
 
-            return String.join("&",qParamList);
+            protected void add(String paramName,String paramValue) {
 
-       
-        }
+                List<String> values = args.get(paramName);
+                if (values != null) {
+                    // param name has been assigned at least one value before.
+                    // add another value to existing list
+                    values.add(paramValue);
+                } else {
+                    // param name not found. make new List
+                    List<String> l = new ArrayList<String>();
 
-        protected void add(String paramName,String paramValue) {
-
-            List<String> values = args.get(paramName);
-            if (values != null) {
-                // param name has been assigned at least one value before.
-                // add another value to existing list 
-                values.add(paramValue);
-            } else {
-                // param name not found. make new List
-                List<String> l = new ArrayList<String>();
-
-                // add single entry
-                l.add(paramValue);
-               // add list as value to param name in map
-                args.put(paramName,l);
-            }
-           
-          
-        }
-
-    }
+                    // add single entry
+                    l.add(paramValue);
+                   // add list as value to param name in map
+                    args.put(paramName,l);
+                }
 
 
-
-    /** 
-     *  Defined here: https://docs.ipfs.tech/reference/kubo/rpc/#api-v0-files-chcid
-    */
-    public class FilesChCIDArgs extends FilesArgs {
-
-        public FilesChCIDArgs path(String mfsPath) {
-            add("arg",mfsPath);
-        
-            return (this);
-        }
-
-        public FilesChCIDArgs cidVersion(int cidVersionToUse) {
-            add("cid-version",Integer.toString(cidVersionToUse));
-
-            return (this);
-        }
-
-        public FilesChCIDArgs hash(String hashFunction) {
-            add("hash",hashFunction);
-
-            return (this);
-        }
-
-        
-    }
-
-    /**
-     * Defined here: https://docs.ipfs.tech/reference/kubo/rpc/#api-v0-files-cp
-    */
-    public class FilesCpArgs extends FilesArgs {
-        public FilesCpArgs(String srcIPFSOrMFSPath, String dstMFSPath) {
-
-            add("arg",srcIPFSOrMFSPath);
-            add("arg",dstMFSPath);
-        } 
-
-        public FilesCpArgs makeParentDirs(boolean parents) {
-
-            add("parents",Boolean.toString(parents));
-
-            return (this);
-        } 
-    }
-
-    
-    /**
-     * Defined here: https://docs.ipfs.tech/reference/kubo/rpc/#api-v0-files-flush
-     *
-    */
-    public class FilesFlushArgs extends FilesArgs {
-        public FilesFlushArgs path(String pathToFlush) {
-
-            add("arg",pathToFlush);
-            
-            return (this);
-        }
-    }
-
-    /**
-      *
-      *
-    */
-    public class FilesLsArgs extends FilesArgs {
-
-        public FilesLsArgs path(String pathToShowListing) {
-            add("arg",pathToShowListing);
-
-            return (this);
-        }
-
-        public FilesLsArgs longListingFormat(boolean useLongListingFormat) {
-            add("long",Boolean.toString(useLongListingFormat));
-
-            return (this);
-        }
-
-        public FilesLsArgs noSort(boolean noSort) {
-            add("U",Boolean.toString(noSort));
-
-            return (this);
-        }
-    }
-
-    /**
-      *
-      *
-    */
-    public class FilesMkdirArgs extends FilesArgs {
-
-        public FilesMkdirArgs(String path) {
-            add("arg",path);
-        }
-
-        public FilesMkdirArgs parents(boolean makeParentDirsAsNeeded) {
-            add("parents", Boolean.toString(makeParentDirsAsNeeded));
-
-            return (this);
-        }
-
-        public FilesMkdirArgs cidVersion(int cidVersionToUse) {
-            add("cid-version",Integer.toString(cidVersionToUse));
-
-            return (this);
-        }
-
-        public FilesMkdirArgs hash(String hashFunction) {
-            add("hash",hashFunction);
-
-            return (this);
-        } 
-    }
-
-    /**
-      *
-      *
-    */
-    public class FilesMvArgs extends FilesArgs {
-
-        public FilesMvArgs(String srcPath, String dstPath) {
-            add("arg",srcPath);
-            add("arg",dstPath);
-        }
-
-    }
-
-    /**
-      *
-      *
-    */
-    public class FilesReadArgs extends FilesArgs {
-
-        public FilesReadArgs(String pathToRead) {
-            add("arg",pathToRead);
-        }
-
-        public FilesReadArgs offset(int byteOffsetToStartReading) {
-            add("offset",Integer.toString(byteOffsetToStartReading)); 
-            
-            return (this);
-        
-        }
-
-        public FilesReadArgs count(long maxBytesToRead) {
-            add("count",Long.toString(maxBytesToRead));
-
-            return (this);
-        }
-
-    }
-
-    /**
-      *
-      *
-    */
-    public class FilesRmArgs extends FilesArgs {
-
-        public FilesRmArgs(String path, String... morePaths) {
-
-            add("arg",path);
-
-            for (String p: morePaths) {
-                add("arg",p);
             }
 
         }
 
-        public FilesRmArgs recursive(boolean recursivelyRemoveDirs) {
-            add("recursive",Boolean.toString(recursivelyRemoveDirs));
 
-            return (this);
+
+        /**
+         *  Defined here: https://docs.ipfs.tech/reference/kubo/rpc/#api-v0-files-chcid
+        */
+        public class ChCIDArgs extends Args {
+
+            public ChCIDArgs path(String mfsPath) {
+                add("arg",mfsPath);
+
+                return (this);
+            }
+
+            public ChCIDArgs cidVersion(int cidVersionToUse) {
+                add("cid-version",Integer.toString(cidVersionToUse));
+
+                return (this);
+            }
+
+            public ChCIDArgs hash(String hashFunction) {
+                add("hash",hashFunction);
+
+                return (this);
+            }
+
 
         }
 
-        public FilesRmArgs force(boolean forciblyRemoveTargetAtPath) {
-            add("force",Boolean.toString(forciblyRemoveTargetAtPath));
+        /**
+         * Defined here: https://docs.ipfs.tech/reference/kubo/rpc/#api-v0-files-cp
+        */
+        public class CpArgs extends Args {
+            public CpArgs(String srcIPFSOrMFSPath, String dstMFSPath) {
 
-            return (this);
+                add("arg",srcIPFSOrMFSPath);
+                add("arg",dstMFSPath);
+            }
+
+            public CpArgs makeParentDirs(boolean parents) {
+
+                add("parents",Boolean.toString(parents));
+
+                return (this);
+            }
+        }
+
+
+        /**
+         * Defined here: https://docs.ipfs.tech/reference/kubo/rpc/#api-v0-files-flush
+         *
+        */
+        public class FlushArgs extends Args {
+
+            public FlushArgs path(String pathToFlush) {
+
+                add("arg",pathToFlush);
+
+                return (this);
+            }
+        }
+
+        /**
+          *
+          *
+        */
+        public class LsArgs extends Args {
+
+            public LsArgs path(String pathToShowListing) {
+                add("arg",pathToShowListing);
+
+                return (this);
+            }
+
+            public LsArgs longListingFormat(boolean useLongListingFormat) {
+                add("long",Boolean.toString(useLongListingFormat));
+
+                return (this);
+            }
+
+            public LsArgs noSort(boolean noSort) {
+                add("U",Boolean.toString(noSort));
+
+                return (this);
+            }
+        }
+
+        /**
+          *
+          *
+        */
+        public class MkdirArgs extends Args {
+
+            public MkdirArgs(String path) {
+                add("arg",path);
+            }
+
+            public MkdirArgs parents(boolean makeParentDirsAsNeeded) {
+                add("parents", Boolean.toString(makeParentDirsAsNeeded));
+
+                return (this);
+            }
+
+            public MkdirArgs cidVersion(int cidVersionToUse) {
+                add("cid-version",Integer.toString(cidVersionToUse));
+
+                return (this);
+            }
+
+            public MkdirArgs hash(String hashFunction) {
+                add("hash",hashFunction);
+
+                return (this);
+            }
+        }
+
+        /**
+          *
+          *
+        */
+        public class MvArgs extends Args {
+
+            public MvArgs(String srcPath, String dstPath) {
+                add("arg",srcPath);
+                add("arg",dstPath);
+            }
 
         }
+
+        /**
+          *
+          *
+        */
+        public class ReadArgs extends Args {
+
+            public ReadArgs(String pathToRead) {
+                add("arg",pathToRead);
+            }
+
+            public ReadArgs offset(int byteOffsetToStartReading) {
+                add("offset",Integer.toString(byteOffsetToStartReading));
+
+                return (this);
+
+            }
+
+            public ReadArgs count(long maxBytesToRead) {
+                add("count",Long.toString(maxBytesToRead));
+
+                return (this);
+            }
+
+        }
+
+        /**
+          *
+          *
+        */
+        public class RmArgs extends Args {
+
+            public RmArgs(String path, String... morePaths) {
+
+                add("arg",path);
+
+                for (String p: morePaths) {
+                    add("arg",p);
+                }
+
+            }
+
+            public RmArgs recursive(boolean recursivelyRemoveDirs) {
+                add("recursive",Boolean.toString(recursivelyRemoveDirs));
+
+                return (this);
+
+            }
+
+            public RmArgs force(boolean forciblyRemoveTargetAtPath) {
+                add("force",Boolean.toString(forciblyRemoveTargetAtPath));
+
+                return (this);
+
+            }
+        }
+
+        /**
+          *
+          *
+        */
+        public class StatArgs extends Args {
+
+            public StatArgs(String pathToNodeToStat) {
+                add("arg",pathToNodeToStat);
+            }
+
+            public StatArgs format(String formatString) {
+                add("format",formatString);
+
+                return (this);
+            }
+
+            public StatArgs hash(boolean printOnlyHash) {
+                add("hash",Boolean.toString(printOnlyHash));
+
+                return (this);
+            }
+
+            public StatArgs size(boolean printOnlySize) {
+                add("size",Boolean.toString(printOnlySize));
+
+                return (this);
+            }
+
+            public StatArgs withLocal(boolean computeAmountOfDagThatIsLocal) {
+
+                add("with-local",Boolean.toString(computeAmountOfDagThatIsLocal));
+
+                return (this);
+            }
+
+
+        }
+
+        public class WriteArgs extends Args {
+
+            public WriteArgs(String path) {
+                add("arg",path);
+            }
+
+            public WriteArgs offset(long offsetToBeginWriting) {
+                add("offset",Long.toString(offsetToBeginWriting));
+
+                return (this);
+            }
+
+            public WriteArgs create(boolean createFileIfNotExists)  {
+                add("create",Boolean.toString(createFileIfNotExists));
+
+                return (this);
+            }
+
+            public WriteArgs parents(boolean makeParentDirsAsNeeded) {
+                add("parents",Boolean.toString(makeParentDirsAsNeeded));
+
+                return (this);
+            }
+
+            public WriteArgs truncate(boolean truncateFileSizeToZeroBeforeWrite) {
+                add("truncate",Boolean.toString(truncateFileSizeToZeroBeforeWrite));
+
+                return (this);
+            }
+
+            public WriteArgs count(long maxNumberBytesToRead) {
+                add("count",Long.toString(maxNumberBytesToRead));
+
+                return (this);
+            }
+
+            public WriteArgs rawLeaves(boolean useRawBlocksForNewLeafNodes) {
+                add("raw-leaves",Boolean.toString(useRawBlocksForNewLeafNodes));
+
+                return (this);
+            }
+
+            public WriteArgs cidVersion(int cidVersionToUse) {
+                add("cid-version",Integer.toString(cidVersionToUse));
+
+                return (this);
+            }
+
+            public WriteArgs hash(String hashFunction) {
+                add("hash", hashFunction);
+
+                return (this);
+            }
+
+        }
+
+
     }
 
-    /**
-      * 
-      *
-    */
-    public class FilesStatArgs extends FilesArgs {
-
-        public FilesStatArgs(String pathToNodeToStat) {
-            add("arg",pathToNodeToStat);
-        }
-
-        public FilesStatArgs format(String formatString) {
-            add("format",formatString);
-
-            return (this);
-        }
-
-        public FilesStatArgs hash(boolean printOnlyHash) {
-            add("hash",Boolean.toString(printOnlyHash));
-
-            return (this);
-        }
-
-        public FilesStatArgs size(boolean printOnlySize) {
-            add("size",Boolean.toString(printOnlySize));
-
-            return (this);
-        }
-
-        public FilesStatArgs withLocal(boolean computeAmountOfDagThatIsLocal) {
-
-            add("with-local",Boolean.toString(computeAmountOfDagThatIsLocal));
-
-            return (this);
-        }
-
-
-    }
-
-    public class FilesWriteArgs extends FilesArgs {
-
-        public FilesWriteArgs(String path) {
-            add("arg",path);
-        }
-
-        public FilesWriteArgs offset(long offsetToBeginWriting) {
-            add("offset",Long.toString(offsetToBeginWriting));
-
-            return (this);
-        }
-
-        public FilesWriteArgs create(boolean createFileIfNotExists)  {
-            add("create",Boolean.toString(createFileIfNotExists));
-
-            return (this);
-        }
-
-        public FilesWriteArgs parents(boolean makeParentDirsAsNeeded) {
-            add("parents",Boolean.toString(makeParentDirsAsNeeded));
-
-            return (this);
-        }
-
-        public FilesWriteArgs truncate(boolean truncateFileSizeToZeroBeforeWrite) {
-            add("truncate",Boolean.toString(truncateFileSizeToZeroBeforeWrite));
-
-            return (this);
-        }
-
-        public FilesWriteArgs count(long maxNumberBytesToRead) {
-            add("count",Long.toString(maxNumberBytesToRead));
-
-            return (this);
-        }
-
-        public FilesWriteArgs rawLeaves(boolean useRawBlocksForNewLeafNodes) {
-            add("raw-leaves",Boolean.toString(useRawBlocksForNewLeafNodes));
-
-            return (this);
-        }
-
-        public FilesWriteArgs cidVersion(int cidVersionToUse) {
-            add("cid-version",Integer.toString(cidVersionToUse));
-
-            return (this);
-        }
-
-        public FilesWriteArgs hash(String hashFunction) {
-            add("hash", hashFunction);
-
-            return (this);
-        }
-
-    }
 
     // End Files Command Classes
-    
+
 
     private Map retrieveMap(String path) throws IOException {
         return (Map)retrieveAndParse(path);
     }
 
+    private Map retrieveMap(String path, NamedStreamable uploadFile) throws IOException {
+        return (Map)retrieveAndParse(path,uploadFile);
+    }
+
     private Object retrieveAndParse(String path) throws IOException {
         byte[] res = retrieve(path);
         return JSONParser.parse(new String(res));
+    }
+
+    private Object retrieveAndParse(String path, NamedStreamable uploadFile) throws IOException {
+
+        byte[] res = retrieve(path,uploadFile);
+
+        return JSONParser.parse(new String(res));
+
     }
 
     private Stream<Object> retrieveAndParseStream(String path, ForkJoinPool executor) throws IOException {
@@ -1079,6 +1102,12 @@ public class IPFS {
     private byte[] retrieve(String path) throws IOException {
         URL target = new URL(protocol, host, port, version + path);
         return IPFS.get(target, connectTimeoutMillis, readTimeoutMillis);
+    }
+
+    private byte[] retrieve(String path, NamedStreamable uploadFile) throws IOException {
+        URL target = new URL(protocol,host,port,version + path);
+
+        return IPFS.get(target, connectTimeoutMillis, readTimeoutMillis, uploadFile);
     }
 
     private static byte[] get(URL target, int connectTimeoutMillis, int readTimeoutMillis) throws IOException {
@@ -1122,6 +1151,23 @@ public class IPFS {
         } catch (IOException e) {
             throw extractError(e, conn);
         }
+    }
+
+    private static byte[] get(URL target, int connectTimeoutMillis, int readTimeoutMillis, NamedStreamable uploadFile) throws IOException {
+
+        /*
+            Posts data stream (i.e. uploadFile) as a multipart/form-data request message body
+        */
+
+        Multipart m = new Multipart(target.toString(),"UTF-8",connectTimeoutMillis,readTimeoutMillis);
+        if (uploadFile.isDirectory()) {
+            // can't upload directory paths
+            throw new IllegalArgumentException("'" + uploadFile.getName() + "' is a directory.");
+        }
+        m.addFilePart("file",Paths.get(""), uploadFile);
+
+        return m.finish().getBytes();
+
     }
 
     public static RuntimeException extractError(IOException e, HttpURLConnection conn) {
@@ -1214,7 +1260,7 @@ public class IPFS {
             while ((r=in.read(buf)) >= 0)
                 resp.write(buf, 0, r);
             return resp.toByteArray();
-            
+
         } catch(IOException ex) {
             throw new RuntimeException("Error reading InputStrean", ex);
         }
@@ -1223,7 +1269,7 @@ public class IPFS {
     private static boolean detectSSL(MultiAddress multiaddress) {
         return multiaddress.toString().contains("/https");
     }
-    
+
     private static HttpURLConnection configureConnection(URL target, String method, int connectTimeoutMillis, int readTimeoutMillis) throws IOException {
         HttpURLConnection conn = (HttpURLConnection) target.openConnection();
         conn.setRequestMethod(method);
