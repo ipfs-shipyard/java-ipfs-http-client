@@ -93,7 +93,7 @@ public class IPFS {
      * @return current IPFS object with configured timeout
      */
     public IPFS timeout(int timeout) {
-        return new IPFS(host, port, version, connectTimeoutMillis, readTimeoutMillis, protocol.equals("https"));
+        return new IPFS(host, port, version, timeout, timeout, protocol.equals("https"));
     }
 
     public List<MerkleNode> add(NamedStreamable file) throws IOException {
