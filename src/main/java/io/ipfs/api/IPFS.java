@@ -160,7 +160,7 @@ public class IPFS {
         return retrieveMap("resolve?arg=/" + scheme+"/"+hash +"&r="+recursive);
     }
 
-
+    @Deprecated
     public String dns(String domain, boolean recursive) throws IOException {
         Map res = retrieveMap("dns?arg=" + domain + "&r=" + recursive);
         return (String)res.get("Path");
@@ -353,6 +353,7 @@ public class IPFS {
     /* 'ipfs object' is a plumbing command used to manipulate DAG objects directly. {Object} is a subset of {Block}
      */
     public class IPFSObject {
+        @Deprecated
         public List<MerkleNode> put(List<byte[]> data) throws IOException {
             Multipart m = new Multipart(protocol +"://" + host + ":" + port + version+"object/put?stream-channels=true", "UTF-8");
             for (byte[] f : data)
@@ -360,7 +361,7 @@ public class IPFS {
             String res = m.finish();
             return JSONParser.parseStream(res).stream().map(x -> MerkleNode.fromJSON((Map<String, Object>) x)).collect(Collectors.toList());
         }
-
+        @Deprecated
         public List<MerkleNode> put(String encoding, List<byte[]> data) throws IOException {
             if (!"json".equals(encoding) && !"protobuf".equals(encoding))
                 throw new IllegalArgumentException("Encoding must be json or protobuf");
@@ -370,33 +371,33 @@ public class IPFS {
             String res = m.finish();
             return JSONParser.parseStream(res).stream().map(x -> MerkleNode.fromJSON((Map<String, Object>) x)).collect(Collectors.toList());
         }
-
+        @Deprecated
         public MerkleNode get(Multihash hash) throws IOException {
             Map json = retrieveMap("object/get?stream-channels=true&arg=" + hash);
             json.put("Hash", hash.toBase58());
             return MerkleNode.fromJSON(json);
         }
-
+        @Deprecated
         public MerkleNode links(Multihash hash) throws IOException {
             Map json = retrieveMap("object/links?stream-channels=true&arg=" + hash);
             return MerkleNode.fromJSON(json);
         }
-
+        @Deprecated
         public Map<String, Object> stat(Multihash hash) throws IOException {
             return retrieveMap("object/stat?stream-channels=true&arg=" + hash);
         }
-
+        @Deprecated
         public byte[] data(Multihash hash) throws IOException {
             return retrieve("object/data?stream-channels=true&arg=" + hash);
         }
-
+        @Deprecated
         public MerkleNode _new(Optional<String> template) throws IOException {
             if (template.isPresent() && !ObjectTemplates.contains(template.get()))
                 throw new IllegalStateException("Unrecognised template: "+template.get());
             Map json = retrieveMap("object/new?stream-channels=true"+(template.isPresent() ? "&arg=" + template.get() : ""));
             return MerkleNode.fromJSON(json);
         }
-
+        @Deprecated
         public MerkleNode patch(Multihash base, String command, Optional<byte[]> data, Optional<String> name, Optional<Multihash> target) throws IOException {
             if (!ObjectPatchTypes.contains(command))
                 throw new IllegalStateException("Illegal Object.patch command type: "+command);
@@ -445,6 +446,7 @@ public class IPFS {
     }
 
     public class DHT {
+        @Deprecated
         public List<Map<String, Object>> findprovs(Multihash hash) throws IOException {
             return getAndParseStream("dht/findprovs?arg=" + hash).stream()
                     .map(x -> (Map<String, Object>) x)
@@ -454,21 +456,22 @@ public class IPFS {
         public Map query(Multihash peerId) throws IOException {
             return retrieveMap("dht/query?arg=" + peerId.toString());
         }
-
+        @Deprecated
         public Map findpeer(Multihash id) throws IOException {
             return retrieveMap("dht/findpeer?arg=" + id.toString());
         }
-
+        @Deprecated
         public Map get(Multihash hash) throws IOException {
             return retrieveMap("dht/get?arg=" + hash);
         }
-
+        @Deprecated
         public Map put(String key, String value) throws IOException {
             return retrieveMap("dht/put?arg=" + key + "&arg="+value);
         }
     }
 
     public class File {
+        @Deprecated
         public Map ls(Multihash path) throws IOException {
             return retrieveMap("file/ls?arg=" + path);
         }
