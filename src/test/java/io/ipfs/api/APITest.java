@@ -763,9 +763,10 @@ public class APITest {
         Map setResult = ipfs.config.set("Datastore.GCPeriod", val);
         ipfs.config.replace(new NamedStreamable.ByteArrayWrapper(JSONParser.toString(config).getBytes()));
 //            Object log = ipfs.log();
-        String sys = ipfs.diag.sys();
-        String cmds = ipfs.diag.cmds();
-
+        Map sys = ipfs.diag.sys();
+        List<Map> cmds = ipfs.diag.cmds(true);
+        String res = ipfs.diag.clearCmds();
+        List<Map> cmds2 = ipfs.diag.cmds(true);
         //String profile = "default";
         //ipfs.config.profileApply(profile, true);
         //Map entry = ipfs.config("Addresses.API", Optional.of("/ip4/127.0.0.1/tcp/5001"), Optional.empty());

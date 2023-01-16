@@ -707,12 +707,20 @@ public class IPFS {
     }
 
     public class Diag {
-        public String cmds() throws IOException {
-            return new String(retrieve("diag/cmds?stream-channels=true"));
+        public List<Map> cmds() throws IOException {
+            return (List)retrieveAndParse("diag/cmds");
         }
 
-        public String sys() throws IOException {
-            return new String(retrieve("diag/sys?stream-channels=true"));
+        public List<Map> cmds(boolean verbose) throws IOException {
+            return (List)retrieveAndParse("diag/cmds?verbose=" + verbose);
+        }
+
+        public String clearCmds() throws IOException {
+            return retrieveString("diag/cmds/clear");
+        }
+
+        public Map sys() throws IOException {
+            return retrieveMap("diag/sys?stream-channels=true");
         }
     }
 
