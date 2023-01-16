@@ -45,6 +45,7 @@ public class IPFS {
     public final DHT dht = new DHT();
     public final File file = new File();
     public final Files files = new Files();
+    public final FileStore fileStore = new FileStore();
     public final Stats stats = new Stats();
     public final Name name = new Name();
     public final Pubsub pubsub = new Pubsub();
@@ -589,6 +590,21 @@ public class IPFS {
                 m.addFilePart("file", Paths.get(""), uploadFile);
             }
             return m.finish();
+        }
+    }
+
+    public class FileStore {
+
+        public Map dups() throws IOException {
+            return retrieveMap("filestore/dups");
+        }
+
+        public Map ls() throws IOException {
+            return retrieveMap("filestore/ls");
+        }
+
+        public Map verify() throws IOException {
+            return retrieveMap("filestore/verify");
         }
     }
 

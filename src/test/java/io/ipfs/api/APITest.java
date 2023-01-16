@@ -262,6 +262,15 @@ public class APITest {
         String cid = ipfs.files.chcid(copyToPath);
         ipfs.files.rm("/filesTest", true, true);
     }
+
+    @Test
+    @Ignore("Experimental feature not enabled by default")
+    public void fileStoreTest() throws IOException {
+        ipfs.fileStore.dups();
+        ipfs.fileStore.ls();
+        ipfs.fileStore.verify();
+    }
+
     @Test
     public void pinTest() throws IOException {
         MerkleNode file = ipfs.add(new NamedStreamable.ByteArrayWrapper("some data".getBytes())).get(0);
