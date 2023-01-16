@@ -696,6 +696,14 @@ public class IPFS {
             String res = m.finish();
             return MerkleNode.fromJSON(JSONParser.parse(res));
         }
+
+        public Map resolve(String path) throws IOException {
+            return retrieveMap("dag/resolve?&arg=" + path);
+        }
+
+        public Map stat(Cid cid) throws IOException {
+            return retrieveMap("dag/stat?&arg=" + cid);
+        }
     }
 
     public class Diag {

@@ -33,6 +33,10 @@ public class APITest {
 
         byte[] get = ipfs.dag.get(expected);
         Assert.assertTrue("Raw data equal", original.equals(new String(get).trim()));
+        Map res = ipfs.dag.resolve("bafyreidbm2zncsc3j25zn7lofgd4woeh6eygdy73thfosuni2rwr3bhcvu");
+        Assert.assertTrue("not resolved", res != null);
+        res = ipfs.dag.stat(expected);
+        Assert.assertTrue("not found", res != null);
     }
 
     @Test
