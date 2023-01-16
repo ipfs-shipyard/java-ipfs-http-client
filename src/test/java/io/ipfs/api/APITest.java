@@ -761,6 +761,10 @@ public class APITest {
 //            Object log = ipfs.log();
         String sys = ipfs.diag.sys();
         String cmds = ipfs.diag.cmds();
+
+        //String profile = "default";
+        //ipfs.config.profileApply(profile, true);
+        //Map entry = ipfs.config("Addresses.API", Optional.of("/ip4/127.0.0.1/tcp/5001"), Optional.empty());
     }
 
     @Test

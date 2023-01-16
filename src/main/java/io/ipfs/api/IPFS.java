@@ -740,9 +740,19 @@ public class IPFS {
         return retrieveMap("log/tail");
     }
 
+    public Map config(String entry, Optional<String> value, Optional<Boolean> setBool) throws IOException {
+        String valArg = value.isPresent() ? "&arg=" + value.get() : "";
+        String setBoolArg = setBool.isPresent() ? "&arg=" + setBool.get() : "";
+        return retrieveMap("config?arg=" + entry + valArg + setBoolArg);
+    }
+
     public class Config {
         public Map show() throws IOException {
             return (Map)retrieveAndParse("config/show");
+        }
+
+        public Map profileApply(String profile, boolean dryRun) throws IOException {
+            return (Map)retrieveAndParse("config/profile/apply?arg="+profile + "&dry-run" + dryRun);
         }
 
         public void replace(NamedStreamable file) throws IOException {
