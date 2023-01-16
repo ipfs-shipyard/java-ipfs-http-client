@@ -215,7 +215,48 @@ public class APITest {
             throw new IllegalStateException("Didn't remove file!");
         Object gc = ipfs.repo.gc();
     }
+    @Test
+    public void filesTest() throws IOException {
 
+        ipfs.files.rm("/filesTest", true, true);
+        String filename = "hello.txt";
+        String folder = "/filesTest/one/two";
+        String path = folder + "/" + filename;
+        String contents = "hello world!";
+        NamedStreamable ns = new NamedStreamable.ByteArrayWrapper(filename, contents.getBytes());
+        String res = ipfs.files.write(path, ns, true, true);
+        Map stat = ipfs.files.stat( path);
+        String readContents = new String(ipfs.files.read(path));
+        Assert.assertTrue("Should be equals", contents.equals(readContents));
+        res = ipfs.files.rm(path, false, false);
+
+        String tempFilename = "temp.txt";
+        String tempFolder = "/filesTest/a/b/c";
+        String tempPath = tempFolder + "/" + tempFilename;
+        String mkdir = ipfs.files.mkdir(tempFolder, true);
+        stat = ipfs.files.stat(tempFolder);
+        NamedStreamable tempFile = new NamedStreamable.ByteArrayWrapper(tempFilename, contents.getBytes());
+        res = ipfs.files.write(tempPath, tempFile, true, false);
+        res = ipfs.files.mv(tempPath, "/" + tempFilename);
+        stat = ipfs.files.stat("/" + tempFilename);
+        Map lsMap = ipfs.files.ls("/");
+
+        String flushFolder = "/filesTest/f/l/u/s/h";
+        res = ipfs.files.mkdir(flushFolder, true);
+        Map flushMap = ipfs.files.flush(flushFolder);
+
+        String copyFilename = "copy.txt";
+        String copyFromFolder = "/filesTest/fromThere";
+        String copyToFolder = "/filesTest/toHere";
+        String copyFromPath = copyFromFolder + "/" + copyFilename;
+        String copyToPath = copyToFolder + "/" + copyFilename;
+        NamedStreamable copyFile = new NamedStreamable.ByteArrayWrapper(copyFilename, "copy".getBytes());
+        res = ipfs.files.write(copyFromPath, copyFile, true, true);
+        res = ipfs.files.cp(copyFromPath, copyToPath, true);
+        stat = ipfs.files.stat(copyToPath);
+        String cid = ipfs.files.chcid(copyToPath);
+        ipfs.files.rm("/filesTest", true, true);
+    }
     @Test
     public void pinTest() throws IOException {
         MerkleNode file = ipfs.add(new NamedStreamable.ByteArrayWrapper("some data".getBytes())).get(0);

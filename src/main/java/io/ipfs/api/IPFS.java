@@ -42,6 +42,7 @@ public class IPFS {
     public final Update update = new Update();
     public final DHT dht = new DHT();
     public final File file = new File();
+    public final Files files = new Files();
     public final Stats stats = new Stats();
     public final Name name = new Name();
     public final Pubsub pubsub = new Pubsub();
@@ -477,8 +478,93 @@ public class IPFS {
         }
     }
 
-    // Network commands
+    public class Files {
 
+        public String chcid() throws IOException {
+            return retrieveString("files/chcid");
+        }
+
+        public String chcid(String path) throws IOException {
+            String arg = URLEncoder.encode(path, "UTF-8");
+            return retrieveString("files/chcid?args=" + arg);
+        }
+
+        public String cp(String source, String dest, boolean parents) throws IOException {
+            return retrieveString("files/cp?arg=" + URLEncoder.encode(source, "UTF-8") + "&arg=" + URLEncoder.encode(dest, "UTF-8") + "&parents=" + parents);
+        }
+
+        public Map flush() throws IOException {
+            return retrieveMap("files/flush");
+        }
+
+        public Map flush(String path) throws IOException {
+            String arg = URLEncoder.encode(path, "UTF-8");
+            return retrieveMap("files/flush?arg=" + arg);
+        }
+
+        public Map ls() throws IOException {
+            return retrieveMap("files/ls");
+        }
+
+        public Map ls(String path) throws IOException {
+            String arg = URLEncoder.encode(path, "UTF-8");
+            return retrieveMap("files/ls?arg=" + arg);
+        }
+
+        public Map ls(String path, boolean longListing, boolean u) throws IOException {
+            String arg = URLEncoder.encode(path, "UTF-8");
+            return retrieveMap("files/ls?arg=" + arg + "&long=" + longListing + "&U=" + u);
+        }
+
+        public String mkdir(String path, boolean parents) throws IOException {
+            String arg = URLEncoder.encode(path, "UTF-8");
+            return retrieveString("files/mkdir?arg=" + arg + "&parents=" + parents);
+        }
+
+        public String mkdir(String path, boolean parents, int cidVersion, Multihash hash) throws IOException {
+            String arg = URLEncoder.encode(path, "UTF-8");
+            return retrieveString("files/mkdir?arg=" + arg + "&parents=" + parents + "&cid-version=" + cidVersion + "&hash=" + hash);
+        }
+
+        public String mv(String source, String dest) throws IOException {
+            return retrieveString("files/mv?arg=" + URLEncoder.encode(source, "UTF-8") + "&arg=" + URLEncoder.encode(dest, "UTF-8"));
+        }
+
+        public byte[] read(String path) throws IOException {
+            String arg = URLEncoder.encode(path, "UTF-8");
+            return retrieve("files/read?arg=" + arg);
+        }
+
+        public byte[] read(String path, int offset, int count) throws IOException {
+            String arg = URLEncoder.encode(path, "UTF-8");
+            return retrieve("files/read?arg=" + arg + "&offset=" + offset + "&count=" + count);
+        }
+
+        public String rm(String path, boolean recursive, boolean force) throws IOException {
+            String arg = URLEncoder.encode(path, "UTF-8");
+            return retrieveString("files/rm?arg=" + arg + "&recursive=" + recursive + "&force=" + force);
+        }
+
+        public Map stat(String path) throws IOException {
+            String arg = URLEncoder.encode(path, "UTF-8");
+            return retrieveMap("files/stat?arg=" + arg);
+        }
+
+        public String write(String path, NamedStreamable uploadFile, boolean create, boolean parents) throws IOException {
+            String arg = URLEncoder.encode(path, "UTF-8");
+            String rpcParams = "files/write?arg=" + arg + "&create=" + create + "&parents=" + parents;
+            URL target = new URL(protocol,host,port,version + rpcParams);
+            Multipart m = new Multipart(target.toString(),"UTF-8");
+            if (uploadFile.isDirectory()) {
+                throw new IllegalArgumentException("Input must be a file");
+            } else {
+                m.addFilePart("file", Paths.get(""), uploadFile);
+            }
+            return m.finish();
+        }
+    }
+
+    // Network commands
     public List<MultiAddress> bootstrap() throws IOException {
         return ((List<String>)retrieveMap("bootstrap/").get("Peers"))
                 .stream()
@@ -691,6 +777,11 @@ public class IPFS {
      */
     private void retrieveAndParseStream(String path, Consumer<Object> results, Consumer<IOException> err) throws IOException {
         getObjectStream(retrieveStream(path), d -> results.accept(JSONParser.parse(new String(d))), err);
+    }
+
+    private String retrieveString(String path) throws IOException {
+        URL target = new URL(protocol, host, port, version + path);
+        return new String(IPFS.get(target, connectTimeoutMillis, readTimeoutMillis));
     }
 
     private byte[] retrieve(String path) throws IOException {
