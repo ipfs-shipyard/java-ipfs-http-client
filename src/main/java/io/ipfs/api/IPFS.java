@@ -35,6 +35,8 @@ public class IPFS {
     public final Swarm swarm = new Swarm();
     public final Bootstrap bootstrap = new Bootstrap();
     public final Block block = new Block();
+
+    public final CidAPI cid = new CidAPI();
     public final Dag dag = new Dag();
     public final Diag diag = new Diag();
     public final Config config = new Config();
@@ -310,6 +312,32 @@ public class IPFS {
         }
     }
 
+    public class CidAPI {
+        public Map base32(Cid hash) throws IOException {
+            return (Map)retrieveAndParse("cid/base32?arg=" + hash);
+        }
+
+        public List<Map> bases(boolean prefix, boolean  numeric) throws IOException {
+            return (List)retrieveAndParse("cid/bases?prefix=" + prefix + "&numeric=" + numeric);
+        }
+
+        public List<Map> codecs(boolean numeric, boolean  supported) throws IOException {
+            return (List)retrieveAndParse("cid/codecs?numeric=" + numeric + "&supported=" + supported);
+        }
+
+        public Map format(Cid hash, Optional<String> f, Optional<String> v, Optional<String> mc, Optional<String> b) throws IOException {
+            String fArg = f.isPresent() ? "&f=" + URLEncoder.encode(f.get()) : "";
+            String vArg = v.isPresent() ? "&v=" + v.get() : "";
+            String mcArg = mc.isPresent() ? "&mc=" + mc.get() : "";
+            String bArg = b.isPresent() ? "&b=" + b.get() : "";
+            return (Map)retrieveAndParse("cid/format?arg=" + hash + fArg + vArg + mcArg + bArg);
+        }
+
+        public List<Map> hashes(boolean numeric, boolean  supported) throws IOException {
+            return (List)retrieveAndParse("cid/hashes?numeric=" + numeric + "&supported=" + supported);
+        }
+
+    }
     /* 'ipfs block' is a plumbing command used to manipulate raw ipfs blocks.
      */
     public class Block {
@@ -578,12 +606,17 @@ public class IPFS {
     }
 
     public class Bootstrap {
-        public List<MultiAddress> list() throws IOException {
-            return bootstrap();
-        }
 
         public List<MultiAddress> add(MultiAddress addr) throws IOException {
             return ((List<String>)retrieveMap("bootstrap/add?arg="+addr).get("Peers")).stream().map(x -> new MultiAddress(x)).collect(Collectors.toList());
+        }
+
+        public List<MultiAddress> add() throws IOException {
+            return ((List<String>)retrieveMap("bootstrap/add/default").get("Peers")).stream().map(x -> new MultiAddress(x)).collect(Collectors.toList());
+        }
+
+        public List<MultiAddress> list() throws IOException {
+            return ((List<String>)retrieveMap("bootstrap/list").get("Peers")).stream().map(x -> new MultiAddress(x)).collect(Collectors.toList());
         }
 
         public List<MultiAddress> rm(MultiAddress addr) throws IOException {
@@ -592,6 +625,10 @@ public class IPFS {
 
         public List<MultiAddress> rm(MultiAddress addr, boolean all) throws IOException {
             return ((List<String>)retrieveMap("bootstrap/rm?"+(all ? "all=true&":"")+"arg="+addr).get("Peers")).stream().map(x -> new MultiAddress(x)).collect(Collectors.toList());
+        }
+
+        public List<MultiAddress> rmAll() throws IOException {
+            return ((List<String>)retrieveMap("bootstrap/rm/all").get("Peers")).stream().map(x -> new MultiAddress(x)).collect(Collectors.toList());
         }
     }
 

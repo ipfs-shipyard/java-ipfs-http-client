@@ -7,6 +7,7 @@ import io.ipfs.multiaddr.MultiAddress;
 import org.junit.*;
 
 import java.io.*;
+import java.net.URLEncoder;
 import java.nio.file.*;
 import java.util.*;
 import java.util.function.*;
@@ -730,6 +731,24 @@ public class APITest {
         List<MultiAddress> bootstrap = ipfs.bootstrap.list();
         List<MultiAddress> rm = ipfs.bootstrap.rm(bootstrap.get(0), false);
         List<MultiAddress> add = ipfs.bootstrap.add(bootstrap.get(0));
+        List<MultiAddress> defaultPeers = ipfs.bootstrap.add();
+        List<MultiAddress> peers = ipfs.bootstrap.list();
+    }
+
+    @Test
+    public void cidTest() throws IOException {
+        List<Map> bases = ipfs.cid.bases(true, true);
+        List<Map> codecs = ipfs.cid.codecs(true, true);
+        Map stat = ipfs.files.stat("/");
+        String rootFolderHash = (String)stat.get("Hash");
+        Map base32 = ipfs.cid.base32(Cid.decode(rootFolderHash));
+        Map format = ipfs.cid.format(Cid.decode(rootFolderHash),
+                Optional.of("%s"), Optional.of("1"),
+                Optional.empty(), Optional.empty());
+
+        List<Map> hashes = ipfs.cid.hashes(false, false);
+
+        System.currentTimeMillis();
     }
 
     @Test
