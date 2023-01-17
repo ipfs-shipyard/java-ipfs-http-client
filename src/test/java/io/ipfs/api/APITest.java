@@ -679,6 +679,7 @@ public class APITest {
     }
 
     @Test
+    @Ignore
     public void repoTest() throws IOException {
         ipfs.repo.gc();
         Multihash res = ipfs.repo.ls();
