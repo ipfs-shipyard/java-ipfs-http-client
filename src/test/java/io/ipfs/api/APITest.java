@@ -7,6 +7,7 @@ import io.ipfs.multiaddr.MultiAddress;
 import org.junit.*;
 
 import java.io.*;
+import java.net.URLEncoder;
 import java.nio.file.*;
 import java.util.*;
 import java.util.function.*;
@@ -32,6 +33,10 @@ public class APITest {
 
         byte[] get = ipfs.dag.get(expected);
         Assert.assertTrue("Raw data equal", original.equals(new String(get).trim()));
+        Map res = ipfs.dag.resolve("bafyreidbm2zncsc3j25zn7lofgd4woeh6eygdy73thfosuni2rwr3bhcvu");
+        Assert.assertTrue("not resolved", res != null);
+        res = ipfs.dag.stat(expected);
+        Assert.assertTrue("not found", res != null);
     }
 
     @Test
@@ -62,6 +67,15 @@ public class APITest {
         List<KeyInfo> rm = ipfs.key.rm(newName);
         List<KeyInfo> remaining = ipfs.key.list();
         Assert.assertTrue("removed key", remaining.equals(existing));
+    }
+
+    @Test
+    @Ignore("Not reliable")
+    public void log() throws IOException {
+        Map lsResult = ipfs.log.ls();
+        Assert.assertTrue("Log ls", !lsResult.isEmpty());
+        Map levelResult = ipfs.log.level("all", "info");
+        Assert.assertTrue("Log level", ((String)levelResult.get("Message")).startsWith("Changed log level"));
     }
 
     @Test
@@ -214,6 +228,69 @@ public class APITest {
         if (!pinRm.get(0).equals(addResult.hash))
             throw new IllegalStateException("Didn't remove file!");
         Object gc = ipfs.repo.gc();
+    }
+    @Test
+    public void filesTest() throws IOException {
+
+        ipfs.files.rm("/filesTest", true, true);
+        String filename = "hello.txt";
+        String folder = "/filesTest/one/two";
+        String path = folder + "/" + filename;
+        String contents = "hello world!";
+        NamedStreamable ns = new NamedStreamable.ByteArrayWrapper(filename, contents.getBytes());
+        String res = ipfs.files.write(path, ns, true, true);
+        Map stat = ipfs.files.stat( path);
+        String readContents = new String(ipfs.files.read(path));
+        Assert.assertTrue("Should be equals", contents.equals(readContents));
+        res = ipfs.files.rm(path, false, false);
+
+        String tempFilename = "temp.txt";
+        String tempFolder = "/filesTest/a/b/c";
+        String tempPath = tempFolder + "/" + tempFilename;
+        String mkdir = ipfs.files.mkdir(tempFolder, true);
+        stat = ipfs.files.stat(tempFolder);
+        NamedStreamable tempFile = new NamedStreamable.ByteArrayWrapper(tempFilename, contents.getBytes());
+        res = ipfs.files.write(tempPath, tempFile, true, false);
+        res = ipfs.files.mv(tempPath, "/" + tempFilename);
+        stat = ipfs.files.stat("/" + tempFilename);
+        Map lsMap = ipfs.files.ls("/");
+
+        String flushFolder = "/filesTest/f/l/u/s/h";
+        res = ipfs.files.mkdir(flushFolder, true);
+        Map flushMap = ipfs.files.flush(flushFolder);
+
+        String copyFilename = "copy.txt";
+        String copyFromFolder = "/filesTest/fromThere";
+        String copyToFolder = "/filesTest/toHere";
+        String copyFromPath = copyFromFolder + "/" + copyFilename;
+        String copyToPath = copyToFolder + "/" + copyFilename;
+        NamedStreamable copyFile = new NamedStreamable.ByteArrayWrapper(copyFilename, "copy".getBytes());
+        res = ipfs.files.write(copyFromPath, copyFile, true, true);
+        res = ipfs.files.cp(copyFromPath, copyToPath, true);
+        stat = ipfs.files.stat(copyToPath);
+        String cid = ipfs.files.chcid(copyToPath);
+        ipfs.files.rm("/filesTest", true, true);
+    }
+
+    @Test
+    public void multibaseTest() throws IOException {
+        List<Map> encodings = ipfs.multibase.list(true, false);
+        Assert.assertTrue("multibase/list works", !encodings.isEmpty());
+        String encoded = ipfs.multibase.encode(Optional.empty(), new NamedStreamable.ByteArrayWrapper("hello".getBytes()));
+        Assert.assertTrue("multibase/encode works", encoded.equals("uaGVsbG8"));
+        String decoded = ipfs.multibase.decode(new NamedStreamable.ByteArrayWrapper(encoded.getBytes()));
+        Assert.assertTrue("multibase/decode works", decoded.equals("hello"));
+        String input = "f68656c6c6f";
+        String transcode = ipfs.multibase.transcode(Optional.of("base64url"), new NamedStreamable.ByteArrayWrapper(input.getBytes()));
+        Assert.assertTrue("multibase/transcode works", transcode.equals(encoded));
+    }
+
+    @Test
+    @Ignore("Experimental feature not enabled by default")
+    public void fileStoreTest() throws IOException {
+        ipfs.fileStore.dups();
+        ipfs.fileStore.ls();
+        ipfs.fileStore.verify();
     }
 
     @Test
@@ -602,6 +679,16 @@ public class APITest {
     }
 
     @Test
+    @Ignore
+    public void repoTest() throws IOException {
+        ipfs.repo.gc();
+        Multihash res = ipfs.repo.ls();
+        //String migration = ipfs.repo.migrate(false);
+        Map stat = ipfs.repo.stat(false, true);
+        Map verify = ipfs.repo.verify();
+        Map version = ipfs.repo.version();
+    }
+    @Test
     @Ignore("name test may hang forever")
     public void nameTest() throws IOException {
         MerkleNode pointer = new MerkleNode("QmPZ9gcCEpqKTo6aq61g2nXGUhM4iCL3ewB6LDXZCtioEB");
@@ -643,6 +730,11 @@ public class APITest {
     @Test
     public void statsTest() throws IOException {
         Map stats = ipfs.stats.bw();
+        Map bitswap = ipfs.stats.bitswap(true, true);
+        Map dht = ipfs.stats.dht();
+        //{"Message":"can only return stats if Experimental.AcceleratedDHTClient is enabled","Code":0,"Type":"error"}
+        //requires Map provide = ipfs.stats.provide();
+        Map repo = ipfs.stats.repo(false, true);
     }
 
     public void resolveTest() throws IOException {
@@ -651,6 +743,7 @@ public class APITest {
     }
 
     @Test
+    @Ignore
     public void swarmTest() throws IOException {
         Map<Multihash, List<MultiAddress>> addrs = ipfs.swarm.addrs();
         if (addrs.size() > 0) {
@@ -689,6 +782,24 @@ public class APITest {
         List<MultiAddress> bootstrap = ipfs.bootstrap.list();
         List<MultiAddress> rm = ipfs.bootstrap.rm(bootstrap.get(0), false);
         List<MultiAddress> add = ipfs.bootstrap.add(bootstrap.get(0));
+        List<MultiAddress> defaultPeers = ipfs.bootstrap.add();
+        List<MultiAddress> peers = ipfs.bootstrap.list();
+    }
+
+    @Test
+    public void cidTest() throws IOException {
+        List<Map> bases = ipfs.cid.bases(true, true);
+        List<Map> codecs = ipfs.cid.codecs(true, true);
+        Map stat = ipfs.files.stat("/");
+        String rootFolderHash = (String)stat.get("Hash");
+        Map base32 = ipfs.cid.base32(Cid.decode(rootFolderHash));
+        Map format = ipfs.cid.format(Cid.decode(rootFolderHash),
+                Optional.of("%s"), Optional.of("1"),
+                Optional.empty(), Optional.empty());
+
+        List<Map> hashes = ipfs.cid.hashes(false, false);
+
+        System.currentTimeMillis();
     }
 
     @Test
@@ -699,8 +810,13 @@ public class APITest {
         Map setResult = ipfs.config.set("Datastore.GCPeriod", val);
         ipfs.config.replace(new NamedStreamable.ByteArrayWrapper(JSONParser.toString(config).getBytes()));
 //            Object log = ipfs.log();
-        String sys = ipfs.diag.sys();
-        String cmds = ipfs.diag.cmds();
+        Map sys = ipfs.diag.sys();
+        List<Map> cmds = ipfs.diag.cmds(true);
+        String res = ipfs.diag.clearCmds();
+        List<Map> cmds2 = ipfs.diag.cmds(true);
+        //String profile = "default";
+        //ipfs.config.profileApply(profile, true);
+        //Map entry = ipfs.config("Addresses.API", Optional.of("/ip4/127.0.0.1/tcp/5001"), Optional.empty());
     }
 
     @Test

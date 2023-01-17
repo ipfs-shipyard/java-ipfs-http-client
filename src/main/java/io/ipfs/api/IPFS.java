@@ -29,12 +29,15 @@ public class IPFS {
     private final int connectTimeoutMillis;
     private final int readTimeoutMillis;
     public final Key key = new Key();
+    public final Log log = new Log();
+    public final MultibaseAPI multibase = new MultibaseAPI();
     public final Pin pin = new Pin();
     public final Repo repo = new Repo();
     public final IPFSObject object = new IPFSObject();
     public final Swarm swarm = new Swarm();
     public final Bootstrap bootstrap = new Bootstrap();
     public final Block block = new Block();
+    public final CidAPI cid = new CidAPI();
     public final Dag dag = new Dag();
     public final Diag diag = new Diag();
     public final Config config = new Config();
@@ -42,6 +45,8 @@ public class IPFS {
     public final Update update = new Update();
     public final DHT dht = new DHT();
     public final File file = new File();
+    public final Files files = new Files();
+    public final FileStore fileStore = new FileStore();
     public final Stats stats = new Stats();
     public final Name name = new Name();
     public final Pubsub pubsub = new Pubsub();
@@ -86,7 +91,7 @@ public class IPFS {
             throw new RuntimeException(e);
         }
     }
-    
+
     /**
      * Configure a HTTP client timeout
      * @param timeout (default 0: infinite timeout)
@@ -94,6 +99,10 @@ public class IPFS {
      */
     public IPFS timeout(int timeout) {
         return new IPFS(host, port, version, timeout, timeout, protocol.equals("https"));
+    }
+
+    public String shutdown() throws IOException {
+        return retrieveString("shutdown");
     }
 
     public List<MerkleNode> add(NamedStreamable file) throws IOException {
@@ -249,11 +258,86 @@ public class IPFS {
         }
     }
 
+    public class Log {
+        public Map level(String subsystem, String logLevel) throws IOException {
+            return retrieveMap("log/level?arg=" + subsystem + "&arg=" + logLevel);
+        }
+        public Map ls() throws IOException {
+            return retrieveMap("log/ls");
+        }
+    }
+
+    public class MultibaseAPI {
+        public String decode(NamedStreamable encoded_file) {
+            Multipart m = new Multipart(protocol + "://" + host + ":" + port + version +
+                    "multibase/decode", "UTF-8");
+            try {
+                if (encoded_file.isDirectory()) {
+                    throw new IllegalArgumentException("encoded_file must be a file");
+                } else {
+                    m.addFilePart("file", Paths.get(""), encoded_file);
+                    return m.finish();
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e.getMessage(), e);
+            }
+        }
+        public String encode(Optional<String> encoding, NamedStreamable file) {
+            String b = encoding.map(f -> "?b=" + f).orElse("?b=base64url");
+            Multipart m = new Multipart(protocol + "://" + host + ":" + port + version +
+                    "multibase/encode" + b, "UTF-8");
+            try {
+                if (file.isDirectory()) {
+                    throw new IllegalArgumentException("Input must be a file");
+                } else {
+                    m.addFilePart("file", Paths.get(""), file);
+                    return m.finish();
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e.getMessage(), e);
+            }
+        }
+        public List<Map> list(boolean prefix, boolean  numeric) throws IOException {
+            return (List)retrieveAndParse("multibase/list?prefix=" + prefix + "&numeric=" + numeric);
+        }
+        public String transcode(Optional<String> encoding, NamedStreamable file) {
+            String b = encoding.map(f -> "?b=" + f).orElse("?b=base64url");
+            Multipart m = new Multipart(protocol + "://" + host + ":" + port + version +
+                    "multibase/transcode" + b, "UTF-8");
+            try {
+                if (file.isDirectory()) {
+                    throw new IllegalArgumentException("Input must be a file");
+                } else {
+                    m.addFilePart("file", Paths.get(""), file);
+                    return m.finish();
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e.getMessage(), e);
+            }
+        }
+    }
+
     /* 'ipfs repo' is a plumbing command used to manipulate the repo.
      */
     public class Repo {
-        public Object gc() throws IOException {
-            return retrieveAndParse("repo/gc");
+        public Map gc() throws IOException {
+            return retrieveMap("repo/gc");
+        }
+        public Multihash ls() throws IOException {
+            Map res = retrieveMap("repo/ls");
+            return Cid.decode((String)res.get("Ref"));
+        }
+        /*public String migrate(boolean allowDowngrade) throws IOException {
+            return retrieveString("repo/migrate?allow-downgrade=" + allowDowngrade);
+        }*/
+        public Map stat(boolean sizeOnly, boolean humanReadable) throws IOException {
+            return retrieveMap("repo/stat?size-only=" + sizeOnly + "&human=" + humanReadable);
+        }
+        public Map verify() throws IOException {
+            return retrieveMap("repo/verify");
+        }
+        public Map version() throws IOException {
+            return retrieveMap("repo/version");
         }
     }
 
@@ -309,6 +393,32 @@ public class IPFS {
         }
     }
 
+    public class CidAPI {
+        public Map base32(Cid hash) throws IOException {
+            return (Map)retrieveAndParse("cid/base32?arg=" + hash);
+        }
+
+        public List<Map> bases(boolean prefix, boolean  numeric) throws IOException {
+            return (List)retrieveAndParse("cid/bases?prefix=" + prefix + "&numeric=" + numeric);
+        }
+
+        public List<Map> codecs(boolean numeric, boolean  supported) throws IOException {
+            return (List)retrieveAndParse("cid/codecs?numeric=" + numeric + "&supported=" + supported);
+        }
+
+        public Map format(Cid hash, Optional<String> f, Optional<String> v, Optional<String> mc, Optional<String> b) throws IOException {
+            String fArg = f.isPresent() ? "&f=" + URLEncoder.encode(f.get()) : "";
+            String vArg = v.isPresent() ? "&v=" + v.get() : "";
+            String mcArg = mc.isPresent() ? "&mc=" + mc.get() : "";
+            String bArg = b.isPresent() ? "&b=" + b.get() : "";
+            return (Map)retrieveAndParse("cid/format?arg=" + hash + fArg + vArg + mcArg + bArg);
+        }
+
+        public List<Map> hashes(boolean numeric, boolean  supported) throws IOException {
+            return (List)retrieveAndParse("cid/hashes?numeric=" + numeric + "&supported=" + supported);
+        }
+
+    }
     /* 'ipfs block' is a plumbing command used to manipulate raw ipfs blocks.
      */
     public class Block {
@@ -477,8 +587,111 @@ public class IPFS {
         }
     }
 
-    // Network commands
+    public class Files {
 
+        public String chcid() throws IOException {
+            return retrieveString("files/chcid");
+        }
+
+        public String chcid(String path) throws IOException {
+            String arg = URLEncoder.encode(path, "UTF-8");
+            return retrieveString("files/chcid?args=" + arg);
+        }
+
+        public String cp(String source, String dest, boolean parents) throws IOException {
+            return retrieveString("files/cp?arg=" + URLEncoder.encode(source, "UTF-8") + "&arg=" +
+                    URLEncoder.encode(dest, "UTF-8") + "&parents=" + parents);
+        }
+
+        public Map flush() throws IOException {
+            return retrieveMap("files/flush");
+        }
+
+        public Map flush(String path) throws IOException {
+            String arg = URLEncoder.encode(path, "UTF-8");
+            return retrieveMap("files/flush?arg=" + arg);
+        }
+
+        public Map ls() throws IOException {
+            return retrieveMap("files/ls");
+        }
+
+        public Map ls(String path) throws IOException {
+            String arg = URLEncoder.encode(path, "UTF-8");
+            return retrieveMap("files/ls?arg=" + arg);
+        }
+
+        public Map ls(String path, boolean longListing, boolean u) throws IOException {
+            String arg = URLEncoder.encode(path, "UTF-8");
+            return retrieveMap("files/ls?arg=" + arg + "&long=" + longListing + "&U=" + u);
+        }
+
+        public String mkdir(String path, boolean parents) throws IOException {
+            String arg = URLEncoder.encode(path, "UTF-8");
+            return retrieveString("files/mkdir?arg=" + arg + "&parents=" + parents);
+        }
+
+        public String mkdir(String path, boolean parents, int cidVersion, Multihash hash) throws IOException {
+            String arg = URLEncoder.encode(path, "UTF-8");
+            return retrieveString("files/mkdir?arg=" + arg + "&parents=" + parents + "&cid-version=" +
+                    cidVersion + "&hash=" + hash);
+        }
+
+        public String mv(String source, String dest) throws IOException {
+            return retrieveString("files/mv?arg=" + URLEncoder.encode(source, "UTF-8") + "&arg=" +
+                    URLEncoder.encode(dest, "UTF-8"));
+        }
+
+        public byte[] read(String path) throws IOException {
+            String arg = URLEncoder.encode(path, "UTF-8");
+            return retrieve("files/read?arg=" + arg);
+        }
+
+        public byte[] read(String path, int offset, int count) throws IOException {
+            String arg = URLEncoder.encode(path, "UTF-8");
+            return retrieve("files/read?arg=" + arg + "&offset=" + offset + "&count=" + count);
+        }
+
+        public String rm(String path, boolean recursive, boolean force) throws IOException {
+            String arg = URLEncoder.encode(path, "UTF-8");
+            return retrieveString("files/rm?arg=" + arg + "&recursive=" + recursive + "&force=" + force);
+        }
+
+        public Map stat(String path) throws IOException {
+            String arg = URLEncoder.encode(path, "UTF-8");
+            return retrieveMap("files/stat?arg=" + arg);
+        }
+
+        public String write(String path, NamedStreamable uploadFile, boolean create, boolean parents) throws IOException {
+            String arg = URLEncoder.encode(path, "UTF-8");
+            String rpcParams = "files/write?arg=" + arg + "&create=" + create + "&parents=" + parents;
+            URL target = new URL(protocol,host,port,version + rpcParams);
+            Multipart m = new Multipart(target.toString(),"UTF-8");
+            if (uploadFile.isDirectory()) {
+                throw new IllegalArgumentException("Input must be a file");
+            } else {
+                m.addFilePart("file", Paths.get(""), uploadFile);
+            }
+            return m.finish();
+        }
+    }
+
+    public class FileStore {
+
+        public Map dups() throws IOException {
+            return retrieveMap("filestore/dups");
+        }
+
+        public Map ls() throws IOException {
+            return retrieveMap("filestore/ls");
+        }
+
+        public Map verify() throws IOException {
+            return retrieveMap("filestore/verify");
+        }
+    }
+
+    // Network commands
     public List<MultiAddress> bootstrap() throws IOException {
         return ((List<String>)retrieveMap("bootstrap/").get("Peers"))
                 .stream()
@@ -492,12 +705,20 @@ public class IPFS {
     }
 
     public class Bootstrap {
-        public List<MultiAddress> list() throws IOException {
-            return bootstrap();
-        }
 
         public List<MultiAddress> add(MultiAddress addr) throws IOException {
-            return ((List<String>)retrieveMap("bootstrap/add?arg="+addr).get("Peers")).stream().map(x -> new MultiAddress(x)).collect(Collectors.toList());
+            return ((List<String>)retrieveMap("bootstrap/add?arg="+addr).get("Peers"))
+                    .stream().map(x -> new MultiAddress(x)).collect(Collectors.toList());
+        }
+
+        public List<MultiAddress> add() throws IOException {
+            return ((List<String>)retrieveMap("bootstrap/add/default").get("Peers"))
+                    .stream().map(x -> new MultiAddress(x)).collect(Collectors.toList());
+        }
+
+        public List<MultiAddress> list() throws IOException {
+            return ((List<String>)retrieveMap("bootstrap/list").get("Peers"))
+                    .stream().map(x -> new MultiAddress(x)).collect(Collectors.toList());
         }
 
         public List<MultiAddress> rm(MultiAddress addr) throws IOException {
@@ -506,6 +727,10 @@ public class IPFS {
 
         public List<MultiAddress> rm(MultiAddress addr, boolean all) throws IOException {
             return ((List<String>)retrieveMap("bootstrap/rm?"+(all ? "all=true&":"")+"arg="+addr).get("Peers")).stream().map(x -> new MultiAddress(x)).collect(Collectors.toList());
+        }
+
+        public List<MultiAddress> rmAll() throws IOException {
+            return ((List<String>)retrieveMap("bootstrap/rm/all").get("Peers")).stream().map(x -> new MultiAddress(x)).collect(Collectors.toList());
         }
     }
 
@@ -573,15 +798,31 @@ public class IPFS {
             String res = m.finish();
             return MerkleNode.fromJSON(JSONParser.parse(res));
         }
+
+        public Map resolve(String path) throws IOException {
+            return retrieveMap("dag/resolve?&arg=" + path);
+        }
+
+        public Map stat(Cid cid) throws IOException {
+            return retrieveMap("dag/stat?&arg=" + cid);
+        }
     }
 
     public class Diag {
-        public String cmds() throws IOException {
-            return new String(retrieve("diag/cmds?stream-channels=true"));
+        public List<Map> cmds() throws IOException {
+            return (List)retrieveAndParse("diag/cmds");
         }
 
-        public String sys() throws IOException {
-            return new String(retrieve("diag/sys?stream-channels=true"));
+        public List<Map> cmds(boolean verbose) throws IOException {
+            return (List)retrieveAndParse("diag/cmds?verbose=" + verbose);
+        }
+
+        public String clearCmds() throws IOException {
+            return retrieveString("diag/cmds/clear");
+        }
+
+        public Map sys() throws IOException {
+            return retrieveMap("diag/sys?stream-channels=true");
         }
     }
 
@@ -598,8 +839,20 @@ public class IPFS {
     }
 
     public class Stats {
+        public Map bitswap(boolean verbose, boolean humanReadable) throws IOException {
+            return retrieveMap("stats/bitswap?verbose=" + verbose + "&human=" + humanReadable);
+        }
         public Map bw() throws IOException {
             return retrieveMap("stats/bw");
+        }
+        public Map dht() throws IOException {
+            return retrieveMap("stats/dht");
+        }
+        public Map provide() throws IOException {
+            return retrieveMap("stats/provide");
+        }
+        public Map repo(boolean sizeOnly, boolean humanReadable) throws IOException {
+            return retrieveMap("stats/repo?size-only=" + sizeOnly + "&human=" + humanReadable);
         }
     }
 
@@ -617,9 +870,19 @@ public class IPFS {
         return retrieveMap("log/tail");
     }
 
+    public Map config(String entry, Optional<String> value, Optional<Boolean> setBool) throws IOException {
+        String valArg = value.isPresent() ? "&arg=" + value.get() : "";
+        String setBoolArg = setBool.isPresent() ? "&arg=" + setBool.get() : "";
+        return retrieveMap("config?arg=" + entry + valArg + setBoolArg);
+    }
+
     public class Config {
         public Map show() throws IOException {
             return (Map)retrieveAndParse("config/show");
+        }
+
+        public Map profileApply(String profile, boolean dryRun) throws IOException {
+            return (Map)retrieveAndParse("config/profile/apply?arg="+profile + "&dry-run" + dryRun);
         }
 
         public void replace(NamedStreamable file) throws IOException {
@@ -691,6 +954,11 @@ public class IPFS {
      */
     private void retrieveAndParseStream(String path, Consumer<Object> results, Consumer<IOException> err) throws IOException {
         getObjectStream(retrieveStream(path), d -> results.accept(JSONParser.parse(new String(d))), err);
+    }
+
+    private String retrieveString(String path) throws IOException {
+        URL target = new URL(protocol, host, port, version + path);
+        return new String(IPFS.get(target, connectTimeoutMillis, readTimeoutMillis));
     }
 
     private byte[] retrieve(String path) throws IOException {
