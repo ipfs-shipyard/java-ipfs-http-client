@@ -30,6 +30,7 @@ public class IPFS {
     private final int readTimeoutMillis;
     public final Key key = new Key();
     public final Log log = new Log();
+    public final MultibaseAPI multibase = new MultibaseAPI();
     public final Pin pin = new Pin();
     public final Repo repo = new Repo();
     public final IPFSObject object = new IPFSObject();
@@ -260,6 +261,55 @@ public class IPFS {
         }
         public Map ls() throws IOException {
             return retrieveMap("log/ls");
+        }
+    }
+    public class MultibaseAPI {
+        public String decode(NamedStreamable encoded_file) {
+            Multipart m = new Multipart(protocol + "://" + host + ":" + port + version +
+                    "multibase/decode", "UTF-8");
+            try {
+                if (encoded_file.isDirectory()) {
+                    throw new IllegalArgumentException("encoded_file must be a file");
+                } else {
+                    m.addFilePart("file", Paths.get(""), encoded_file);
+                    return m.finish();
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e.getMessage(), e);
+            }
+        }
+        public String encode(Optional<String> encoding, NamedStreamable file) {
+            String b = encoding.map(f -> "?b=" + f).orElse("?b=base64url");
+            Multipart m = new Multipart(protocol + "://" + host + ":" + port + version +
+                    "multibase/encode" + b, "UTF-8");
+            try {
+                if (file.isDirectory()) {
+                    throw new IllegalArgumentException("Input must be a file");
+                } else {
+                    m.addFilePart("file", Paths.get(""), file);
+                    return m.finish();
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e.getMessage(), e);
+            }
+        }
+        public List<Map> list(boolean prefix, boolean  numeric) throws IOException {
+            return (List)retrieveAndParse("multibase/list?prefix=" + prefix + "&numeric=" + numeric);
+        }
+        public String transcode(Optional<String> encoding, NamedStreamable file) {
+            String b = encoding.map(f -> "?b=" + f).orElse("?b=base64url");
+            Multipart m = new Multipart(protocol + "://" + host + ":" + port + version +
+                    "multibase/transcode" + b, "UTF-8");
+            try {
+                if (file.isDirectory()) {
+                    throw new IllegalArgumentException("Input must be a file");
+                } else {
+                    m.addFilePart("file", Paths.get(""), file);
+                    return m.finish();
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e.getMessage(), e);
+            }
         }
     }
 

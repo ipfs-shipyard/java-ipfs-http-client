@@ -76,7 +76,7 @@ public class APITest {
         Map levelResult = ipfs.log.level("all", "info");
         Assert.assertTrue("Log level", ((String)levelResult.get("Message")).startsWith("Changed log level"));
     }
-    
+
     @Test
     public void ipldNode() {
         Function<Stream<Pair<String, CborObject>>, CborObject.CborMap> map =
@@ -269,6 +269,19 @@ public class APITest {
         stat = ipfs.files.stat(copyToPath);
         String cid = ipfs.files.chcid(copyToPath);
         ipfs.files.rm("/filesTest", true, true);
+    }
+
+    @Test
+    public void multibaseTest() throws IOException {
+        List<Map> encodings = ipfs.multibase.list(true, false);
+        Assert.assertTrue("multibase/list works", !encodings.isEmpty());
+        String encoded = ipfs.multibase.encode(Optional.empty(), new NamedStreamable.ByteArrayWrapper("hello".getBytes()));
+        Assert.assertTrue("multibase/encode works", encoded.equals("uaGVsbG8"));
+        String decoded = ipfs.multibase.decode(new NamedStreamable.ByteArrayWrapper(encoded.getBytes()));
+        Assert.assertTrue("multibase/decode works", decoded.equals("hello"));
+        String input = "f68656c6c6f";
+        String transcode = ipfs.multibase.transcode(Optional.of("base64url"), new NamedStreamable.ByteArrayWrapper(input.getBytes()));
+        Assert.assertTrue("multibase/transcode works", transcode.equals(encoded));
     }
 
     @Test
