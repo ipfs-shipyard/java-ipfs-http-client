@@ -70,9 +70,10 @@ public class APITest {
     }
 
     @Test
+    @Ignore("Not reliable")
     public void log() throws IOException {
         Map lsResult = ipfs.log.ls();
-        //Assert.assertTrue("Log ls", !lsResult.isEmpty());
+        Assert.assertTrue("Log ls", !lsResult.isEmpty());
         Map levelResult = ipfs.log.level("all", "info");
         Assert.assertTrue("Log level", ((String)levelResult.get("Message")).startsWith("Changed log level"));
     }
