@@ -37,7 +37,6 @@ public class IPFS {
     public final Swarm swarm = new Swarm();
     public final Bootstrap bootstrap = new Bootstrap();
     public final Block block = new Block();
-
     public final CidAPI cid = new CidAPI();
     public final Dag dag = new Dag();
     public final Diag diag = new Diag();
@@ -267,6 +266,7 @@ public class IPFS {
             return retrieveMap("log/ls");
         }
     }
+
     public class MultibaseAPI {
         public String decode(NamedStreamable encoded_file) {
             Multipart m = new Multipart(protocol + "://" + host + ":" + port + version +
@@ -599,7 +599,8 @@ public class IPFS {
         }
 
         public String cp(String source, String dest, boolean parents) throws IOException {
-            return retrieveString("files/cp?arg=" + URLEncoder.encode(source, "UTF-8") + "&arg=" + URLEncoder.encode(dest, "UTF-8") + "&parents=" + parents);
+            return retrieveString("files/cp?arg=" + URLEncoder.encode(source, "UTF-8") + "&arg=" +
+                    URLEncoder.encode(dest, "UTF-8") + "&parents=" + parents);
         }
 
         public Map flush() throws IOException {
@@ -632,11 +633,13 @@ public class IPFS {
 
         public String mkdir(String path, boolean parents, int cidVersion, Multihash hash) throws IOException {
             String arg = URLEncoder.encode(path, "UTF-8");
-            return retrieveString("files/mkdir?arg=" + arg + "&parents=" + parents + "&cid-version=" + cidVersion + "&hash=" + hash);
+            return retrieveString("files/mkdir?arg=" + arg + "&parents=" + parents + "&cid-version=" +
+                    cidVersion + "&hash=" + hash);
         }
 
         public String mv(String source, String dest) throws IOException {
-            return retrieveString("files/mv?arg=" + URLEncoder.encode(source, "UTF-8") + "&arg=" + URLEncoder.encode(dest, "UTF-8"));
+            return retrieveString("files/mv?arg=" + URLEncoder.encode(source, "UTF-8") + "&arg=" +
+                    URLEncoder.encode(dest, "UTF-8"));
         }
 
         public byte[] read(String path) throws IOException {
@@ -704,15 +707,18 @@ public class IPFS {
     public class Bootstrap {
 
         public List<MultiAddress> add(MultiAddress addr) throws IOException {
-            return ((List<String>)retrieveMap("bootstrap/add?arg="+addr).get("Peers")).stream().map(x -> new MultiAddress(x)).collect(Collectors.toList());
+            return ((List<String>)retrieveMap("bootstrap/add?arg="+addr).get("Peers"))
+                    .stream().map(x -> new MultiAddress(x)).collect(Collectors.toList());
         }
 
         public List<MultiAddress> add() throws IOException {
-            return ((List<String>)retrieveMap("bootstrap/add/default").get("Peers")).stream().map(x -> new MultiAddress(x)).collect(Collectors.toList());
+            return ((List<String>)retrieveMap("bootstrap/add/default").get("Peers"))
+                    .stream().map(x -> new MultiAddress(x)).collect(Collectors.toList());
         }
 
         public List<MultiAddress> list() throws IOException {
-            return ((List<String>)retrieveMap("bootstrap/list").get("Peers")).stream().map(x -> new MultiAddress(x)).collect(Collectors.toList());
+            return ((List<String>)retrieveMap("bootstrap/list").get("Peers"))
+                    .stream().map(x -> new MultiAddress(x)).collect(Collectors.toList());
         }
 
         public List<MultiAddress> rm(MultiAddress addr) throws IOException {
