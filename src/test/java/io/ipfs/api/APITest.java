@@ -728,6 +728,11 @@ public class APITest {
     @Test
     public void statsTest() throws IOException {
         Map stats = ipfs.stats.bw();
+        Map bitswap = ipfs.stats.bitswap(true, true);
+        Map dht = ipfs.stats.dht();
+        //{"Message":"can only return stats if Experimental.AcceleratedDHTClient is enabled","Code":0,"Type":"error"}
+        //requires Map provide = ipfs.stats.provide();
+        Map repo = ipfs.stats.repo(false, true);
     }
 
     public void resolveTest() throws IOException {

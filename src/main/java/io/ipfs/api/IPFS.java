@@ -92,7 +92,7 @@ public class IPFS {
             throw new RuntimeException(e);
         }
     }
-    
+
     /**
      * Configure a HTTP client timeout
      * @param timeout (default 0: infinite timeout)
@@ -100,6 +100,10 @@ public class IPFS {
      */
     public IPFS timeout(int timeout) {
         return new IPFS(host, port, version, timeout, timeout, protocol.equals("https"));
+    }
+
+    public String shutdown() throws IOException {
+        return retrieveString("shutdown");
     }
 
     public List<MerkleNode> add(NamedStreamable file) throws IOException {
@@ -829,8 +833,20 @@ public class IPFS {
     }
 
     public class Stats {
+        public Map bitswap(boolean verbose, boolean humanReadable) throws IOException {
+            return retrieveMap("stats/bitswap?verbose=" + verbose + "&human=" + humanReadable);
+        }
         public Map bw() throws IOException {
             return retrieveMap("stats/bw");
+        }
+        public Map dht() throws IOException {
+            return retrieveMap("stats/dht");
+        }
+        public Map provide() throws IOException {
+            return retrieveMap("stats/provide");
+        }
+        public Map repo(boolean sizeOnly, boolean humanReadable) throws IOException {
+            return retrieveMap("stats/repo?size-only=" + sizeOnly + "&human=" + humanReadable);
         }
     }
 
