@@ -678,6 +678,15 @@ public class APITest {
     }
 
     @Test
+    public void repoTest() throws IOException {
+        ipfs.repo.gc();
+        Multihash res = ipfs.repo.ls();
+        //String migration = ipfs.repo.migrate(false);
+        Map stat = ipfs.repo.stat(false, true);
+        Map verify = ipfs.repo.verify();
+        Map version = ipfs.repo.version();
+    }
+    @Test
     @Ignore("name test may hang forever")
     public void nameTest() throws IOException {
         MerkleNode pointer = new MerkleNode("QmPZ9gcCEpqKTo6aq61g2nXGUhM4iCL3ewB6LDXZCtioEB");

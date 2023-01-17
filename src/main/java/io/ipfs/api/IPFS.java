@@ -316,8 +316,24 @@ public class IPFS {
     /* 'ipfs repo' is a plumbing command used to manipulate the repo.
      */
     public class Repo {
-        public Object gc() throws IOException {
-            return retrieveAndParse("repo/gc");
+        public Map gc() throws IOException {
+            return retrieveMap("repo/gc");
+        }
+        public Multihash ls() throws IOException {
+            Map res = retrieveMap("repo/ls");
+            return Cid.decode((String)res.get("Ref"));
+        }
+        /*public String migrate(boolean allowDowngrade) throws IOException {
+            return retrieveString("repo/migrate?allow-downgrade=" + allowDowngrade);
+        }*/
+        public Map stat(boolean sizeOnly, boolean humanReadable) throws IOException {
+            return retrieveMap("repo/stat?size-only=" + sizeOnly + "&human=" + humanReadable);
+        }
+        public Map verify() throws IOException {
+            return retrieveMap("repo/verify");
+        }
+        public Map version() throws IOException {
+            return retrieveMap("repo/version");
         }
     }
 
