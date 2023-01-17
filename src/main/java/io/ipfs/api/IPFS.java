@@ -29,6 +29,7 @@ public class IPFS {
     private final int connectTimeoutMillis;
     private final int readTimeoutMillis;
     public final Key key = new Key();
+    public final Log log = new Log();
     public final Pin pin = new Pin();
     public final Repo repo = new Repo();
     public final IPFSObject object = new IPFSObject();
@@ -250,6 +251,15 @@ public class IPFS {
                     .stream()
                     .map(KeyInfo::fromJson)
                     .collect(Collectors.toList());
+        }
+    }
+
+    public class Log {
+        public Map level(String subsystem, String logLevel) throws IOException {
+            return retrieveMap("log/level?arg=" + subsystem + "&arg=" + logLevel);
+        }
+        public Map ls() throws IOException {
+            return retrieveMap("log/ls");
         }
     }
 

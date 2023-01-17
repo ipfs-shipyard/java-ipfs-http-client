@@ -70,6 +70,14 @@ public class APITest {
     }
 
     @Test
+    public void log() throws IOException {
+        Map lsResult = ipfs.log.ls();
+        Assert.assertTrue("Log ls", !lsResult.isEmpty());
+        Map levelResult = ipfs.log.level("all", "info");
+        Assert.assertTrue("Log level", ((String)levelResult.get("Message")).startsWith("Changed log level"));
+    }
+    
+    @Test
     public void ipldNode() {
         Function<Stream<Pair<String, CborObject>>, CborObject.CborMap> map =
                 s -> CborObject.CborMap.build(s.collect(Collectors.toMap(p -> p.left, p -> p.right)));
