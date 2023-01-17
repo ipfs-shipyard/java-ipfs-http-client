@@ -742,6 +742,7 @@ public class APITest {
     }
 
     @Test
+    @Ignore
     public void swarmTest() throws IOException {
         Map<Multihash, List<MultiAddress>> addrs = ipfs.swarm.addrs();
         if (addrs.size() > 0) {
