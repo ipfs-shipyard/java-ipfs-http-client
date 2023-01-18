@@ -2,6 +2,7 @@ package io.ipfs.api;
 
 import io.ipfs.api.cbor.*;
 import io.ipfs.cid.*;
+import io.ipfs.multibase.Multibase;
 import io.ipfs.multihash.Multihash;
 import io.ipfs.multiaddr.MultiAddress;
 import org.junit.*;
@@ -777,6 +778,54 @@ public class APITest {
         List<Peer> peers = ipfs.swarm.peers();
     }
 
+    @Test
+    public void versionTest() throws IOException {
+        Map listenAddrs = ipfs.version.versionDeps();
+        System.currentTimeMillis();
+    }
+
+    @Test
+    public void swarmTestFilters() throws IOException {
+        Map listenAddrs = ipfs.swarm.listenAddrs();
+        Map localAddrs = ipfs.swarm.localAddrs(true);
+        String multiAddrFilter = "/ip4/192.168.0.0/ipcidr/16";
+        Map rm = ipfs.swarm.filtersRm(multiAddrFilter);
+        Map filters = ipfs.swarm.filters();
+        List<String> filtersList = (List<String>)filters.get("Strings");
+        Assert.assertTrue("Filters empty", filtersList == null);
+
+        Map added = ipfs.swarm.filtersAdd(multiAddrFilter);
+        filters = ipfs.swarm.filters();
+        filtersList = (List<String>)filters.get("Strings");
+        Assert.assertTrue("Filters NOT empty", !filtersList.isEmpty());
+        rm = ipfs.swarm.filtersRm(multiAddrFilter);
+    }
+
+    @Test
+    @Ignore
+    public void swarmTestPeering() throws IOException {
+        String id = "INSERT_VAL_HERE";
+        Multihash hash = Multihash.fromBase58(id);
+        String peer = "/ip6/::1/tcp/4001/p2p/" + id;
+        MultiAddress ma = new MultiAddress(peer);
+        Map addPeering = ipfs.swarm.peeringAdd(ma);
+        Map lsPeering = ipfs.swarm.peeringLs();
+        List<String> peeringList = (List<String>)lsPeering.get("Peers");
+        Assert.assertTrue("Filters not empty", !peeringList.isEmpty());
+        Map rmPeering = ipfs.swarm.peeringRm(hash);
+        lsPeering = ipfs.swarm.peeringLs();
+        peeringList = (List<String>)lsPeering.get("Peers");
+        Assert.assertTrue("Filters empty", peeringList.isEmpty());
+    }
+
+    @Test
+    public void bitswapTest() throws IOException {
+        List<Peer> peers = ipfs.swarm.peers();
+        Map ledger = ipfs.bitswap.ledger(peers.get(0).id);
+        Map want = ipfs.bitswap.wantlist(peers.get(0).id);
+        //String reprovide = ipfs.bitswap.reprovide();
+        Map stat = ipfs.bitswap.stat();
+    }
     @Test
     public void bootstrapTest() throws IOException {
         List<MultiAddress> bootstrap = ipfs.bootstrap.list();
