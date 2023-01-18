@@ -868,6 +868,10 @@ public class IPFS {
             return retrieveString("diag/cmds/clear");
         }
 
+        public String profile() throws IOException {
+            return retrieveString("diag/profile");
+        }
+
         public Map sys() throws IOException {
             return retrieveMap("diag/sys?stream-channels=true");
         }

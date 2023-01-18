@@ -863,6 +863,7 @@ public class APITest {
         List<Map> cmds = ipfs.diag.cmds(true);
         String res = ipfs.diag.clearCmds();
         List<Map> cmds2 = ipfs.diag.cmds(true);
+        //res = ipfs.diag.profile();
         //String profile = "default";
         //ipfs.config.profileApply(profile, true);
         //Map entry = ipfs.config("Addresses.API", Optional.of("/ip4/127.0.0.1/tcp/5001"), Optional.empty());
