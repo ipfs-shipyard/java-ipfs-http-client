@@ -315,6 +315,24 @@ public class APITest {
     }
 
     @Test
+    @Ignore
+    public void remotePinTest() throws IOException {
+        MerkleNode file = ipfs.add(new NamedStreamable.ByteArrayWrapper("test data".getBytes())).get(0);
+        Multihash hash = file.hash;
+        String service = "mock";
+        String rmRemoteService = ipfs.pin.rmRemoteService(service);
+        Map lsRemoteService = ipfs.pin.lsRemoteService(false);
+        String endpoint = "http://127.0.0.1:3000";
+        String key = "SET_VALUE_HERE";
+        String added = ipfs.pin.addRemoteService(service, endpoint, key);
+        lsRemoteService = ipfs.pin.lsRemoteService(false);
+        Map addHash = ipfs.pin.addRemote(service, hash, Optional.empty(), true);
+        Map lsRemote = ipfs.pin.lsRemote(service, Optional.empty(), Optional.of(List.of(IPFS.PinStatus.values())));
+        String rmRemote = ipfs.pin.rmRemote(service, Optional.empty(), Optional.of(List.of(IPFS.PinStatus.queued)), Optional.of(List.of(hash)));
+        lsRemote = ipfs.pin.lsRemote(service, Optional.empty(), Optional.of(List.of(IPFS.PinStatus.values())));
+    }
+
+    @Test
     public void pinUpdate() throws IOException {
         MerkleNode child1 = ipfs.add(new NamedStreamable.ByteArrayWrapper("some data".getBytes())).get(0);
         Multihash hashChild1 = child1.hash;

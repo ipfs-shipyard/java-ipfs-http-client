@@ -17,6 +17,7 @@ public class IPFS {
 
     public static final Version MIN_VERSION = Version.parse("0.4.11");
     public enum PinType {all, direct, indirect, recursive}
+    public enum PinStatus {queued, pinning, pinned, failed}
     public List<String> ObjectTemplates = Arrays.asList("unixfs-dir");
     public List<String> ObjectPatchTypes = Arrays.asList("add-link", "rm-link", "set-data", "append-data");
     private static final int DEFAULT_CONNECT_TIMEOUT_MILLIS = 10_000;
@@ -206,7 +207,10 @@ public class IPFS {
                     .map(x -> Cid.decode((String) x))
                     .collect(Collectors.toList());
         }
-
+        public Map addRemote(String service, Multihash hash, Optional<String> name, boolean background) throws IOException {
+            String nameArg = name.isPresent() ? "&name=" + name.get() : "";
+            return retrieveMap("pin/remote/add?arg=" + hash + "&service=" + service + nameArg + "&background=" + background);
+        }
         public Map<Multihash, Object> ls() throws IOException {
             return ls(PinType.direct);
         }
@@ -215,6 +219,13 @@ public class IPFS {
             return ((Map<String, Object>)(((Map)retrieveAndParse("pin/ls?stream-channels=true&t="+type.name())).get("Keys"))).entrySet()
                     .stream()
                     .collect(Collectors.toMap(x -> Cid.decode(x.getKey()), x-> x.getValue()));
+        }
+
+        public Map lsRemote(String service, Optional<String> name, Optional<List<PinStatus>> statusList) throws IOException {
+            String nameArg = name.isPresent() ? "&name=" + name.get() : "";
+            String statusArg = statusList.isPresent() ? statusList.get().stream().
+                    map(p -> "&status=" + p).collect(Collectors.joining()) : "";
+            return retrieveMap("pin/remote/ls?service=" + service + nameArg + statusArg);
         }
 
         public List<Multihash> rm(Multihash hash) throws IOException {
@@ -226,11 +237,35 @@ public class IPFS {
             return ((List<Object>) json.get("Pins")).stream().map(x -> Cid.decode((String) x)).collect(Collectors.toList());
         }
 
+        public String rmRemote(String service, Optional<String> name, Optional<List<PinStatus>> statusList, Optional<List<Multihash>> cidList) throws IOException {
+            String nameArg = name.isPresent() ? "&name=" + name.get() : "";
+            String statusArg = statusList.isPresent() ? statusList.get().stream().
+                    map(p -> "&status=" + p).collect(Collectors.joining()) : "";
+            String cidArg = cidList.isPresent() ? cidList.get().stream().
+                    map(p -> "&cid=" + p.toBase58()).collect(Collectors.joining()) : "";
+            return retrieveString("pin/remote/rm?service=" + service + nameArg + statusArg + cidArg);
+        }
+
+        public String addRemoteService(String service, String endPoint, String key) throws IOException {
+            return retrieveString("pin/remote/service/add?arg=" + service + "&arg=" + endPoint + "&arg=" + key);
+        }
+
+        public Map lsRemoteService(boolean stat) throws IOException {
+            return retrieveMap("pin/remote/service/ls?stat=" + stat);
+        }
+
+        public String rmRemoteService(String service) throws IOException {
+            return retrieveString("pin/remote/service/rm?arg=" + service);
+        }
+
         public List<Multihash> update(Multihash existing, Multihash modified, boolean unpin) throws IOException {
             return ((List<Object>)((Map)retrieveAndParse("pin/update?stream-channels=true&arg=" + existing + "&arg=" + modified + "&unpin=" + unpin)).get("Pins"))
                     .stream()
                     .map(x -> Cid.decode((String) x))
                     .collect(Collectors.toList());
+        }
+        public Map verify(boolean verbose, boolean quite) throws IOException {
+            return retrieveMap("pin/verify?verbose=" + verbose + "&quite=" + quite);
         }
     }
 
