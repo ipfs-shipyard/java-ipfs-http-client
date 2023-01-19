@@ -2,6 +2,7 @@ package io.ipfs.api;
 
 import io.ipfs.api.cbor.*;
 import io.ipfs.cid.*;
+import io.ipfs.multibase.Multibase;
 import io.ipfs.multihash.Multihash;
 import io.ipfs.multiaddr.MultiAddress;
 import org.junit.*;
@@ -311,6 +312,24 @@ public class APITest {
         Map<Multihash, Object> ls2 = ipfs.pin.ls(IPFS.PinType.recursive);
         boolean stillPinned = ls2.containsKey(hash);
         Assert.assertTrue("Pinning works", pinned && stillPinned);
+    }
+
+    @Test
+    @Ignore
+    public void remotePinTest() throws IOException {
+        MerkleNode file = ipfs.add(new NamedStreamable.ByteArrayWrapper("test data".getBytes())).get(0);
+        Multihash hash = file.hash;
+        String service = "mock";
+        String rmRemoteService = ipfs.pin.rmRemoteService(service);
+        Map lsRemoteService = ipfs.pin.lsRemoteService(false);
+        String endpoint = "http://127.0.0.1:3000";
+        String key = "SET_VALUE_HERE";
+        String added = ipfs.pin.addRemoteService(service, endpoint, key);
+        lsRemoteService = ipfs.pin.lsRemoteService(false);
+        Map addHash = ipfs.pin.addRemote(service, hash, Optional.empty(), true);
+        Map lsRemote = ipfs.pin.lsRemote(service, Optional.empty(), Optional.of(List.of(IPFS.PinStatus.values())));
+        String rmRemote = ipfs.pin.rmRemote(service, Optional.empty(), Optional.of(List.of(IPFS.PinStatus.queued)), Optional.of(List.of(hash)));
+        lsRemote = ipfs.pin.lsRemote(service, Optional.empty(), Optional.of(List.of(IPFS.PinStatus.values())));
     }
 
     @Test
@@ -778,6 +797,54 @@ public class APITest {
     }
 
     @Test
+    public void versionTest() throws IOException {
+        Map listenAddrs = ipfs.version.versionDeps();
+        System.currentTimeMillis();
+    }
+
+    @Test
+    public void swarmTestFilters() throws IOException {
+        Map listenAddrs = ipfs.swarm.listenAddrs();
+        Map localAddrs = ipfs.swarm.localAddrs(true);
+        String multiAddrFilter = "/ip4/192.168.0.0/ipcidr/16";
+        Map rm = ipfs.swarm.filtersRm(multiAddrFilter);
+        Map filters = ipfs.swarm.filters();
+        List<String> filtersList = (List<String>)filters.get("Strings");
+        Assert.assertTrue("Filters empty", filtersList == null);
+
+        Map added = ipfs.swarm.filtersAdd(multiAddrFilter);
+        filters = ipfs.swarm.filters();
+        filtersList = (List<String>)filters.get("Strings");
+        Assert.assertTrue("Filters NOT empty", !filtersList.isEmpty());
+        rm = ipfs.swarm.filtersRm(multiAddrFilter);
+    }
+
+    @Test
+    @Ignore
+    public void swarmTestPeering() throws IOException {
+        String id = "INSERT_VAL_HERE";
+        Multihash hash = Multihash.fromBase58(id);
+        String peer = "/ip6/::1/tcp/4001/p2p/" + id;
+        MultiAddress ma = new MultiAddress(peer);
+        Map addPeering = ipfs.swarm.peeringAdd(ma);
+        Map lsPeering = ipfs.swarm.peeringLs();
+        List<String> peeringList = (List<String>)lsPeering.get("Peers");
+        Assert.assertTrue("Filters not empty", !peeringList.isEmpty());
+        Map rmPeering = ipfs.swarm.peeringRm(hash);
+        lsPeering = ipfs.swarm.peeringLs();
+        peeringList = (List<String>)lsPeering.get("Peers");
+        Assert.assertTrue("Filters empty", peeringList.isEmpty());
+    }
+
+    @Test
+    public void bitswapTest() throws IOException {
+        List<Peer> peers = ipfs.swarm.peers();
+        Map ledger = ipfs.bitswap.ledger(peers.get(0).id);
+        Map want = ipfs.bitswap.wantlist(peers.get(0).id);
+        //String reprovide = ipfs.bitswap.reprovide();
+        Map stat = ipfs.bitswap.stat();
+    }
+    @Test
     public void bootstrapTest() throws IOException {
         List<MultiAddress> bootstrap = ipfs.bootstrap.list();
         List<MultiAddress> rm = ipfs.bootstrap.rm(bootstrap.get(0), false);
@@ -814,6 +881,7 @@ public class APITest {
         List<Map> cmds = ipfs.diag.cmds(true);
         String res = ipfs.diag.clearCmds();
         List<Map> cmds2 = ipfs.diag.cmds(true);
+        //res = ipfs.diag.profile();
         //String profile = "default";
         //ipfs.config.profileApply(profile, true);
         //Map entry = ipfs.config("Addresses.API", Optional.of("/ip4/127.0.0.1/tcp/5001"), Optional.empty());

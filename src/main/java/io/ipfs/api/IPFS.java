@@ -17,6 +17,7 @@ public class IPFS {
 
     public static final Version MIN_VERSION = Version.parse("0.4.11");
     public enum PinType {all, direct, indirect, recursive}
+    public enum PinStatus {queued, pinning, pinned, failed}
     public List<String> ObjectTemplates = Arrays.asList("unixfs-dir");
     public List<String> ObjectPatchTypes = Arrays.asList("add-link", "rm-link", "set-data", "append-data");
     private static final int DEFAULT_CONNECT_TIMEOUT_MILLIS = 10_000;
@@ -25,7 +26,7 @@ public class IPFS {
     public final String host;
     public final int port;
     public final String protocol;
-    private final String version;
+    private final String apiVersion;
     private final int connectTimeoutMillis;
     private final int readTimeoutMillis;
     public final Key key = new Key();
@@ -36,6 +37,7 @@ public class IPFS {
     public final IPFSObject object = new IPFSObject();
     public final Swarm swarm = new Swarm();
     public final Bootstrap bootstrap = new Bootstrap();
+    public final Bitswap bitswap = new Bitswap();
     public final Block block = new Block();
     public final CidAPI cid = new CidAPI();
     public final Dag dag = new Dag();
@@ -50,6 +52,7 @@ public class IPFS {
     public final Stats stats = new Stats();
     public final Name name = new Name();
     public final Pubsub pubsub = new Pubsub();
+    public final VersionAPI version = new VersionAPI();
 
     public IPFS(String host, int port) {
         this(host, port, "/api/v0/", false);
@@ -81,7 +84,7 @@ public class IPFS {
             this.protocol = "http";
         }
 
-        this.version = version;
+        this.apiVersion = version;
         // Check IPFS is sufficiently recent
         try {
             Version detected = Version.parse(version());
@@ -98,7 +101,7 @@ public class IPFS {
      * @return current IPFS object with configured timeout
      */
     public IPFS timeout(int timeout) {
-        return new IPFS(host, port, version, timeout, timeout, protocol.equals("https"));
+        return new IPFS(host, port, apiVersion, timeout, timeout, protocol.equals("https"));
     }
 
     public String shutdown() throws IOException {
@@ -118,7 +121,7 @@ public class IPFS {
     }
 
     public List<MerkleNode> add(List<NamedStreamable> files, boolean wrap, boolean hashOnly) throws IOException {
-        Multipart m = new Multipart(protocol + "://" + host + ":" + port + version + "add?stream-channels=true&w="+wrap + "&n="+hashOnly, "UTF-8");
+        Multipart m = new Multipart(protocol + "://" + host + ":" + port + apiVersion + "add?stream-channels=true&w="+wrap + "&n="+hashOnly, "UTF-8");
         for (NamedStreamable file: files) {
             if (file.isDirectory()) {
                 m.addSubtree(Paths.get(""), file);
@@ -204,7 +207,10 @@ public class IPFS {
                     .map(x -> Cid.decode((String) x))
                     .collect(Collectors.toList());
         }
-
+        public Map addRemote(String service, Multihash hash, Optional<String> name, boolean background) throws IOException {
+            String nameArg = name.isPresent() ? "&name=" + name.get() : "";
+            return retrieveMap("pin/remote/add?arg=" + hash + "&service=" + service + nameArg + "&background=" + background);
+        }
         public Map<Multihash, Object> ls() throws IOException {
             return ls(PinType.direct);
         }
@@ -213,6 +219,13 @@ public class IPFS {
             return ((Map<String, Object>)(((Map)retrieveAndParse("pin/ls?stream-channels=true&t="+type.name())).get("Keys"))).entrySet()
                     .stream()
                     .collect(Collectors.toMap(x -> Cid.decode(x.getKey()), x-> x.getValue()));
+        }
+
+        public Map lsRemote(String service, Optional<String> name, Optional<List<PinStatus>> statusList) throws IOException {
+            String nameArg = name.isPresent() ? "&name=" + name.get() : "";
+            String statusArg = statusList.isPresent() ? statusList.get().stream().
+                    map(p -> "&status=" + p).collect(Collectors.joining()) : "";
+            return retrieveMap("pin/remote/ls?service=" + service + nameArg + statusArg);
         }
 
         public List<Multihash> rm(Multihash hash) throws IOException {
@@ -224,11 +237,35 @@ public class IPFS {
             return ((List<Object>) json.get("Pins")).stream().map(x -> Cid.decode((String) x)).collect(Collectors.toList());
         }
 
+        public String rmRemote(String service, Optional<String> name, Optional<List<PinStatus>> statusList, Optional<List<Multihash>> cidList) throws IOException {
+            String nameArg = name.isPresent() ? "&name=" + name.get() : "";
+            String statusArg = statusList.isPresent() ? statusList.get().stream().
+                    map(p -> "&status=" + p).collect(Collectors.joining()) : "";
+            String cidArg = cidList.isPresent() ? cidList.get().stream().
+                    map(p -> "&cid=" + p.toBase58()).collect(Collectors.joining()) : "";
+            return retrieveString("pin/remote/rm?service=" + service + nameArg + statusArg + cidArg);
+        }
+
+        public String addRemoteService(String service, String endPoint, String key) throws IOException {
+            return retrieveString("pin/remote/service/add?arg=" + service + "&arg=" + endPoint + "&arg=" + key);
+        }
+
+        public Map lsRemoteService(boolean stat) throws IOException {
+            return retrieveMap("pin/remote/service/ls?stat=" + stat);
+        }
+
+        public String rmRemoteService(String service) throws IOException {
+            return retrieveString("pin/remote/service/rm?arg=" + service);
+        }
+
         public List<Multihash> update(Multihash existing, Multihash modified, boolean unpin) throws IOException {
             return ((List<Object>)((Map)retrieveAndParse("pin/update?stream-channels=true&arg=" + existing + "&arg=" + modified + "&unpin=" + unpin)).get("Pins"))
                     .stream()
                     .map(x -> Cid.decode((String) x))
                     .collect(Collectors.toList());
+        }
+        public Map verify(boolean verbose, boolean quite) throws IOException {
+            return retrieveMap("pin/verify?verbose=" + verbose + "&quite=" + quite);
         }
     }
 
@@ -269,7 +306,7 @@ public class IPFS {
 
     public class MultibaseAPI {
         public String decode(NamedStreamable encoded_file) {
-            Multipart m = new Multipart(protocol + "://" + host + ":" + port + version +
+            Multipart m = new Multipart(protocol + "://" + host + ":" + port + apiVersion +
                     "multibase/decode", "UTF-8");
             try {
                 if (encoded_file.isDirectory()) {
@@ -284,7 +321,7 @@ public class IPFS {
         }
         public String encode(Optional<String> encoding, NamedStreamable file) {
             String b = encoding.map(f -> "?b=" + f).orElse("?b=base64url");
-            Multipart m = new Multipart(protocol + "://" + host + ":" + port + version +
+            Multipart m = new Multipart(protocol + "://" + host + ":" + port + apiVersion +
                     "multibase/encode" + b, "UTF-8");
             try {
                 if (file.isDirectory()) {
@@ -302,7 +339,7 @@ public class IPFS {
         }
         public String transcode(Optional<String> encoding, NamedStreamable file) {
             String b = encoding.map(f -> "?b=" + f).orElse("?b=base64url");
-            Multipart m = new Multipart(protocol + "://" + host + ":" + port + version +
+            Multipart m = new Multipart(protocol + "://" + host + ":" + port + apiVersion +
                     "multibase/transcode" + b, "UTF-8");
             try {
                 if (file.isDirectory()) {
@@ -341,6 +378,13 @@ public class IPFS {
         }
     }
 
+
+    public class VersionAPI {
+        public Map versionDeps() throws IOException {
+            return retrieveMap("version/deps");
+        }
+    }
+
     public class Pubsub {
         public Object ls() throws IOException {
             return retrieveAndParse("pubsub/ls");
@@ -363,7 +407,7 @@ public class IPFS {
          */
         public void pub(String topic, String data) {
             String encodedTopic = Multibase.encode(Multibase.Base.Base64Url, topic.getBytes());
-            Multipart m = new Multipart(protocol +"://" + host + ":" + port + version+"pubsub/pub?arg=" + encodedTopic, "UTF-8");
+            Multipart m = new Multipart(protocol +"://" + host + ":" + port + apiVersion+"pubsub/pub?arg=" + encodedTopic, "UTF-8");
             try {
                 m.addFilePart("file", Paths.get(""), new NamedStreamable.ByteArrayWrapper(data.getBytes()));
                 String res = m.finish();
@@ -445,7 +489,7 @@ public class IPFS {
 
         public MerkleNode put(byte[] data, Optional<String> format) throws IOException {
             String fmt = format.map(f -> "&format=" + f).orElse("");
-            Multipart m = new Multipart(protocol +"://" + host + ":" + port + version+"block/put?stream-channels=true" + fmt, "UTF-8");
+            Multipart m = new Multipart(protocol +"://" + host + ":" + port + apiVersion+"block/put?stream-channels=true" + fmt, "UTF-8");
             try {
                 m.addFilePart("file", Paths.get(""), new NamedStreamable.ByteArrayWrapper(data));
                 String res = m.finish();
@@ -465,7 +509,7 @@ public class IPFS {
     public class IPFSObject {
         @Deprecated
         public List<MerkleNode> put(List<byte[]> data) throws IOException {
-            Multipart m = new Multipart(protocol +"://" + host + ":" + port + version+"object/put?stream-channels=true", "UTF-8");
+            Multipart m = new Multipart(protocol +"://" + host + ":" + port + apiVersion+"object/put?stream-channels=true", "UTF-8");
             for (byte[] f : data)
                 m.addFilePart("file", Paths.get(""), new NamedStreamable.ByteArrayWrapper(f));
             String res = m.finish();
@@ -475,7 +519,7 @@ public class IPFS {
         public List<MerkleNode> put(String encoding, List<byte[]> data) throws IOException {
             if (!"json".equals(encoding) && !"protobuf".equals(encoding))
                 throw new IllegalArgumentException("Encoding must be json or protobuf");
-            Multipart m = new Multipart(protocol +"://" + host + ":" + port + version+"object/put?stream-channels=true&encoding="+encoding, "UTF-8");
+            Multipart m = new Multipart(protocol +"://" + host + ":" + port + apiVersion+"object/put?stream-channels=true&encoding="+encoding, "UTF-8");
             for (byte[] f : data)
                 m.addFilePart("file", Paths.get(""), new NamedStreamable.ByteArrayWrapper(f));
             String res = m.finish();
@@ -529,7 +573,7 @@ public class IPFS {
                 case "append-data":
                     if (!data.isPresent())
                         throw new IllegalStateException("set-data requires data!");
-                    Multipart m = new Multipart(protocol +"://" + host + ":" + port + version+"object/patch/"+command+"?arg="+base.toBase58()+"&stream-channels=true", "UTF-8");
+                    Multipart m = new Multipart(protocol +"://" + host + ":" + port + apiVersion+"object/patch/"+command+"?arg="+base.toBase58()+"&stream-channels=true", "UTF-8");
                     m.addFilePart("file", Paths.get(""), new NamedStreamable.ByteArrayWrapper(data.get()));
                     String res = m.finish();
                     return MerkleNode.fromJSON(JSONParser.parse(res));
@@ -665,7 +709,7 @@ public class IPFS {
         public String write(String path, NamedStreamable uploadFile, boolean create, boolean parents) throws IOException {
             String arg = URLEncoder.encode(path, "UTF-8");
             String rpcParams = "files/write?arg=" + arg + "&create=" + create + "&parents=" + parents;
-            URL target = new URL(protocol,host,port,version + rpcParams);
+            URL target = new URL(protocol,host,port,apiVersion + rpcParams);
             Multipart m = new Multipart(target.toString(),"UTF-8");
             if (uploadFile.isDirectory()) {
                 throw new IllegalArgumentException("Input must be a file");
@@ -704,6 +748,21 @@ public class IPFS {
                 }).collect(Collectors.toList());
     }
 
+    public class Bitswap {
+        public Map ledger(Multihash peerId) throws IOException {
+            return retrieveMap("bitswap/ledger?arg="+peerId);
+        }
+
+        public String reprovide() throws IOException {
+            return retrieveString("bitswap/reprovide");
+        }
+        public Map stat() throws IOException {
+            return retrieveMap("bitswap/stat");
+        }
+        public Map wantlist(Multihash peerId) throws IOException {
+            return retrieveMap("bitswap/wantlist?peer=" + peerId);
+        }
+    }
     public class Bootstrap {
 
         public List<MultiAddress> add(MultiAddress addr) throws IOException {
@@ -762,7 +821,12 @@ public class IPFS {
                                     .map(MultiAddress::new)
                                     .collect(Collectors.toList())));
         }
-
+        public Map listenAddrs() throws IOException {
+            return retrieveMap("swarm/addrs/listen");
+        }
+        public Map localAddrs(boolean showPeerId) throws IOException {
+            return retrieveMap("swarm/addrs/local?id=" + showPeerId);
+        }
         public Map connect(MultiAddress multiAddr) throws IOException {
             Map m = retrieveMap("swarm/connect?arg="+multiAddr);
             return m;
@@ -771,6 +835,24 @@ public class IPFS {
         public Map disconnect(MultiAddress multiAddr) throws IOException {
             Map m = retrieveMap("swarm/disconnect?arg="+multiAddr);
             return m;
+        }
+        public Map filters() throws IOException {
+            return retrieveMap("swarm/filters");
+        }
+        public Map filtersAdd(String multiAddrFilter) throws IOException {
+            return retrieveMap("swarm/filters/add?arg="+multiAddrFilter);
+        }
+        public Map filtersRm(String multiAddrFilter) throws IOException {
+            return retrieveMap("swarm/filters/rm?arg="+multiAddrFilter);
+        }
+        public Map peeringLs() throws IOException {
+            return retrieveMap("swarm/peering/ls");
+        }
+        public Map peeringAdd(MultiAddress multiAddr) throws IOException {
+            return retrieveMap("swarm/peering/add?arg="+multiAddr);
+        }
+        public Map peeringRm(Multihash multiAddr) throws IOException {
+            return retrieveMap("swarm/peering/rm?arg="+multiAddr);
         }
     }
 
@@ -792,7 +874,7 @@ public class IPFS {
         }
 
         public MerkleNode put(String inputFormat, byte[] object, String outputFormat) throws IOException {
-            String prefix = protocol + "://" + host + ":" + port + version;
+            String prefix = protocol + "://" + host + ":" + port + apiVersion;
             Multipart m = new Multipart(prefix + "dag/put/?stream-channels=true&input-codec=" + inputFormat + "&store-codec=" + outputFormat, "UTF-8");
             m.addFilePart("file", Paths.get(""), new NamedStreamable.ByteArrayWrapper(object));
             String res = m.finish();
@@ -819,6 +901,10 @@ public class IPFS {
 
         public String clearCmds() throws IOException {
             return retrieveString("diag/cmds/clear");
+        }
+
+        public String profile() throws IOException {
+            return retrieveString("diag/profile");
         }
 
         public Map sys() throws IOException {
@@ -886,7 +972,7 @@ public class IPFS {
         }
 
         public void replace(NamedStreamable file) throws IOException {
-            Multipart m = new Multipart(protocol +"://" + host + ":" + port + version+"config/replace?stream-channels=true", "UTF-8");
+            Multipart m = new Multipart(protocol +"://" + host + ":" + port + apiVersion+"config/replace?stream-channels=true", "UTF-8");
             m.addFilePart("file", Paths.get(""), file);
             String res = m.finish();
         }
@@ -957,12 +1043,12 @@ public class IPFS {
     }
 
     private String retrieveString(String path) throws IOException {
-        URL target = new URL(protocol, host, port, version + path);
+        URL target = new URL(protocol, host, port, apiVersion + path);
         return new String(IPFS.get(target, connectTimeoutMillis, readTimeoutMillis));
     }
 
     private byte[] retrieve(String path) throws IOException {
-        URL target = new URL(protocol, host, port, version + path);
+        URL target = new URL(protocol, host, port, apiVersion + path);
         return IPFS.get(target, connectTimeoutMillis, readTimeoutMillis);
     }
 
@@ -1055,7 +1141,7 @@ public class IPFS {
     }
 
     private InputStream retrieveStream(String path) throws IOException {
-        URL target = new URL(protocol, host, port, version + path);
+        URL target = new URL(protocol, host, port, apiVersion + path);
         return IPFS.getStream(target, connectTimeoutMillis, readTimeoutMillis);
     }
 
@@ -1069,7 +1155,7 @@ public class IPFS {
     }
 
     private Map postMap(String path, byte[] body, Map<String, String> headers) throws IOException {
-        URL target = new URL(protocol, host, port, version + path);
+        URL target = new URL(protocol, host, port, apiVersion + path);
         return (Map) JSONParser.parse(new String(post(target, body, headers, connectTimeoutMillis, readTimeoutMillis)));
     }
 
