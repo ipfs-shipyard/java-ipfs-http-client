@@ -320,16 +320,16 @@ public class APITest {
         MerkleNode file = ipfs.add(new NamedStreamable.ByteArrayWrapper("test data".getBytes())).get(0);
         Multihash hash = file.hash;
         String service = "mock";
-        String rmRemoteService = ipfs.pin.rmRemoteService(service);
-        Map lsRemoteService = ipfs.pin.lsRemoteService(false);
+        String rmRemoteService = ipfs.pin.remote.rmService(service);
+        Map lsRemoteService = ipfs.pin.remote.lsService(false);
         String endpoint = "http://127.0.0.1:3000";
         String key = "SET_VALUE_HERE";
-        String added = ipfs.pin.addRemoteService(service, endpoint, key);
-        lsRemoteService = ipfs.pin.lsRemoteService(false);
-        Map addHash = ipfs.pin.addRemote(service, hash, Optional.empty(), true);
-        Map lsRemote = ipfs.pin.lsRemote(service, Optional.empty(), Optional.of(List.of(IPFS.PinStatus.values())));
-        String rmRemote = ipfs.pin.rmRemote(service, Optional.empty(), Optional.of(List.of(IPFS.PinStatus.queued)), Optional.of(List.of(hash)));
-        lsRemote = ipfs.pin.lsRemote(service, Optional.empty(), Optional.of(List.of(IPFS.PinStatus.values())));
+        String added = ipfs.pin.remote.addService(service, endpoint, key);
+        lsRemoteService = ipfs.pin.remote.lsService(false);
+        Map addHash = ipfs.pin.remote.add(service, hash, Optional.empty(), true);
+        Map lsRemote = ipfs.pin.remote.ls(service, Optional.empty(), Optional.of(List.of(IPFS.PinStatus.values())));
+        String rmRemote = ipfs.pin.remote.rm(service, Optional.empty(), Optional.of(List.of(IPFS.PinStatus.queued)), Optional.of(List.of(hash)));
+        lsRemote = ipfs.pin.remote.ls(service, Optional.empty(), Optional.of(List.of(IPFS.PinStatus.values())));
     }
 
     @Test
@@ -807,16 +807,16 @@ public class APITest {
         Map listenAddrs = ipfs.swarm.listenAddrs();
         Map localAddrs = ipfs.swarm.localAddrs(true);
         String multiAddrFilter = "/ip4/192.168.0.0/ipcidr/16";
-        Map rm = ipfs.swarm.filtersRm(multiAddrFilter);
+        Map rm = ipfs.swarm.rmFilter(multiAddrFilter);
         Map filters = ipfs.swarm.filters();
         List<String> filtersList = (List<String>)filters.get("Strings");
         Assert.assertTrue("Filters empty", filtersList == null);
 
-        Map added = ipfs.swarm.filtersAdd(multiAddrFilter);
+        Map added = ipfs.swarm.addFilter(multiAddrFilter);
         filters = ipfs.swarm.filters();
         filtersList = (List<String>)filters.get("Strings");
         Assert.assertTrue("Filters NOT empty", !filtersList.isEmpty());
-        rm = ipfs.swarm.filtersRm(multiAddrFilter);
+        rm = ipfs.swarm.rmFilter(multiAddrFilter);
     }
 
     @Test
@@ -826,12 +826,12 @@ public class APITest {
         Multihash hash = Multihash.fromBase58(id);
         String peer = "/ip6/::1/tcp/4001/p2p/" + id;
         MultiAddress ma = new MultiAddress(peer);
-        Map addPeering = ipfs.swarm.peeringAdd(ma);
-        Map lsPeering = ipfs.swarm.peeringLs();
+        Map addPeering = ipfs.swarm.addPeering(ma);
+        Map lsPeering = ipfs.swarm.lsPeering();
         List<String> peeringList = (List<String>)lsPeering.get("Peers");
         Assert.assertTrue("Filters not empty", !peeringList.isEmpty());
-        Map rmPeering = ipfs.swarm.peeringRm(hash);
-        lsPeering = ipfs.swarm.peeringLs();
+        Map rmPeering = ipfs.swarm.rmPeering(hash);
+        lsPeering = ipfs.swarm.lsPeering();
         peeringList = (List<String>)lsPeering.get("Peers");
         Assert.assertTrue("Filters empty", peeringList.isEmpty());
     }
