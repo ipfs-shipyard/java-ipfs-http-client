@@ -201,16 +201,46 @@ public class IPFS {
     /* Pinning an object ensures a local copy of it is kept.
      */
     public class Pin {
+        public final Remote remote = new Remote();
+
+        public class Remote {
+            public Map add(String service, Multihash hash, Optional<String> name, boolean background) throws IOException {
+                String nameArg = name.isPresent() ? "&name=" + name.get() : "";
+                return retrieveMap("pin/remote/add?arg=" + hash + "&service=" + service + nameArg + "&background=" + background);
+            }
+            public Map ls(String service, Optional<String> name, Optional<List<PinStatus>> statusList) throws IOException {
+                String nameArg = name.isPresent() ? "&name=" + name.get() : "";
+                String statusArg = statusList.isPresent() ? statusList.get().stream().
+                        map(p -> "&status=" + p).collect(Collectors.joining()) : "";
+                return retrieveMap("pin/remote/ls?service=" + service + nameArg + statusArg);
+            }
+            public String rm(String service, Optional<String> name, Optional<List<PinStatus>> statusList, Optional<List<Multihash>> cidList) throws IOException {
+                String nameArg = name.isPresent() ? "&name=" + name.get() : "";
+                String statusArg = statusList.isPresent() ? statusList.get().stream().
+                        map(p -> "&status=" + p).collect(Collectors.joining()) : "";
+                String cidArg = cidList.isPresent() ? cidList.get().stream().
+                        map(p -> "&cid=" + p.toBase58()).collect(Collectors.joining()) : "";
+                return retrieveString("pin/remote/rm?service=" + service + nameArg + statusArg + cidArg);
+            }
+            public String addService(String service, String endPoint, String key) throws IOException {
+                return retrieveString("pin/remote/service/add?arg=" + service + "&arg=" + endPoint + "&arg=" + key);
+            }
+
+            public Map lsService(boolean stat) throws IOException {
+                return retrieveMap("pin/remote/service/ls?stat=" + stat);
+            }
+
+            public String rmService(String service) throws IOException {
+                return retrieveString("pin/remote/service/rm?arg=" + service);
+            }
+        }
         public List<Multihash> add(Multihash hash) throws IOException {
             return ((List<Object>)((Map)retrieveAndParse("pin/add?stream-channels=true&arg=" + hash)).get("Pins"))
                     .stream()
                     .map(x -> Cid.decode((String) x))
                     .collect(Collectors.toList());
         }
-        public Map addRemote(String service, Multihash hash, Optional<String> name, boolean background) throws IOException {
-            String nameArg = name.isPresent() ? "&name=" + name.get() : "";
-            return retrieveMap("pin/remote/add?arg=" + hash + "&service=" + service + nameArg + "&background=" + background);
-        }
+
         public Map<Multihash, Object> ls() throws IOException {
             return ls(PinType.direct);
         }
@@ -221,13 +251,6 @@ public class IPFS {
                     .collect(Collectors.toMap(x -> Cid.decode(x.getKey()), x-> x.getValue()));
         }
 
-        public Map lsRemote(String service, Optional<String> name, Optional<List<PinStatus>> statusList) throws IOException {
-            String nameArg = name.isPresent() ? "&name=" + name.get() : "";
-            String statusArg = statusList.isPresent() ? statusList.get().stream().
-                    map(p -> "&status=" + p).collect(Collectors.joining()) : "";
-            return retrieveMap("pin/remote/ls?service=" + service + nameArg + statusArg);
-        }
-
         public List<Multihash> rm(Multihash hash) throws IOException {
             return rm(hash, true);
         }
@@ -235,27 +258,6 @@ public class IPFS {
         public List<Multihash> rm(Multihash hash, boolean recursive) throws IOException {
             Map json = retrieveMap("pin/rm?stream-channels=true&r=" + recursive + "&arg=" + hash);
             return ((List<Object>) json.get("Pins")).stream().map(x -> Cid.decode((String) x)).collect(Collectors.toList());
-        }
-
-        public String rmRemote(String service, Optional<String> name, Optional<List<PinStatus>> statusList, Optional<List<Multihash>> cidList) throws IOException {
-            String nameArg = name.isPresent() ? "&name=" + name.get() : "";
-            String statusArg = statusList.isPresent() ? statusList.get().stream().
-                    map(p -> "&status=" + p).collect(Collectors.joining()) : "";
-            String cidArg = cidList.isPresent() ? cidList.get().stream().
-                    map(p -> "&cid=" + p.toBase58()).collect(Collectors.joining()) : "";
-            return retrieveString("pin/remote/rm?service=" + service + nameArg + statusArg + cidArg);
-        }
-
-        public String addRemoteService(String service, String endPoint, String key) throws IOException {
-            return retrieveString("pin/remote/service/add?arg=" + service + "&arg=" + endPoint + "&arg=" + key);
-        }
-
-        public Map lsRemoteService(boolean stat) throws IOException {
-            return retrieveMap("pin/remote/service/ls?stat=" + stat);
-        }
-
-        public String rmRemoteService(String service) throws IOException {
-            return retrieveString("pin/remote/service/rm?arg=" + service);
         }
 
         public List<Multihash> update(Multihash existing, Multihash modified, boolean unpin) throws IOException {
@@ -839,19 +841,19 @@ public class IPFS {
         public Map filters() throws IOException {
             return retrieveMap("swarm/filters");
         }
-        public Map filtersAdd(String multiAddrFilter) throws IOException {
+        public Map addFilter(String multiAddrFilter) throws IOException {
             return retrieveMap("swarm/filters/add?arg="+multiAddrFilter);
         }
-        public Map filtersRm(String multiAddrFilter) throws IOException {
+        public Map rmFilter(String multiAddrFilter) throws IOException {
             return retrieveMap("swarm/filters/rm?arg="+multiAddrFilter);
         }
-        public Map peeringLs() throws IOException {
+        public Map lsPeering() throws IOException {
             return retrieveMap("swarm/peering/ls");
         }
-        public Map peeringAdd(MultiAddress multiAddr) throws IOException {
+        public Map addPeering(MultiAddress multiAddr) throws IOException {
             return retrieveMap("swarm/peering/add?arg="+multiAddr);
         }
-        public Map peeringRm(Multihash multiAddr) throws IOException {
+        public Map rmPeering(Multihash multiAddr) throws IOException {
             return retrieveMap("swarm/peering/rm?arg="+multiAddr);
         }
     }
