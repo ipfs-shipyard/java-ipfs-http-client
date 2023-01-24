@@ -134,6 +134,24 @@ public class IPFS {
                 .collect(Collectors.toList());
     }
 
+    public List<MerkleNode> add(NamedStreamable file, AddArgs args) throws IOException {
+        return add(Collections.singletonList(file), args);
+    }
+
+    public List<MerkleNode> add(List<NamedStreamable> files, AddArgs args) throws IOException {
+        Multipart m = new Multipart(protocol + "://" + host + ":" + port + apiVersion + "add?stream-channels=true&"+ args.toQueryString(), "UTF-8");
+        for (NamedStreamable file: files) {
+            if (file.isDirectory()) {
+                m.addSubtree(Paths.get(""), file);
+            } else
+                m.addFilePart("file", Paths.get(""), file);
+        };
+        String res = m.finish();
+        return JSONParser.parseStream(res).stream()
+                .map(x -> MerkleNode.fromJSON((Map<String, Object>) x))
+                .collect(Collectors.toList());
+    }
+
     public List<MerkleNode> ls(Multihash hash) throws IOException {
         Map reply = retrieveMap("ls?arg=" + hash);
         return ((List<Object>) reply.get("Objects"))

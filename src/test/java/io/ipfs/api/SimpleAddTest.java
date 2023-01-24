@@ -44,6 +44,20 @@ public class SimpleAddTest {
     }
 
     @Test
+    public void testAddArgs() throws Exception {
+        Path path = Paths.get("src/test/resources/html/index.html");
+        NamedStreamable file = new FileWrapper(path.toFile());
+        AddArgs args = AddArgs.Builder.newInstance()
+                .setInline()
+                .setCidVersion(1)
+                .build();
+        List<MerkleNode> tree = ipfs.add(file, args);
+
+        Assert.assertEquals(1, tree.size());
+        Assert.assertEquals("index.html", tree.get(0).name.get());
+    }
+
+    @Test
     public void testSingleWrapped() throws Exception {
 
         Path path = Paths.get("src/test/resources/html/index.html");

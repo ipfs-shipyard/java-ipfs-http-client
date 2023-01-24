@@ -908,6 +908,18 @@ public class APITest {
         ipfs.cat(Multihash.fromBase58("Qmaisz6NMhDB51cCvNWa1GMS7LU1pAxdF4Ld6Ft9kZEP2a"));
     }
 
+    @Test
+    public void addArgsTest() {
+        AddArgs args = AddArgs.Builder.newInstance()
+                .setInline()
+                .setCidVersion(1)
+                .build();
+        String res = args.toString();
+        Assert.assertTrue("args toString() format", res.equals("[cid-version = 1, inline = true]"));
+        String queryStr = args.toQueryString();
+        Assert.assertTrue("args toQueryString() format", queryStr.equals("inline=true&cid-version=1"));
+    }
+
     // this api is disabled until deployment over IPFS is enabled
     public void updateTest() throws IOException {
         Object check = ipfs.update.check();
