@@ -662,6 +662,13 @@ public class IPFS {
             return retrieveString("files/chcid?args=" + arg);
         }
 
+        public String chcid(String path, Optional<Integer> cidVersion, Optional<String> hash) throws IOException {
+            String arg = URLEncoder.encode(path, "UTF-8");
+            String cid = cidVersion.isPresent() ? "&cid-version=" + cidVersion.get() : "";
+            String hashFunc = hash.isPresent() ? "&hash=" + hash.get() : "";
+            return retrieveString("files/chcid?args=" + arg + cid + hashFunc);
+        }
+
         public String cp(String source, String dest, boolean parents) throws IOException {
             return retrieveString("files/cp?arg=" + URLEncoder.encode(source, "UTF-8") + "&arg=" +
                     URLEncoder.encode(dest, "UTF-8") + "&parents=" + parents);
@@ -695,10 +702,11 @@ public class IPFS {
             return retrieveString("files/mkdir?arg=" + arg + "&parents=" + parents);
         }
 
-        public String mkdir(String path, boolean parents, int cidVersion, Multihash hash) throws IOException {
+        public String mkdir(String path, boolean parents, Optional<Integer> cidVersion, Optional<String> hash) throws IOException {
             String arg = URLEncoder.encode(path, "UTF-8");
-            return retrieveString("files/mkdir?arg=" + arg + "&parents=" + parents + "&cid-version=" +
-                    cidVersion + "&hash=" + hash);
+            String cid = cidVersion.isPresent() ? "&cid-version=" + cidVersion.get() : "";
+            String hashFunc = hash.isPresent() ? "&hash=" + hash.get() : "";
+            return retrieveString("files/mkdir?arg=" + arg + "&parents=" + parents + cid + hashFunc);
         }
 
         public String mv(String source, String dest) throws IOException {
@@ -725,10 +733,27 @@ public class IPFS {
             String arg = URLEncoder.encode(path, "UTF-8");
             return retrieveMap("files/stat?arg=" + arg);
         }
-
+        public Map stat(String path, Optional<String> format, boolean withLocal) throws IOException {
+            String arg = URLEncoder.encode(path, "UTF-8");
+            String formatStr = format.isPresent() ? "&format=" + format.get() : "";
+            return retrieveMap("files/stat?arg=" + arg + formatStr + "&with-local=" + withLocal);
+        }
         public String write(String path, NamedStreamable uploadFile, boolean create, boolean parents) throws IOException {
             String arg = URLEncoder.encode(path, "UTF-8");
             String rpcParams = "files/write?arg=" + arg + "&create=" + create + "&parents=" + parents;
+            URL target = new URL(protocol,host,port,apiVersion + rpcParams);
+            Multipart m = new Multipart(target.toString(),"UTF-8");
+            if (uploadFile.isDirectory()) {
+                throw new IllegalArgumentException("Input must be a file");
+            } else {
+                m.addFilePart("file", Paths.get(""), uploadFile);
+            }
+            return m.finish();
+        }
+
+        public String write(String path, NamedStreamable uploadFile, WriteFilesArgs args) throws IOException {
+            String arg = URLEncoder.encode(path, "UTF-8");
+            String rpcParams = "files/write?arg=" + arg + "&" + args.toQueryString();
             URL target = new URL(protocol,host,port,apiVersion + rpcParams);
             Multipart m = new Multipart(target.toString(),"UTF-8");
             if (uploadFile.isDirectory()) {
@@ -746,12 +771,12 @@ public class IPFS {
             return retrieveMap("filestore/dups");
         }
 
-        public Map ls() throws IOException {
-            return retrieveMap("filestore/ls");
+        public Map ls(boolean fileOrder) throws IOException {
+            return retrieveMap("filestore/ls?file-order=" + fileOrder);
         }
 
-        public Map verify() throws IOException {
-            return retrieveMap("filestore/verify");
+        public Map verify(boolean fileOrder) throws IOException {
+            return retrieveMap("filestore/verify?file-order=" + fileOrder);
         }
     }
 
@@ -778,6 +803,9 @@ public class IPFS {
         }
         public Map stat() throws IOException {
             return retrieveMap("bitswap/stat");
+        }
+        public Map stat(boolean verbose, boolean humanReadable) throws IOException {
+            return retrieveMap("bitswap/stat?verbose=" + verbose + "&human=" + humanReadable);
         }
         public Map wantlist(Multihash peerId) throws IOException {
             return retrieveMap("bitswap/wantlist?peer=" + peerId);
