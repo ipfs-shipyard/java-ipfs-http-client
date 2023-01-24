@@ -241,6 +241,7 @@ public class APITest {
         NamedStreamable ns = new NamedStreamable.ByteArrayWrapper(filename, contents.getBytes());
         String res = ipfs.files.write(path, ns, true, true);
         Map stat = ipfs.files.stat( path);
+        Map stat2 = ipfs.files.stat( path, Optional.of("<cumulsize>"), true);
         String readContents = new String(ipfs.files.read(path));
         Assert.assertTrue("Should be equals", contents.equals(readContents));
         res = ipfs.files.rm(path, false, false);
@@ -255,6 +256,7 @@ public class APITest {
         res = ipfs.files.mv(tempPath, "/" + tempFilename);
         stat = ipfs.files.stat("/" + tempFilename);
         Map lsMap = ipfs.files.ls("/");
+        Map lsMap2 = ipfs.files.ls("/", true, false);
 
         String flushFolder = "/filesTest/f/l/u/s/h";
         res = ipfs.files.mkdir(flushFolder, true);
@@ -266,11 +268,18 @@ public class APITest {
         String copyFromPath = copyFromFolder + "/" + copyFilename;
         String copyToPath = copyToFolder + "/" + copyFilename;
         NamedStreamable copyFile = new NamedStreamable.ByteArrayWrapper(copyFilename, "copy".getBytes());
-        res = ipfs.files.write(copyFromPath, copyFile, true, true);
+        WriteFilesArgs args = WriteFilesArgs.Builder.newInstance()
+                .setCreate()
+                .setParents()
+                .build();
+        res = ipfs.files.write(copyFromPath, copyFile, args);
         res = ipfs.files.cp(copyFromPath, copyToPath, true);
         stat = ipfs.files.stat(copyToPath);
-        String cid = ipfs.files.chcid(copyToPath);
-        ipfs.files.rm("/filesTest", true, true);
+        String cidRes = ipfs.files.chcid(copyToPath);
+        stat = ipfs.files.stat(copyToPath);
+        String cidV0Res = ipfs.files.chcid(copyToPath, Optional.of(0), Optional.empty());
+        stat = ipfs.files.stat(copyToPath);
+        ipfs.files.rm("/filesTest", false, true);
     }
 
     @Test
@@ -290,8 +299,8 @@ public class APITest {
     @Ignore("Experimental feature not enabled by default")
     public void fileStoreTest() throws IOException {
         ipfs.fileStore.dups();
-        ipfs.fileStore.ls();
-        ipfs.fileStore.verify();
+        Map res = ipfs.fileStore.ls(true);
+        ipfs.fileStore.verify(true);
     }
 
     @Test
@@ -843,6 +852,7 @@ public class APITest {
         Map want = ipfs.bitswap.wantlist(peers.get(0).id);
         //String reprovide = ipfs.bitswap.reprovide();
         Map stat = ipfs.bitswap.stat();
+        Map stat2 = ipfs.bitswap.stat(true, false);
     }
     @Test
     public void bootstrapTest() throws IOException {
@@ -878,7 +888,7 @@ public class APITest {
         ipfs.config.replace(new NamedStreamable.ByteArrayWrapper(JSONParser.toString(config).getBytes()));
 //            Object log = ipfs.log();
         Map sys = ipfs.diag.sys();
-        List<Map> cmds = ipfs.diag.cmds(true);
+        List<Map> cmds = ipfs.diag.cmds();
         String res = ipfs.diag.clearCmds();
         List<Map> cmds2 = ipfs.diag.cmds(true);
         //res = ipfs.diag.profile();
