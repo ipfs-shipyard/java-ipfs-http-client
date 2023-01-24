@@ -1,5 +1,6 @@
 package io.ipfs.api;
 
+import java.net.URLEncoder;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -31,7 +32,9 @@ final class AddArgs {
     {
         StringBuilder sb = new StringBuilder();
         for (Map.Entry<String, String> entry: args.entrySet()) {
-            sb.append("&").append(entry.getKey()).append("=").append(entry.getValue());
+            sb.append("&").append(entry.getKey())
+                    .append("=")
+                    .append(URLEncoder.encode(entry.getValue()));
         }
         return sb.length() > 0 ? sb.toString().substring(1) : sb.toString();
     }
