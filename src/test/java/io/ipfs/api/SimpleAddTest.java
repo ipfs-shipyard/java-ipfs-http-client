@@ -56,6 +56,15 @@ public class SimpleAddTest {
         Assert.assertEquals(1, tree.size());
         Assert.assertEquals("index.html", tree.get(0).name.get());
     }
+    @Test
+    public void testFilenameEncoding() throws Exception {
+        Path path = Paths.get("src/test/resources/folder/你好.html");
+        NamedStreamable file = new FileWrapper(path.toFile());
+        List<MerkleNode> tree = ipfs.add(file);
+
+        Assert.assertEquals(1, tree.size());
+        Assert.assertEquals("你好.html", tree.get(0).name.get());
+    }
 
     @Test
     public void testSingleWrapped() throws Exception {

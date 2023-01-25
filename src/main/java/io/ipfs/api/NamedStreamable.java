@@ -52,11 +52,7 @@ public interface NamedStreamable
         }
 
         public Optional<String> getName() {
-            try {
-                return Optional.of(URLEncoder.encode(source.getName(), "UTF-8"));
-            } catch (UnsupportedEncodingException e) {
-                throw new RuntimeException(e);
-            }
+            return Optional.of(source.getName());
         }
     }
 
