@@ -127,7 +127,7 @@ public class IPFS {
                 m.addSubtree(Paths.get(""), file);
             } else
                 m.addFilePart("file", Paths.get(""), file);
-        };
+        }
         String res = m.finish();
         return JSONParser.parseStream(res).stream()
                 .map(x -> MerkleNode.fromJSON((Map<String, Object>) x))
@@ -145,7 +145,7 @@ public class IPFS {
                 m.addSubtree(Paths.get(""), file);
             } else
                 m.addFilePart("file", Paths.get(""), file);
-        };
+        }
         String res = m.finish();
         return JSONParser.parseStream(res).stream()
                 .map(x -> MerkleNode.fromJSON((Map<String, Object>) x))
@@ -420,10 +420,8 @@ public class IPFS {
 
         /**
          *
-         * @param topic
+         * @param topic topic to publish to
          * @param data url encoded data to be published
-         * @return
-         * @throws IOException
          */
         public void pub(String topic, String data) {
             String encodedTopic = Multibase.encode(Multibase.Base.Base64Url, topic.getBytes());
@@ -471,7 +469,7 @@ public class IPFS {
         }
 
         public Map format(Cid hash, Optional<String> f, Optional<String> v, Optional<String> mc, Optional<String> b) throws IOException {
-            String fArg = f.isPresent() ? "&f=" + URLEncoder.encode(f.get()) : "";
+            String fArg = f.isPresent() ? "&f=" + URLEncoder.encode(f.get(), "UTF-8") : "";
             String vArg = v.isPresent() ? "&v=" + v.get() : "";
             String mcArg = mc.isPresent() ? "&mc=" + mc.get() : "";
             String bArg = b.isPresent() ? "&b=" + b.get() : "";
