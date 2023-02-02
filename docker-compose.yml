@@ -1,7 +1,7 @@
 version: '2'
 services:
   ipfs-daemon:
-    image: 'ipfs/kubo:v0.17.0'
+    image: 'ipfs/kubo:v0.18.1'
     ports:
       - "4001:4001"
       - "5001:5001"
