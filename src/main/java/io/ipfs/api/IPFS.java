@@ -244,8 +244,8 @@ public class IPFS {
                 return retrieveString("pin/remote/service/add?arg=" + service + "&arg=" + endPoint + "&arg=" + key);
             }
 
-            public Map lsService(boolean stat) throws IOException {
-                return retrieveMap("pin/remote/service/ls?stat=" + stat);
+            public List<Map> lsService(boolean stat) throws IOException {
+                return (List<Map>) retrieveMap("pin/remote/service/ls?stat=" + stat).get("RemoteServices");
             }
 
             public String rmService(String service) throws IOException {

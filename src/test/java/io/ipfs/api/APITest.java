@@ -330,7 +330,7 @@ public class APITest {
         Multihash hash = file.hash;
         String service = "mock";
         String rmRemoteService = ipfs.pin.remote.rmService(service);
-        Map lsRemoteService = ipfs.pin.remote.lsService(false);
+        List<Map> lsRemoteService = ipfs.pin.remote.lsService(false);
         String endpoint = "http://127.0.0.1:3000";
         String key = "SET_VALUE_HERE";
         String added = ipfs.pin.remote.addService(service, endpoint, key);
