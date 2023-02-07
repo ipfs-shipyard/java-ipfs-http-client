@@ -11,7 +11,7 @@ Example usage:
                 .setParents()
                 .build();
  */
-final class WriteFilesArgs {
+final public class WriteFilesArgs {
 
     private final Map<String, String> args = new HashMap<>();
 
