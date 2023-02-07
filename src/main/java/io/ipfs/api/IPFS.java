@@ -681,18 +681,18 @@ public class IPFS {
             return retrieveMap("files/flush?arg=" + arg);
         }
 
-        public Map ls() throws IOException {
-            return retrieveMap("files/ls");
+        public List<Map> ls() throws IOException {
+            return (List<Map>)retrieveMap("files/ls").get("Entries");
         }
 
-        public Map ls(String path) throws IOException {
+        public List<Map> ls(String path) throws IOException {
             String arg = URLEncoder.encode(path, "UTF-8");
-            return retrieveMap("files/ls?arg=" + arg);
+            return (List<Map>)retrieveMap("files/ls?arg=" + arg).get("Entries");
         }
 
-        public Map ls(String path, boolean longListing, boolean u) throws IOException {
+        public List<Map> ls(String path, boolean longListing, boolean u) throws IOException {
             String arg = URLEncoder.encode(path, "UTF-8");
-            return retrieveMap("files/ls?arg=" + arg + "&long=" + longListing + "&U=" + u);
+            return (List<Map>)retrieveMap("files/ls?arg=" + arg + "&long=" + longListing + "&U=" + u).get("Entries");
         }
 
         public String mkdir(String path, boolean parents) throws IOException {

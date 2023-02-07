@@ -255,8 +255,8 @@ public class APITest {
         res = ipfs.files.write(tempPath, tempFile, true, false);
         res = ipfs.files.mv(tempPath, "/" + tempFilename);
         stat = ipfs.files.stat("/" + tempFilename);
-        Map lsMap = ipfs.files.ls("/");
-        Map lsMap2 = ipfs.files.ls("/", true, false);
+        List<Map> lsMap = ipfs.files.ls("/");
+        List<Map> lsMap2 = ipfs.files.ls("/", true, false);
 
         String flushFolder = "/filesTest/f/l/u/s/h";
         res = ipfs.files.mkdir(flushFolder, true);
