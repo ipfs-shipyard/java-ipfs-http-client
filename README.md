@@ -96,7 +96,7 @@ Multihash filePointer = Multihash.fromBase58("QmPZ9gcCEpqKTo6aq61g2nXGUhM4iCL3ew
 byte[] fileContents = ipfs.cat(filePointer);
 ```
 
-More example usage found [here](https://github.com/ipfs-shipyard/java-ipfs-http-client/tree/master/src/main/java/io/ipfs/api/demo)
+More example usage found [here](./src/main/java/io/ipfs/api/demo)
 
 ## Dependencies
 
