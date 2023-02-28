@@ -2,20 +2,22 @@ package io.ipfs.api;
 
 import io.ipfs.api.cbor.*;
 import io.ipfs.cid.*;
-import io.ipfs.multibase.Multibase;
 import io.ipfs.multihash.Multihash;
 import io.ipfs.multiaddr.MultiAddress;
 import org.junit.*;
 
 import java.io.*;
-import java.net.URLEncoder;
 import java.nio.file.*;
 import java.util.*;
 import java.util.function.*;
 import java.util.stream.*;
 
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertArrayEquals;
 
+@SuppressWarnings({"rawtypes", "unused"})
 public class APITest {
 
     private final IPFS ipfs = new IPFS(new MultiAddress("/ip4/127.0.0.1/tcp/5001"));
@@ -30,14 +32,14 @@ public class APITest {
         Cid expected = Cid.decode("bafyreidbm2zncsc3j25zn7lofgd4woeh6eygdy73thfosuni2rwr3bhcvu");
 
         Multihash result = put.hash;
-        Assert.assertTrue("Correct cid returned", result.equals(expected));
+        assertEquals("Correct cid returned", result, expected);
 
         byte[] get = ipfs.dag.get(expected);
-        Assert.assertTrue("Raw data equal", original.equals(new String(get).trim()));
+        assertEquals("Raw data equal", original, new String(get).trim());
         Map res = ipfs.dag.resolve("bafyreidbm2zncsc3j25zn7lofgd4woeh6eygdy73thfosuni2rwr3bhcvu");
-        Assert.assertTrue("not resolved", res != null);
+        assertNotNull("not resolved", res);
         res = ipfs.dag.stat(expected);
-        Assert.assertTrue("not found", res != null);
+        assertNotNull("not found", res);
     }
 
     @Test
@@ -52,10 +54,11 @@ public class APITest {
         Cid cid = (Cid) put.hash;
 
         byte[] get = ipfs.dag.get(cid);
-        Assert.assertTrue("Raw data equal", ((Map)JSONParser.parse(new String(get))).get("data").equals(value));
+        assertEquals("Raw data equal", ((Map) JSONParser.parse(new String(get))).get("data"),
+            value);
 
         Cid expected = Cid.decode("zdpuApemz4XMURSCkBr9W5y974MXkSbeDfLeZmiQTPpvkatFF");
-        Assert.assertTrue("Correct cid returned", cid.equals(expected));
+        assertEquals("Correct cid returned", cid, expected);
     }
 
     @Test
@@ -67,14 +70,14 @@ public class APITest {
         Object rename = ipfs.key.rename(name, newName);
         List<KeyInfo> rm = ipfs.key.rm(newName);
         List<KeyInfo> remaining = ipfs.key.list();
-        Assert.assertTrue("removed key", remaining.equals(existing));
+        assertEquals("removed key", remaining, existing);
     }
 
     @Test
     @Ignore("Not reliable")
     public void log() throws IOException {
         Map lsResult = ipfs.log.ls();
-        Assert.assertTrue("Log ls", !lsResult.isEmpty());
+        Assert.assertFalse("Log ls", lsResult.isEmpty());
         Map levelResult = ipfs.log.level("all", "info");
         Assert.assertTrue("Log level", ((String)levelResult.get("Message")).startsWith("Changed log level"));
     }
@@ -89,7 +92,7 @@ public class APITest {
 
         IpldNode.CborIpldNode node = new IpldNode.CborIpldNode(cbor);
         List<String> tree = node.tree("", -1);
-        Assert.assertTrue("Correct tree", tree.equals(Arrays.asList("/a/b", "/c")));
+        assertEquals("Correct tree", tree, Arrays.asList("/a/b", "/c"));
     }
 
     @Test
@@ -166,7 +169,8 @@ public class APITest {
             throw new IllegalStateException("Different contents!");
     }
 
-//    @Test
+    @Ignore
+    @Test
     public void largeFileTest() throws IOException {
         byte[] largerData = new byte[100*1024*1024];
         new Random(1).nextBytes(largerData);
@@ -174,7 +178,8 @@ public class APITest {
         fileTest(largeFile);
     }
 
-//    @Test
+    @Ignore
+    @Test
     public void hugeFileStreamTest() throws IOException {
         byte[] hugeData = new byte[1000*1024*1024];
         new Random(1).nextBytes(hugeData);
@@ -243,7 +248,7 @@ public class APITest {
         Map stat = ipfs.files.stat( path);
         Map stat2 = ipfs.files.stat( path, Optional.of("<cumulsize>"), true);
         String readContents = new String(ipfs.files.read(path));
-        Assert.assertTrue("Should be equals", contents.equals(readContents));
+        assertEquals("Should be equals", contents, readContents);
         res = ipfs.files.rm(path, false, false);
 
         String tempFilename = "temp.txt";
@@ -285,14 +290,14 @@ public class APITest {
     @Test
     public void multibaseTest() throws IOException {
         List<Map> encodings = ipfs.multibase.list(true, false);
-        Assert.assertTrue("multibase/list works", !encodings.isEmpty());
+        Assert.assertFalse("multibase/list works", encodings.isEmpty());
         String encoded = ipfs.multibase.encode(Optional.empty(), new NamedStreamable.ByteArrayWrapper("hello".getBytes()));
-        Assert.assertTrue("multibase/encode works", encoded.equals("uaGVsbG8"));
+        assertEquals("multibase/encode works", "uaGVsbG8", encoded);
         String decoded = ipfs.multibase.decode(new NamedStreamable.ByteArrayWrapper(encoded.getBytes()));
-        Assert.assertTrue("multibase/decode works", decoded.equals("hello"));
+        assertEquals("multibase/decode works", "hello", decoded);
         String input = "f68656c6c6f";
         String transcode = ipfs.multibase.transcode(Optional.of("base64url"), new NamedStreamable.ByteArrayWrapper(input.getBytes()));
-        Assert.assertTrue("multibase/transcode works", transcode.equals(encoded));
+        assertEquals("multibase/transcode works", transcode, encoded);
     }
 
     @Test
@@ -460,8 +465,8 @@ public class APITest {
         MerkleNode _new = ipfs.object._new(Optional.empty());
         Multihash pointer = Multihash.fromBase58("QmPZ9gcCEpqKTo6aq61g2nXGUhM4iCL3ewB6LDXZCtioEB");
         MerkleNode object = ipfs.object.get(pointer);
-        List<MerkleNode> newPointer = ipfs.object.put(Arrays.asList(object.toJSONString().getBytes()));
-        List<MerkleNode> newPointer2 = ipfs.object.put("json", Arrays.asList(object.toJSONString().getBytes()));
+        List<MerkleNode> newPointer = ipfs.object.put(Collections.singletonList(object.toJSONString().getBytes()));
+        List<MerkleNode> newPointer2 = ipfs.object.put("json", Collections.singletonList(object.toJSONString().getBytes()));
         MerkleNode links = ipfs.object.links(pointer);
         byte[] data = ipfs.object.data(pointer);
         Map stat = ipfs.object.stat(pointer);
@@ -472,7 +477,7 @@ public class APITest {
         MerkleNode pointer = new MerkleNode("QmPZ9gcCEpqKTo6aq61g2nXGUhM4iCL3ewB6LDXZCtioEB");
         Map stat = ipfs.block.stat(pointer.hash);
         byte[] object = ipfs.block.get(pointer.hash);
-        List<MerkleNode> newPointer = ipfs.block.put(Arrays.asList("Some random data...".getBytes()));
+        List<MerkleNode> newPointer = ipfs.block.put(Collections.singletonList("Some random data...".getBytes()));
     }
 
     @Test
@@ -493,18 +498,18 @@ public class APITest {
 
         // Add a DAG node to IPFS
         MerkleNode merkleNode = ipfs.dag.put("json", json.getBytes());
-        Assert.assertEquals("expected to be bafyreiafmbgul64c4nyybvgivswmkuhifamc24cdfuj4ij5xtnhpsfelky" , "bafyreiafmbgul64c4nyybvgivswmkuhifamc24cdfuj4ij5xtnhpsfelky", merkleNode.hash.toString());
+        assertEquals("expected to be bafyreiafmbgul64c4nyybvgivswmkuhifamc24cdfuj4ij5xtnhpsfelky" , "bafyreiafmbgul64c4nyybvgivswmkuhifamc24cdfuj4ij5xtnhpsfelky", merkleNode.hash.toString());
 
         // Get a DAG node
         byte[] res = ipfs.dag.get((Cid) merkleNode.hash);
-        Assert.assertEquals("Should be equals", JSONParser.parse(json), JSONParser.parse(new String(res)));
+        assertEquals("Should be equals", JSONParser.parse(json), JSONParser.parse(new String(res)));
 
         // Publish to IPNS
         Map result = ipfs.name.publish(merkleNode.hash);
 
         // Resolve from IPNS
         String resolved = ipfs.name.resolve(Cid.decode((String) result.get("Name")));
-        Assert.assertEquals("Should be equals", resolved, "/ipfs/" + merkleNode.hash.toString());
+        assertEquals("Should be equals", resolved, "/ipfs/" + merkleNode.hash);
     }
 
     @Test
@@ -536,7 +541,7 @@ public class APITest {
         ipfs.pubsub.pub(topic, data);
         ipfs.pubsub.pub(topic, "G'day");
         List<Map> results = sub.limit(2).collect(Collectors.toList());
-        Assert.assertTrue( ! results.get(0).equals(Collections.emptyMap()));
+        Assert.assertNotEquals(results.get(0), Collections.emptyMap());
     }
 
     private static String toEscapedHex(byte[] in) throws IOException {
@@ -556,7 +561,7 @@ public class APITest {
         Random r = new Random();
         CborObject.CborByteArray target = new CborObject.CborByteArray(("g'day IPFS!").getBytes());
         byte[] rawTarget = target.toByteArray();
-        MerkleNode targetRes = ipfs.block.put(Arrays.asList(rawTarget), Optional.of("cbor")).get(0);
+        MerkleNode targetRes = ipfs.block.put(Collections.singletonList(rawTarget), Optional.of("cbor")).get(0);
 
         CborObject.CborMerkleLink link = new CborObject.CborMerkleLink(targetRes.hash);
         Map<String, CborObject> m = new TreeMap<>();
@@ -564,7 +569,7 @@ public class APITest {
         m.put("arr", new CborObject.CborList(Collections.emptyList()));
         CborObject.CborMap source = CborObject.CborMap.build(m);
         byte[] rawSource = source.toByteArray();
-        MerkleNode sourceRes = ipfs.block.put(Arrays.asList(rawSource), Optional.of("cbor")).get(0);
+        MerkleNode sourceRes = ipfs.block.put(Collections.singletonList(rawSource), Optional.of("cbor")).get(0);
 
         CborObject.fromByteArray(rawSource);
 
@@ -576,7 +581,7 @@ public class APITest {
         Assert.assertTrue("refs returns links", refs.contains(targetRes.hash));
 
         byte[] bytes = ipfs.block.get(targetRes.hash);
-        Assert.assertTrue("same contents after GC", Arrays.equals(bytes, rawTarget));
+        assertArrayEquals("same contents after GC", bytes, rawTarget);
         // These commands can be used to reproduce this on the command line
         String reproCommand1 = "printf \"" + toEscapedHex(rawTarget) + "\" | ipfs block put --format=cbor";
         String reproCommand2 = "printf \"" + toEscapedHex(rawSource) + "\" | ipfs block put --format=cbor";
@@ -587,34 +592,34 @@ public class APITest {
     public void recursiveRefs() throws IOException {
         CborObject.CborByteArray leaf1 = new CborObject.CborByteArray(("G'day IPFS!").getBytes());
         byte[] rawLeaf1 = leaf1.toByteArray();
-        MerkleNode leaf1Res = ipfs.block.put(Arrays.asList(rawLeaf1), Optional.of("cbor")).get(0);
+        MerkleNode leaf1Res = ipfs.block.put(Collections.singletonList(rawLeaf1), Optional.of("cbor")).get(0);
 
         CborObject.CborMerkleLink link = new CborObject.CborMerkleLink(leaf1Res.hash);
         Map<String, CborObject> m = new TreeMap<>();
         m.put("link1", link);
         CborObject.CborMap source = CborObject.CborMap.build(m);
-        MerkleNode sourceRes = ipfs.block.put(Arrays.asList(source.toByteArray()), Optional.of("cbor")).get(0);
+        MerkleNode sourceRes = ipfs.block.put(Collections.singletonList(source.toByteArray()), Optional.of("cbor")).get(0);
 
         CborObject.CborByteArray leaf2 = new CborObject.CborByteArray(("G'day again, IPFS!").getBytes());
         byte[] rawLeaf2 = leaf2.toByteArray();
-        MerkleNode leaf2Res = ipfs.block.put(Arrays.asList(rawLeaf2), Optional.of("cbor")).get(0);
+        MerkleNode leaf2Res = ipfs.block.put(Collections.singletonList(rawLeaf2), Optional.of("cbor")).get(0);
 
         Map<String, CborObject> m2 = new TreeMap<>();
         m2.put("link1", new CborObject.CborMerkleLink(sourceRes.hash));
         m2.put("link2", new CborObject.CborMerkleLink(leaf2Res.hash));
         CborObject.CborMap source2 = CborObject.CborMap.build(m2);
-        MerkleNode rootRes = ipfs.block.put(Arrays.asList(source2.toByteArray()), Optional.of("cbor")).get(0);
+        MerkleNode rootRes = ipfs.block.put(Collections.singletonList(source2.toByteArray()), Optional.of("cbor")).get(0);
 
         List<Multihash> refs = ipfs.refs(rootRes.hash, false);
         boolean correct = refs.contains(sourceRes.hash) && refs.contains(leaf2Res.hash) && refs.size() == 2;
         Assert.assertTrue("refs returns links", correct);
 
         List<Multihash> refsRecurse = ipfs.refs(rootRes.hash, true);
-        boolean correctRecurse = refs.contains(sourceRes.hash)
-                && refs.contains(leaf1Res.hash)
-                && refs.contains(leaf2Res.hash)
-                && refs.size() == 3;
-        Assert.assertTrue("refs returns links", correct);
+        boolean correctRecurse = refsRecurse.contains(sourceRes.hash)
+                && refsRecurse.contains(leaf1Res.hash)
+                && refsRecurse.contains(leaf2Res.hash)
+                && refsRecurse.size() == 3;
+        Assert.assertTrue("refs returns links", correctRecurse);
     }
 
     /**
@@ -625,23 +630,23 @@ public class APITest {
         Random r = new Random();
         CborObject.CborByteArray target = new CborObject.CborByteArray(("g'day IPFS!" + r.nextInt()).getBytes());
         byte[] rawTarget = target.toByteArray();
-        MerkleNode block1 = ipfs.block.put(Arrays.asList(rawTarget), Optional.of("cbor")).get(0);
+        MerkleNode block1 = ipfs.block.put(Collections.singletonList(rawTarget), Optional.of("cbor")).get(0);
         Multihash block1Hash = block1.hash;
         byte[] retrievedObj1 = ipfs.block.get(block1Hash);
-        Assert.assertTrue("get inverse of put", Arrays.equals(retrievedObj1, rawTarget));
+        assertArrayEquals("get inverse of put", retrievedObj1, rawTarget);
 
         CborObject.CborMerkleLink cbor2 = new CborObject.CborMerkleLink(block1.hash);
         byte[] obj2 = cbor2.toByteArray();
-        MerkleNode block2 = ipfs.block.put(Arrays.asList(obj2), Optional.of("cbor")).get(0);
+        MerkleNode block2 = ipfs.block.put(Collections.singletonList(obj2), Optional.of("cbor")).get(0);
         byte[] retrievedObj2 = ipfs.block.get(block2.hash);
-        Assert.assertTrue("get inverse of put", Arrays.equals(retrievedObj2, obj2));
+        assertArrayEquals("get inverse of put", retrievedObj2, obj2);
 
         List<Multihash> add = ipfs.pin.add(block2.hash);
         ipfs.repo.gc();
         ipfs.repo.gc();
 
         byte[] bytes = ipfs.block.get(block1.hash);
-        Assert.assertTrue("same contents after GC", Arrays.equals(bytes, rawTarget));
+        assertArrayEquals("same contents after GC", bytes, rawTarget);
         // These commands can be used to reproduce this on the command line
         String reproCommand1 = "printf \"" + toEscapedHex(rawTarget) + "\" | ipfs block put --format=cbor";
         String reproCommand2 = "printf \"" + toEscapedHex(obj2) + "\" | ipfs block put --format=cbor";
@@ -655,9 +660,9 @@ public class APITest {
     public void rootNull() throws IOException {
         CborObject.CborNull cbor = new CborObject.CborNull();
         byte[] obj = cbor.toByteArray();
-        MerkleNode block = ipfs.block.put(Arrays.asList(obj), Optional.of("cbor")).get(0);
+        MerkleNode block = ipfs.block.put(Collections.singletonList(obj), Optional.of("cbor")).get(0);
         byte[] retrievedObj = ipfs.block.get(block.hash);
-        Assert.assertTrue("get inverse of put", Arrays.equals(retrievedObj, obj));
+        assertArrayEquals("get inverse of put", retrievedObj, obj);
 
         List<Multihash> add = ipfs.pin.add(block.hash);
         ipfs.repo.gc();
@@ -676,19 +681,19 @@ public class APITest {
         Random r = new Random();
         CborObject.CborByteArray target = new CborObject.CborByteArray(("g'day IPFS!" + r.nextInt()).getBytes());
         byte[] rawTarget = target.toByteArray();
-        MerkleNode targetRes = ipfs.block.put(Arrays.asList(rawTarget), Optional.of("cbor")).get(0);
+        MerkleNode targetRes = ipfs.block.put(Collections.singletonList(rawTarget), Optional.of("cbor")).get(0);
 
         CborObject.CborMerkleLink link = new CborObject.CborMerkleLink(targetRes.hash);
-        CborObject.CborList source = new CborObject.CborList(Arrays.asList(link));
+        CborObject.CborList source = new CborObject.CborList(Collections.singletonList(link));
         byte[] rawSource = source.toByteArray();
-        MerkleNode sourceRes = ipfs.block.put(Arrays.asList(rawSource), Optional.of("cbor")).get(0);
+        MerkleNode sourceRes = ipfs.block.put(Collections.singletonList(rawSource), Optional.of("cbor")).get(0);
 
         List<Multihash> add = ipfs.pin.add(sourceRes.hash);
         ipfs.repo.gc();
         ipfs.repo.gc();
 
         byte[] bytes = ipfs.block.get(targetRes.hash);
-        Assert.assertTrue("same contents after GC", Arrays.equals(bytes, rawTarget));
+        assertArrayEquals("same contents after GC", bytes, rawTarget);
         // These commands can be used to reproduce this on the command line
         String reproCommand1 = "printf \"" + toEscapedHex(rawTarget) + "\" | ipfs block put --format=cbor";
         String reproCommand2 = "printf \"" + toEscapedHex(rawSource) + "\" | ipfs block put --format=cbor";
@@ -819,12 +824,12 @@ public class APITest {
         Map rm = ipfs.swarm.rmFilter(multiAddrFilter);
         Map filters = ipfs.swarm.filters();
         List<String> filtersList = (List<String>)filters.get("Strings");
-        Assert.assertTrue("Filters empty", filtersList == null);
+        Assert.assertNull("Filters empty", filtersList);
 
         Map added = ipfs.swarm.addFilter(multiAddrFilter);
         filters = ipfs.swarm.filters();
         filtersList = (List<String>)filters.get("Strings");
-        Assert.assertTrue("Filters NOT empty", !filtersList.isEmpty());
+        Assert.assertFalse("Filters NOT empty", filtersList.isEmpty());
         rm = ipfs.swarm.rmFilter(multiAddrFilter);
     }
 
@@ -838,7 +843,7 @@ public class APITest {
         Map addPeering = ipfs.swarm.addPeering(ma);
         Map lsPeering = ipfs.swarm.lsPeering();
         List<String> peeringList = (List<String>)lsPeering.get("Peers");
-        Assert.assertTrue("Filters not empty", !peeringList.isEmpty());
+        Assert.assertFalse("Filters not empty", peeringList.isEmpty());
         Map rmPeering = ipfs.swarm.rmPeering(hash);
         lsPeering = ipfs.swarm.lsPeering();
         peeringList = (List<String>)lsPeering.get("Peers");
@@ -925,9 +930,9 @@ public class APITest {
                 .setCidVersion(1)
                 .build();
         String res = args.toString();
-        Assert.assertTrue("args toString() format", res.equals("[cid-version = 1, inline = true]"));
+        assertEquals("args toString() format", "[cid-version = 1, inline = true]", res);
         String queryStr = args.toQueryString();
-        Assert.assertTrue("args toQueryString() format", queryStr.equals("inline=true&cid-version=1"));
+        assertEquals("args toQueryString() format", "inline=true&cid-version=1", queryStr);
     }
 
     // this api is disabled until deployment over IPFS is enabled
