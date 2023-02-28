@@ -1,0 +1,15 @@
+load(":test_utils.bzl", "junit_test")
+
+filegroup(
+    name = "test-resources",
+    srcs = glob([
+        "resources/**",
+    ]),
+)
+
+junit_test(test_class = "io.ipfs.api.AddTest")
+junit_test(test_class = "io.ipfs.api.APITest")
+junit_test(test_class = "io.ipfs.api.RecursiveAddTest")
+junit_test(test_class = "io.ipfs.api.SimpleAddTest")
+junit_test(test_class = "io.ipfs.api.VersionsTest")
+

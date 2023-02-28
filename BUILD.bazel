@@ -1,0 +1,10 @@
+java_library (
+    name = "maven_deps",
+    visibility = ["//visibility:public"],
+    exports = [
+        "@maven//:com_github_multiformats_java_multiaddr",
+        "@maven//:com_github_multiformats_java_multihash",
+        "@maven//:com_github_multiformats_java_multibase",
+        "@maven//:com_github_ipld_java_cid",
+        ],
+)

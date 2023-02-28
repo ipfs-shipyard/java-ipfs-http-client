@@ -13,3 +13,7 @@ TEST-io.ipfs.api.APITest.*
 .idea/*
 api.iml
 
+# Bazel
+/bazel-*
+/.ijwb/
+

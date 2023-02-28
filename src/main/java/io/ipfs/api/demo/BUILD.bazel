@@ -1,0 +1,9 @@
+java_binary (
+    name = "demo",
+    srcs = glob(["*.java"]),
+    main_class = "io.ipfs.api.demo.UsageMFSFilesAPI",
+    deps = [
+        "//src/main/java/io/ipfs/api:core",
+        "//:maven_deps",
+        ],
+)

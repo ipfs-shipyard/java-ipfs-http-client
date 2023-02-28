@@ -1,0 +1,8 @@
+java_library (
+    name = "cbor",
+    visibility = ["//visibility:public"],
+    srcs = glob(["*.java"]),
+    deps = [
+        "//:maven_deps",
+        ],
+)
