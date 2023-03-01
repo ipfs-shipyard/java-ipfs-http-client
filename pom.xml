@@ -32,36 +32,86 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <version.junit>4.13.2</version.junit>
-        <version.hamcrest>2.2</version.hamcrest>
+		<version.junit>4.13.2</version.junit>
+		<version.hamcrest>2.2</version.hamcrest>
 		<version.multiaddr>v1.4.10</version.multiaddr>
+		<version.multibase>1.1.1</version.multibase>
+		<version.multihash>1.3.2</version.multihash>
+		<version.cid>v1.3.6</version.cid>
 	</properties>
 
 	<repositories>
 		<repository>
 			<id>jitpack.io</id>
+			<releases>
+				<!-- Enable this if you want to use the dependency JARs as published on Jitpack -->
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
 			<url>https://jitpack.io</url>
+		</repository>
+		<repository>
+			<id>local-jars</id>
+			<releases>
+				<!-- Disable this if you don't want to use the local dependency JARs from the lib directory-->
+				<enabled>true</enabled>
+				<checksumPolicy>ignore</checksumPolicy>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<url>file://${project.basedir}/lib</url>
+		</repository>
+		<!-- Override and disable the Central repository to make sure we don't depend on it-->
+		<repository>
+			<id>central</id>
+			<name>Central Repository</name>
+			<url>https://repo.maven.apache.org/maven2</url>
+			<layout>default</layout>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
 		</repository>
 	</repositories>
 
 	<dependencies>
-        <dependency>
-            <groupId>com.github.multiformats</groupId>
-            <artifactId>java-multiaddr</artifactId>
-            <version>${version.multiaddr}</version>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>${version.junit}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.hamcrest</groupId>
-            <artifactId>hamcrest</artifactId>
-            <version>${version.hamcrest}</version>
-            <scope>test</scope>
-        </dependency>
+		<dependency>
+			<groupId>com.github.multiformats</groupId>
+			<artifactId>java-multiaddr</artifactId>
+			<version>${version.multiaddr}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.github.multiformats</groupId>
+			<artifactId>java-multihash</artifactId>
+			<version>${version.multihash}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.github.multiformats</groupId>
+			<artifactId>java-multibase</artifactId>
+			<version>${version.multibase}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.github.ipld</groupId>
+			<artifactId>java-cid</artifactId>
+			<version>${version.cid}</version>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>${version.junit}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.hamcrest</groupId>
+			<artifactId>hamcrest</artifactId>
+			<version>${version.hamcrest}</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
