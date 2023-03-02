@@ -67,18 +67,18 @@ public class IPFS {
     }
 
     public IPFS(String host, int port, String version, boolean ssl) {
-        this(host, port, version, false, DEFAULT_CONNECT_TIMEOUT_MILLIS, DEFAULT_READ_TIMEOUT_MILLIS, ssl);
+        this(host, port, version, true, DEFAULT_CONNECT_TIMEOUT_MILLIS, DEFAULT_READ_TIMEOUT_MILLIS, ssl);
     }
 
-    public IPFS(String host, int port, String version, boolean overrideMinVersionCheck, boolean ssl) {
-        this(host, port, version, overrideMinVersionCheck, DEFAULT_CONNECT_TIMEOUT_MILLIS, DEFAULT_READ_TIMEOUT_MILLIS, ssl);
+    public IPFS(String host, int port, String version, boolean enforceMinVersion, boolean ssl) {
+        this(host, port, version, enforceMinVersion, DEFAULT_CONNECT_TIMEOUT_MILLIS, DEFAULT_READ_TIMEOUT_MILLIS, ssl);
     }
 
     public IPFS(String host, int port, String version, int connectTimeoutMillis, int readTimeoutMillis, boolean ssl) {
-        this(host, port, version, false, connectTimeoutMillis, readTimeoutMillis, ssl);
+        this(host, port, version, true, connectTimeoutMillis, readTimeoutMillis, ssl);
     }
 
-    public IPFS(String host, int port, String version, boolean overrideMinVersionCheck, int connectTimeoutMillis, int readTimeoutMillis, boolean ssl) {
+    public IPFS(String host, int port, String version, boolean enforceMinVersion, int connectTimeoutMillis, int readTimeoutMillis, boolean ssl) {
         if (connectTimeoutMillis < 0) throw new IllegalArgumentException("connect timeout must be zero or positive");
         if (readTimeoutMillis < 0) throw new IllegalArgumentException("read timeout must be zero or positive");
         this.host = host;
@@ -94,7 +94,7 @@ public class IPFS {
 
         this.apiVersion = version;
         // Check IPFS is sufficiently recent
-        if (!overrideMinVersionCheck) {
+        if (enforceMinVersion) {
             try {
                 Version detected = Version.parse(version());
                 if (detected.isBefore(MIN_VERSION))
