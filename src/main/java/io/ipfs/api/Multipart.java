@@ -98,14 +98,12 @@ public class Multipart {
         append(LINE_FEED);
         out.flush();
 
-        try {
-            InputStream inputStream = uploadFile.getInputStream();
+        try (InputStream inputStream = uploadFile.getInputStream()){
             byte[] buffer = new byte[4096];
             int r;
             while ((r = inputStream.read(buffer)) != -1)
                 out.write(buffer, 0, r);
             out.flush();
-            inputStream.close();
         } catch (IOException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
@@ -138,14 +136,12 @@ public class Multipart {
                 reader.close();
                 httpConn.disconnect();
             } else {
-                try {
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(
-                            httpConn.getInputStream()));
+                try (InputStreamReader isr = new InputStreamReader(httpConn.getInputStream());
+                     BufferedReader reader = new BufferedReader(isr)){
                     String line;
                     while ((line = reader.readLine()) != null) {
                         b.append(line);
                     }
-                    reader.close();
                 } catch (Throwable t) {
                 }
                 throw new IOException("Server returned status: " + status + " with body: " + b.toString() + " and Trailer header: " + httpConn.getHeaderFields().get("Trailer"));
