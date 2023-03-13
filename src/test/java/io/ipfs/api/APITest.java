@@ -20,7 +20,9 @@ import static org.junit.Assert.assertArrayEquals;
 @SuppressWarnings({"rawtypes", "unused"})
 public class APITest {
 
-    private final IPFS ipfs = new IPFS(new MultiAddress("/ip4/127.0.0.1/tcp/5001"));
+    private final MultiAddress ipfsAddress = new MultiAddress("/ip4/127.0.0.1/tcp/5001");
+    private final IPFS ipfs = new IPFS(ipfsAddress.getHost(), ipfsAddress.getPort(), "/api/v0/", true, false);
+
     private final Random r = new Random(33550336); // perfect
 
     @Test

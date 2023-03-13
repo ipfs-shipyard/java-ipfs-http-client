@@ -11,7 +11,7 @@ Example usage:
                 .setCidVersion(1)
                 .build();
  */
-final class AddArgs {
+public final class AddArgs {
 
     private final Map<String, String> args = new HashMap<>();
 
