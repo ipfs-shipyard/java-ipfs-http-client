@@ -397,8 +397,8 @@ public class IPFS {
         /*public String migrate(boolean allowDowngrade) throws IOException {
             return retrieveString("repo/migrate?allow-downgrade=" + allowDowngrade);
         }*/
-        public Map stat(boolean sizeOnly, boolean humanReadable) throws IOException {
-            return retrieveMap("repo/stat?size-only=" + sizeOnly + "&human=" + humanReadable);
+        public RepoStat stat(boolean sizeOnly) throws IOException {
+            return RepoStat.fromJson(retrieveAndParse("repo/stat?size-only=" + sizeOnly));
         }
         public Map verify() throws IOException {
             return retrieveMap("repo/verify");
@@ -812,8 +812,8 @@ public class IPFS {
         public Map stat() throws IOException {
             return retrieveMap("bitswap/stat");
         }
-        public Map stat(boolean verbose, boolean humanReadable) throws IOException {
-            return retrieveMap("bitswap/stat?verbose=" + verbose + "&human=" + humanReadable);
+        public Map stat(boolean verbose) throws IOException {
+            return retrieveMap("bitswap/stat?verbose=" + verbose);
         }
         public Map wantlist(Multihash peerId) throws IOException {
             return retrieveMap("bitswap/wantlist?peer=" + peerId);
@@ -856,6 +856,9 @@ public class IPFS {
     public class Swarm {
         public List<Peer> peers() throws IOException {
             Map m = retrieveMap("swarm/peers?stream-channels=true");
+            if (m.get("Peers") == null) {
+                return Collections.emptyList();
+            }
             return ((List<Object>)m.get("Peers")).stream()
                     .flatMap(json -> {
                         try {
@@ -981,8 +984,8 @@ public class IPFS {
     }
 
     public class Stats {
-        public Map bitswap(boolean verbose, boolean humanReadable) throws IOException {
-            return retrieveMap("stats/bitswap?verbose=" + verbose + "&human=" + humanReadable);
+        public Map bitswap(boolean verbose) throws IOException {
+            return retrieveMap("stats/bitswap?verbose=" + verbose);
         }
         public Map bw() throws IOException {
             return retrieveMap("stats/bw");
@@ -993,8 +996,8 @@ public class IPFS {
         public Map provide() throws IOException {
             return retrieveMap("stats/provide");
         }
-        public Map repo(boolean sizeOnly, boolean humanReadable) throws IOException {
-            return retrieveMap("stats/repo?size-only=" + sizeOnly + "&human=" + humanReadable);
+        public RepoStat repo(boolean sizeOnly) throws IOException {
+            return RepoStat.fromJson(retrieveAndParse("stats/repo?size-only=" + sizeOnly));
         }
     }
 
