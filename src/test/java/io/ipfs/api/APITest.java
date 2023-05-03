@@ -719,7 +719,8 @@ public class APITest {
         ipfs.repo.gc();
         Multihash res = ipfs.repo.ls();
         //String migration = ipfs.repo.migrate(false);
-        Map stat = ipfs.repo.stat(false, true);
+        RepoStat stat = ipfs.repo.stat(false);
+        RepoStat stat2 = ipfs.repo.stat(true);
         Map verify = ipfs.repo.verify();
         Map version = ipfs.repo.version();
     }
@@ -765,11 +766,11 @@ public class APITest {
     @Test
     public void statsTest() throws IOException {
         Map stats = ipfs.stats.bw();
-        Map bitswap = ipfs.stats.bitswap(true, true);
+        Map bitswap = ipfs.stats.bitswap(true);
         Map dht = ipfs.stats.dht();
         //{"Message":"can only return stats if Experimental.AcceleratedDHTClient is enabled","Code":0,"Type":"error"}
         //requires Map provide = ipfs.stats.provide();
-        Map repo = ipfs.stats.repo(false, true);
+        RepoStat repo = ipfs.stats.repo(false);
     }
 
     public void resolveTest() throws IOException {
@@ -859,7 +860,7 @@ public class APITest {
         Map want = ipfs.bitswap.wantlist(peers.get(0).id);
         //String reprovide = ipfs.bitswap.reprovide();
         Map stat = ipfs.bitswap.stat();
-        Map stat2 = ipfs.bitswap.stat(true, false);
+        Map stat2 = ipfs.bitswap.stat(true);
     }
     @Test
     public void bootstrapTest() throws IOException {
