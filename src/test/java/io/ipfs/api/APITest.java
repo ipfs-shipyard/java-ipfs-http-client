@@ -938,6 +938,11 @@ public class APITest {
         assertEquals("args toQueryString() format", "inline=true&cid-version=1", queryStr);
     }
 
+    @Test
+    public void failOnPurposeTest() {
+        assertEquals(1, 2);
+    }
+
     // this api is disabled until deployment over IPFS is enabled
     private void updateTest() throws IOException {
         Object check = ipfs.update.check();
