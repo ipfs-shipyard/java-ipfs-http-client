@@ -939,7 +939,7 @@ public class APITest {
     }
 
     // this api is disabled until deployment over IPFS is enabled
-    public void updateTest() throws IOException {
+    private void updateTest() throws IOException {
         Object check = ipfs.update.check();
         Object update = ipfs.update();
     }
