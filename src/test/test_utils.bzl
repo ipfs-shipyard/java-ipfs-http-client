@@ -8,7 +8,4 @@ def junit_test(test_class):
         data = [
             "//src/test:test-resources",
         ],
-        jvm_flags = [
-            "-Djava.security.manager=allow",
-        ]
     )
