@@ -4,7 +4,8 @@ java_binary (
     main_class = "io.ipfs.api.demo.UsageMFSFilesAPI",
     deps = [
         "//src/main/java/io/ipfs/api:core",
-        "//:maven_deps",
         "@multiaddr//:core",
+        "@multihash//:core",
+        "@cid//:core",
         ],
 )

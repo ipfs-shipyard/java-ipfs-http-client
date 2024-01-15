@@ -1,9 +1,8 @@
 java_library (
-    name = "maven_deps",
-    visibility = ["//visibility:public"],
+    name = "maven_test_deps",
+    visibility = ["//src/test/java:__subpackages__"],
     exports = [
-        "@maven//:com_github_multiformats_java_multihash",
-        "@maven//:com_github_multiformats_java_multibase",
-        "@maven//:com_github_ipld_java_cid",
-        ],
+        "@maven//:junit_junit",
+        "@maven//:org_hamcrest_hamcrest",
+    ],
 )

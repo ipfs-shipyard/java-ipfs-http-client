@@ -4,8 +4,10 @@ java_library (
     srcs = glob(["*.java"]),
     deps = [
         "@multiaddr//:core",
+        "@multihash//:core",
+        "@multibase//:core",
+        "@cid//:core",
         "//src/main/java/io/ipfs/api/cbor:cbor",
-        "//:maven_deps",
         ],
 )
 
