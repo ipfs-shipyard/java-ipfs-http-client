@@ -3,6 +3,7 @@ java_library (
     visibility = ["//visibility:public"],
     srcs = glob(["*.java"]),
     deps = [
+        "@multiaddr//:core",
         "//src/main/java/io/ipfs/api:core",
         "//src/main/java/io/ipfs/api/cbor:cbor",
         "//:maven_deps",

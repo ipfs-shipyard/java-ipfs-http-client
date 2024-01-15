@@ -5,5 +5,6 @@ java_binary (
     deps = [
         "//src/main/java/io/ipfs/api:core",
         "//:maven_deps",
+        "@multiaddr//:core",
         ],
 )

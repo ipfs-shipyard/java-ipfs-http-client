@@ -24,11 +24,38 @@ maven_install(
     artifacts = [
         "junit:junit:4.13.2",
         "org.hamcrest:hamcrest:2.2",
-        "com.github.multiformats:java-multiaddr:v1.4.10",
+        "com.github.ipld:java-cid:v1.3.8",
     ],
     repositories = [
         # Private repositories are supported through HTTP Basic auth
         "https://jitpack.io",
         "https://repo1.maven.org/maven2",
     ],
+)
+
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "new_git_repository")
+
+MULTIADDR_BUILD_FILE = """
+filegroup(
+    name = "main_srcs",
+    srcs = glob(["src/main/java/**"]),
+)
+
+java_library(
+    name = "core",
+    srcs = [":main_srcs"],
+    deps = [
+        "@maven//:com_github_multiformats_java_multihash",
+        "@maven//:com_github_multiformats_java_multibase",
+        "@maven//:com_github_ipld_java_cid",
+    ],
+    visibility = ["//visibility:public"],
+)
+"""
+
+new_git_repository(
+    name = "multiaddr",
+    remote = "https://github.com/multiformats/java-multiaddr.git",
+    tag = "v1.4.12",
+    build_file_content = MULTIADDR_BUILD_FILE,
 )
