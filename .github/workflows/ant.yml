@@ -16,6 +16,8 @@ jobs:
         java-version: 11
     - name: Install and run ipfs
       run: ./install-run-ipfs.sh
+    - name: Build & run tests with Maven
+      run: mvn test
     - name: Build with Ant
       run: ant -noinput -buildfile build.xml dist
     - name: Run tests
