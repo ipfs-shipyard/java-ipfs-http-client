@@ -200,12 +200,6 @@ public class IPFS {
         return retrieveMap("resolve?arg=/" + scheme+"/"+hash +"&r="+recursive);
     }
 
-    @Deprecated
-    public String dns(String domain, boolean recursive) throws IOException {
-        Map res = retrieveMap("dns?arg=" + domain + "&r=" + recursive);
-        return (String)res.get("Path");
-    }
-
     public Map mount(java.io.File ipfsRoot, java.io.File ipnsRoot) throws IOException {
         if (ipfsRoot != null && !ipfsRoot.exists())
             ipfsRoot.mkdirs();
