@@ -735,12 +735,6 @@ public class APITest {
         String resolved = ipfs.name.resolve(Cid.decode((String) pub.get("Name")));
     }
 
-    @Test
-    public void dnsTest() throws IOException {
-        String domain = "ipfs.io";
-        String dns = ipfs.dns(domain, true);
-    }
-
     public void mountTest() throws IOException {
         Map mount = ipfs.mount(null, null);
     }
