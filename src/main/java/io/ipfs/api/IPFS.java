@@ -625,6 +625,11 @@ public class IPFS {
             Map res = (Map) retrieveAndParse("name/resolve?arg=" + hash);
             return (String)res.get("Path");
         }
+
+        public String resolve(String name) throws IOException {
+            Map res = (Map) retrieveAndParse("name/resolve?arg=" + name);
+            return (String)res.get("Path");
+        }
     }
 
     public class DHT {
