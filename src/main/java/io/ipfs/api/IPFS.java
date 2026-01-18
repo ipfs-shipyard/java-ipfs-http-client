@@ -294,8 +294,9 @@ public class IPFS {
                     .map(x -> Cid.decode((String) x))
                     .collect(Collectors.toList());
         }
-        public Map verify(boolean verbose, boolean quite) throws IOException {
-            return retrieveMap("pin/verify?verbose=" + verbose + "&quite=" + quite);
+
+        public Map verify(boolean verbose, boolean quiet) throws IOException {
+            return retrieveMap("pin/verify?verbose=" + verbose + "&quiet=" + quiet);
         }
     }
 
