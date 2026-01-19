@@ -7,6 +7,7 @@ import io.ipfs.multiaddr.MultiAddress;
 import org.junit.*;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.*;
 import java.util.function.*;
@@ -396,31 +397,40 @@ public class APITest {
 
     @Test
     public void indirectPinTest() throws IOException {
-        Multihash EMPTY = ipfs.object._new(Optional.empty()).hash;
-        io.ipfs.api.MerkleNode data = ipfs.object.patch(EMPTY, "set-data", Optional.of("childdata".getBytes()), Optional.empty(), Optional.empty());
-        Multihash child = data.hash;
+        String path = "/test/indirectPinTest-" + UUID.randomUUID();
+        ipfs.files.write(path + "/content", new NamedStreamable.ByteArrayWrapper("something".getBytes(StandardCharsets.UTF_8)), true, true);
+        Multihash content = Multihash.decode((String) ipfs.files.stat(path + "/content").get("Hash"));
 
-        io.ipfs.api.MerkleNode tmp1 = ipfs.object.patch(EMPTY, "set-data", Optional.of("parent1_data".getBytes()), Optional.empty(), Optional.empty());
-        Multihash parent1 = ipfs.object.patch(tmp1.hash, "add-link", Optional.empty(), Optional.of(child.toString()), Optional.of(child)).hash;
+        // adding one more extra entry to parent1 to keep its hash different from parent2
+        ipfs.files.mkdir(path + "/parent1", true);
+        ipfs.files.write(path + "/parent1/content1", new NamedStreamable.ByteArrayWrapper("somethingelse".getBytes(StandardCharsets.UTF_8)), true, true);
+        ipfs.files.cp("/ipfs/" + content, path + "/parent1/content2", true);
+
+        ipfs.files.mkdir(path + "/parent2", true);
+        ipfs.files.cp("/ipfs/" + content, path + "/parent2/content", true);
+
+        Multihash parent1 = Multihash.decode((String) ipfs.files.stat(path + "/parent1").get("Hash"));
+        Multihash parent2 = Multihash.decode((String) ipfs.files.stat(path + "/parent2").get("Hash"));
+
         ipfs.pin.add(parent1);
-
-        io.ipfs.api.MerkleNode tmp2 = ipfs.object.patch(EMPTY, "set-data", Optional.of("parent2_data".getBytes()), Optional.empty(), Optional.empty());
-        Multihash parent2 = ipfs.object.patch(tmp2.hash, "add-link", Optional.empty(), Optional.of(child.toString()), Optional.of(child)).hash;
         ipfs.pin.add(parent2);
         ipfs.pin.rm(parent1, true);
 
         Map<Multihash, Object> ls = ipfs.pin.ls(IPFS.PinType.all);
-        boolean childPresent = ls.containsKey(child);
+        boolean childPresent = ls.containsKey(content);
         if (!childPresent)
-            throw new IllegalStateException("Child not present!");
+            throw new IllegalStateException("Child not present: " + ls);
 
         ipfs.repo.gc();
         Map<Multihash, Object> ls2 = ipfs.pin.ls(IPFS.PinType.all);
-        boolean childPresentAfterGC = ls2.containsKey(child);
+        boolean childPresentAfterGC = ls2.containsKey(content);
         if (!childPresentAfterGC)
-            throw new IllegalStateException("Child not present!");
-}
+            throw new IllegalStateException("Child not present:" + ls);
 
+        ipfs.files.rm(path, true, true);
+    }
+
+    @Ignore("RPC API removed")
     @Test
     public void objectPatch() throws IOException {
         MerkleNode obj = ipfs.object._new(Optional.empty());
@@ -462,6 +472,7 @@ public class APITest {
         }
     }
 
+    @Ignore("RPC API removed")
     @Test
     public void objectTest() throws IOException {
         MerkleNode _new = ipfs.object._new(Optional.empty());
@@ -489,10 +500,8 @@ public class APITest {
         List<MerkleNode> bulkPut = ipfs.block.put(Arrays.asList(raw, raw, raw, raw, raw), Optional.of("cbor"));
         List<Multihash> hashes = bulkPut.stream().map(m -> m.hash).collect(Collectors.toList());
         byte[] result = ipfs.block.get(hashes.get(0));
-        System.out.println();
     }
 
-//    @Ignore // Ignored because ipfs frequently times out internally in the publish call
     @Test
     public void publish() throws Exception {
         // JSON document
@@ -512,6 +521,15 @@ public class APITest {
         // Resolve from IPNS
         String resolved = ipfs.name.resolve(Cid.decode((String) result.get("Name")));
         assertEquals("Should be equals", resolved, "/ipfs/" + merkleNode.hash);
+    }
+
+    @Test
+    public void resolveName() throws Exception {
+        // Resolve from DNSLinked domain
+        String resolved = ipfs.name.resolve("docs.ipfs.tech");
+        assertNotNull(resolved);
+        assertTrue(resolved.startsWith("/ipfs/"));
+        assertTrue(resolved.length() > 20); // this may change (content and encoding as well)
     }
 
     @Test
@@ -587,7 +605,6 @@ public class APITest {
         // These commands can be used to reproduce this on the command line
         String reproCommand1 = "printf \"" + toEscapedHex(rawTarget) + "\" | ipfs block put --format=cbor";
         String reproCommand2 = "printf \"" + toEscapedHex(rawSource) + "\" | ipfs block put --format=cbor";
-        System.out.println();
     }
 
     @Test
@@ -652,7 +669,6 @@ public class APITest {
         // These commands can be used to reproduce this on the command line
         String reproCommand1 = "printf \"" + toEscapedHex(rawTarget) + "\" | ipfs block put --format=cbor";
         String reproCommand2 = "printf \"" + toEscapedHex(obj2) + "\" | ipfs block put --format=cbor";
-        System.out.println();
     }
 
     /**
@@ -672,7 +688,6 @@ public class APITest {
 
         // These commands can be used to reproduce this on the command line
         String reproCommand1 = "printf \"" + toEscapedHex(obj) + "\" | ipfs block put --format=cbor";
-        System.out.println();
     }
 
     /**
@@ -754,7 +769,6 @@ public class APITest {
     @Test
     public void localId() throws Exception {
         Map id = ipfs.id();
-        System.out.println();
     }
 
     @Test
@@ -856,6 +870,8 @@ public class APITest {
         Map stat = ipfs.bitswap.stat();
         Map stat2 = ipfs.bitswap.stat(true);
     }
+
+    @Ignore("AutoConf.Enabled=true is default; prevents bootstrap removal")
     @Test
     public void bootstrapTest() throws IOException {
         List<MultiAddress> bootstrap = ipfs.bootstrap.list();

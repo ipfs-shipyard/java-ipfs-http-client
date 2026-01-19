@@ -27,8 +27,15 @@ public class Peer {
             throw new IllegalStateException("Incorrect json for Peer: " + JSONParser.toString(json));
         Map m = (Map) json;
         Function<String, String> val = key -> (String) m.get(key);
-        long latency = val.apply("Latency").length() > 0 ? Long.parseLong(val.apply("Latency")) : -1;
-        return new Peer(new MultiAddress(val.apply("Addr")), Cid.decode(val.apply("Peer")), latency, val.apply("Muxer"), val.apply("Streams"));
+        String peerId = val.apply("Peer");
+        Multihash peer; // Multihash bug? Throws IAEx Base1 not supported
+        try {
+            peer = Multihash.fromBase58(peerId);
+        } catch (Exception e) {
+            peer = Multihash.decode(peerId);
+        }
+        long latency = m.containsKey("Latency") ? Long.parseLong(val.apply("Latency")) : -1;
+        return new Peer(new MultiAddress(val.apply("Addr")), peer, latency, val.apply("Muxer"), val.apply("Streams"));
     }
 
     @Override
