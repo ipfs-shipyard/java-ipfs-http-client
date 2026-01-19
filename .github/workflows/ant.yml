@@ -3,7 +3,7 @@ name: Java CI
 on:
   schedule:
     - cron: '42 0 * * 4'
-  push:  
+  push:
   pull_request:
 
 jobs:
@@ -22,8 +22,3 @@ jobs:
       run: ./install-run-ipfs.sh
     - name: Build & run tests with Maven
       run: mvn test
-    - name: Build with Ant
-      run: ant -noinput -buildfile build.xml dist
-    - name: Run tests
-      timeout-minutes: 10
-      run: ant -noinput -buildfile build.xml test
