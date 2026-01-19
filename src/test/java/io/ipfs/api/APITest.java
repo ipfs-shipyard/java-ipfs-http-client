@@ -829,13 +829,15 @@ public class APITest {
 
     @Test
     public void swarmTestFilters() throws IOException {
+        // on GH CI we run this in "server" profile that packs a TON of filters
+        // See https://github.com/ipfs/kubo/blob/c1fd4d70f58e682bfe73fa4b50d17581c823c671/config/profile.go#L27
         Map listenAddrs = ipfs.swarm.listenAddrs();
         Map localAddrs = ipfs.swarm.localAddrs(true);
         String multiAddrFilter = "/ip4/192.168.0.0/ipcidr/16";
         Map rm = ipfs.swarm.rmFilter(multiAddrFilter);
         Map filters = ipfs.swarm.filters();
         List<String> filtersList = (List<String>)filters.get("Strings");
-        Assert.assertNull("Filters empty", filtersList);
+        Assert.assertTrue("Filters empty", filtersList == null || !filtersList.contains(multiAddrFilter));
 
         Map added = ipfs.swarm.addFilter(multiAddrFilter);
         filters = ipfs.swarm.filters();
