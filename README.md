@@ -55,7 +55,7 @@ for Maven, add the following sections to your pom.xml (replacing $LATEST_VERSION
 
 ### Running tests
 
-To run tests, IPFS daemon must be running on `127.0.0.1` interface, with `--enable-pubsub-experiment`, and without `--mount`. 
+To run tests, IPFS daemon must be running on `127.0.0.1` interface, with `--enable-pubsub-experiment`. 
 
 ### IPFS installation
 
