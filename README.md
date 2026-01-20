@@ -110,7 +110,7 @@ Current versions of dependencies are listed in the `pom.xml`, their correspondin
 * [multihash](https://github.com/multiformats/java-multihash)
 * [cid](https://github.com/ipld/java-cid)
 
-This library requires (only) Java 11 bytecode & JDK at runtime. (At build time we use current latest LTS tools.)
+This library targets Java 11 and requires Java 11 or higher to run. (At build time we use current latest LTS tools.)
 
 ## Releasing
 
