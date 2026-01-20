@@ -48,9 +48,9 @@ for Maven, add the following sections to your pom.xml (replacing $LATEST_VERSION
 ### Building
 
 * Clone this repository
-* Run `ant dist`
-* Copy `dist/ipfs.jar` into your project. Appropriate versions of other [dependencies](#dependencies) are also included in `dist/lib/`.
-* Run tests using `ant test`.
+* Run `mvn package`
+* Copy `target/ipfs-$VERSION.jar` into your project. Appropriate versions of other [dependencies](#dependencies) are also included in `dist/lib/`.
+* Run tests using `mvn test` (invocation above will run them as well).
 
 ### Running tests
 
