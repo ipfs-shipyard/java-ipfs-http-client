@@ -832,7 +832,7 @@ public class IPFS {
         }
 
         public List<MultiAddress> list() throws IOException {
-            return ((List<String>)retrieveMap("bootstrap/list").get("Peers"))
+            return ((List<String>)retrieveMap("bootstrap/list?expand-auto=true").get("Peers"))
                     .stream().map(x -> new MultiAddress(x)).collect(Collectors.toList());
         }
 
