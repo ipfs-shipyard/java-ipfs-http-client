@@ -7,7 +7,7 @@
 
 ![](https://ipfs.io/ipfs/QmQJ68PFMDdAsgCZvA1UVzzn18asVcf7HVvCDgpjiSCAse)
 
-> A Java client for the IPFS http api
+> A Java client for the IPFS HTTP API
 
 ## Table of Contents
 
@@ -28,7 +28,8 @@ You can use this project by including `ipfs.jar` from one of the [releases](http
 Package managers are supported through [JitPack](https://jitpack.io/#ipfs/java-ipfs-http-client/) which supports Maven, Gradle, SBT, etc.
 
 for Maven, add the following sections to your pom.xml (replacing $LATEST_VERSION):
-```
+
+```xml
   <repositories>
     <repository>
         <id>jitpack.io</id>
@@ -49,13 +50,14 @@ for Maven, add the following sections to your pom.xml (replacing $LATEST_VERSION
 
 * Clone this repository
 * Run `mvn install`
-* Copy `target/ipfs-$VERSION.jar` into your project. Appropriate versions of other [dependencies](#dependencies) are also included in `dist/lib/`.
+* Copy `target/ipfs-$VERSION.jar` into your project.
 * To copy the project and all dependency JARs to directory, execute `mvn eu.maveniverse.maven.plugins:toolbox:gav-copy -DsourceSpec="resolveTransitive(gav(com.github.ipfs:java-ipfs-http-client:v1.4.5-SNAPSHOT))" -DsinkSpec="flat(.)"` in that given directory.
-* Run tests using `mvn test` (invocation above will run them as well).
 
 ### Running tests
 
-To run tests, IPFS daemon must be running on the `127.0.0.1` interface, with `--enable-pubsub-experiment`. 
+Run tests using `mvn test`.
+
+To run tests, an IPFS daemon must be running on the `127.0.0.1` interface, with `--enable-pubsub-experiment`. 
 
 ### IPFS installation
 
@@ -108,7 +110,10 @@ Current versions of dependencies are listed in the `pom.xml`, their correspondin
 * [multihash](https://github.com/multiformats/java-multihash)
 * [cid](https://github.com/ipld/java-cid)
 
+This library targets Java 11 and requires Java 11 or higher to run. (At build time we use current latest LTS tools.)
+
 ## Releasing
+
 The version number is specified in `pom.xml` and must be changed in order to be accurately reflected in the JAR file manifest. A git tag must be added in the format `vx.x.x` for [JitPack](https://jitpack.io/#ipfs/java-ipfs-http-client/) to work.
 
 ## Contribute
