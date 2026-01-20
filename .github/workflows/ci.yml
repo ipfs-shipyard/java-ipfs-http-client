@@ -4,6 +4,8 @@ on:
   schedule:
     - cron: '42 0 * * 4'
   push:
+    branches:
+      - master
   pull_request:
 
 jobs:
@@ -18,7 +20,8 @@ jobs:
       with:
         distribution: temurin
         java-version: 11
-    - name: Install and run ipfs
+        cache: 'maven'
+    - name: Install and run IPFS
       run: ./install-run-ipfs.sh
     - name: Build & run tests with Maven
       run: mvn test
