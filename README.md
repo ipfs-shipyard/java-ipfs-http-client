@@ -47,11 +47,15 @@ for Maven, add the following sections to your pom.xml (replacing $LATEST_VERSION
 
 ### Building
 
+Build time requirements:
+* Java 21
+* Maven 3.9.6+ (latest patch release is recommended)
+
 * Clone this repository
-* Run `mvn install`
+* Run `./mvnw install`
 * Copy `target/ipfs-$VERSION.jar` into your project. Appropriate versions of other [dependencies](#dependencies) are also included in `dist/lib/`.
-* To copy the project and all dependency JARs to directory, execute `mvn eu.maveniverse.maven.plugins:toolbox:gav-copy -DsourceSpec="resolveTransitive(gav(com.github.ipfs:java-ipfs-http-client:v1.4.5-SNAPSHOT))" -DsinkSpec="flat(.)"` in that given directory.
-* Run tests using `mvn test` (invocation above will run them as well).
+* To copy the project and all dependency JARs to directory, execute `./mvnw eu.maveniverse.maven.plugins:toolbox:gav-copy -DsourceSpec="resolveTransitive(gav(com.github.ipfs:java-ipfs-http-client:v1.4.5-SNAPSHOT))" -DsinkSpec="flat(.)"` in that given directory.
+* Run tests using `./mvnw test` (invocation above will run them as well).
 
 ### Running tests
 
@@ -100,6 +104,9 @@ byte[] fileContents = ipfs.cat(filePointer);
 More example usage found [here](./src/main/java/io/ipfs/api/demo)
 
 ## Dependencies
+
+Run time requirements:
+* Java 11+
 
 Current versions of dependencies are listed in the `pom.xml`, their corresponding source repositories are:
 

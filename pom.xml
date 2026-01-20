@@ -71,6 +71,30 @@
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<version>3.6.2</version>
+				<configuration>
+					<rules>
+						<requireMavenVersion>
+							<version>3.9.6</version>
+						</requireMavenVersion>
+						<requireJavaVersion>
+							<version>21</version>
+						</requireJavaVersion>
+					</rules>
+				</configuration>
+				<executions>
+					<execution>
+						<id>enforce</id>
+						<goals>
+							<goal>enforce</goal>
+						</goals>
+						<phase>validate</phase>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.14.1</version>
 			</plugin>
