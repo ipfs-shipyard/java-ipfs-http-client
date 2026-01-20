@@ -48,8 +48,9 @@ for Maven, add the following sections to your pom.xml (replacing $LATEST_VERSION
 ### Building
 
 * Clone this repository
-* Run `mvn package`
+* Run `mvn install`
 * Copy `target/ipfs-$VERSION.jar` into your project. Appropriate versions of other [dependencies](#dependencies) are also included in `dist/lib/`.
+* To copy the project and all dependency JARs to directory, execute `mvn eu.maveniverse.maven.plugins:toolbox:gav-copy -DsourceSpec="resolveTransitive(gav(com.github.ipfs:java-ipfs-http-client:v1.4.5-SNAPSHOT))" -DsinkSpec="flat(.)"` in that given directory.
 * Run tests using `mvn test` (invocation above will run them as well).
 
 ### Running tests
@@ -100,7 +101,7 @@ More example usage found [here](./src/main/java/io/ipfs/api/demo)
 
 ## Dependencies
 
-Current versions of dependencies are included in the `./lib` directory.
+Current versions of dependencies are listed in the `pom.xml`, their corresponding source repositories are:
 
 * [multibase](https://github.com/multiformats/java-multibase)
 * [multiaddr](https://github.com/multiformats/java-multiaddr)
@@ -108,7 +109,7 @@ Current versions of dependencies are included in the `./lib` directory.
 * [cid](https://github.com/ipld/java-cid)
 
 ## Releasing
-The version number is specified in `build.xml` and `pom.xml` and must be changed in both places in order to be accurately reflected in the JAR file manifest. A git tag must be added in the format `vx.x.x` for [JitPack](https://jitpack.io/#ipfs/java-ipfs-http-client/) to work.
+The version number is specified in `pom.xml` and must be changed in order to be accurately reflected in the JAR file manifest. A git tag must be added in the format `vx.x.x` for [JitPack](https://jitpack.io/#ipfs/java-ipfs-http-client/) to work.
 
 ## Contribute
 
