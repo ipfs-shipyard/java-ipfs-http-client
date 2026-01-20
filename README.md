@@ -49,7 +49,7 @@ for Maven, add the following sections to your pom.xml (replacing $LATEST_VERSION
 
 Build time requirements:
 * Java 21
-* Maven 3.9.6+
+* Maven 3.9.6+ (latest patch release is recommended)
 
 * Clone this repository
 * Run `./mvnw install`
