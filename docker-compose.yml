@@ -6,4 +6,4 @@ services:
       - "4001:4001"
       - "5001:5001"
     user: "ipfs"
-    command: [ "daemon", "--enable-pubsub-experiment --enable-namesys-pubsub --routing=dhtclient" ]
+    command: [ "daemon", "--enable-pubsub-experiment", "--enable-namesys-pubsub", "--routing=dhtclient" ]
