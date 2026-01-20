@@ -22,6 +22,6 @@ jobs:
         java-version: 21
         cache: 'maven'
     - name: Install and run IPFS
-      run: ./install-run-ipfs.sh
+      uses: hoverkraft-tech/compose-action@v2.4.3
     - name: Build & run tests with Maven
       run: ./mvnw -V verify
