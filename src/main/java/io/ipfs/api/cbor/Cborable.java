@@ -2,9 +2,9 @@ package io.ipfs.api.cbor;
 
 public interface Cborable {
 
-    CborObject toCbor();
+  CborObject toCbor();
 
-    default byte[] serialize() {
-        return toCbor().toByteArray();
-    }
+  default byte[] serialize() {
+    return toCbor().toByteArray();
+  }
 }
