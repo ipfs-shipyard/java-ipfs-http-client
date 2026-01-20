@@ -7,6 +7,7 @@ package io.ipfs.api.cbor;
  */
 
 import java.io.*;
+import java.util.Arrays;
 
 import static io.ipfs.api.cbor.CborConstants.*;
 import static io.ipfs.api.cbor.CborType.*;
@@ -30,7 +31,7 @@ public class CborDecoder {
     }
 
     private static void fail(String msg, Object... args) throws IOException {
-        throw new IOException(msg + args);
+        throw new IOException(msg + Arrays.toString(args));
     }
 
     private static String lengthToString(int len) {

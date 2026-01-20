@@ -1,0 +1,14 @@
+java_library (
+    name = "test-core",
+    visibility = ["//visibility:public"],
+    srcs = glob(["*.java"]),
+    deps = [
+        "@multiaddr//:core",
+        "@multihash//:core",
+        "@multibase//:core",
+        "@cid//:core",
+        "//src/main/java/io/ipfs/api:core",
+        "//src/main/java/io/ipfs/api/cbor:cbor",
+        "//:maven_test_deps",
+        ],
+)

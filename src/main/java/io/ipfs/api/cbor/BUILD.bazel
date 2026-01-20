@@ -1,0 +1,10 @@
+java_library (
+    name = "cbor",
+    visibility = ["//visibility:public"],
+    srcs = glob(["*.java"]),
+    deps = [
+        "@multiaddr//:core",
+        "@multihash//:core",
+        "@cid//:core",
+        ],
+)
