@@ -1,9 +1,9 @@
 version: '2'
 services:
   ipfs-daemon:
-    image: 'ipfs/kubo:v0.18.1'
+    image: 'ipfs/kubo:v0.39.0'
     ports:
       - "4001:4001"
       - "5001:5001"
     user: "ipfs"
-    command: [ "daemon", "--enable-pubsub-experiment" ]
+    command: [ "daemon", "--enable-pubsub-experiment --enable-namesys-pubsub --routing=dhtclient" ]
