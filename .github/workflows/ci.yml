@@ -24,4 +24,4 @@ jobs:
     - name: Install and run IPFS
       run: ./install-run-ipfs.sh
     - name: Build & run tests with Maven
-      run: mvn test
+      run: ./mvnw verify

@@ -16,9 +16,10 @@
  	</issueManagement>
 
  	<scm>
+		<connection>scm:git:git://github.com/ipfs/java-ipfs-http-client.git</connection>
+		<developerConnection>scm:git:git@github.com:ipfs/java-ipfs-http-client.git</developerConnection>
+		<tag>HEAD</tag>
  		<url>https://github.com/ipfs/java-ipfs-http-client</url>
- 		<connection>scm:git:git://github.com/ipfs/java-ipfs-http-client.git</connection>
- 		<developerConnection>scm:git:git@github.com:ipfs/java-ipfs-http-client.git</developerConnection>
  	</scm>
 
  	<licenses>
@@ -30,8 +31,10 @@
  	</licenses>
 
 	<properties>
+		<project.build.outputTimestamp>2026-01-20T00:00:00Z</project.build.outputTimestamp>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<maven.compiler.release>11</maven.compiler.release>
         <version.junit>4.13.2</version.junit>
         <version.hamcrest>2.2</version.hamcrest>
 		<version.multiaddr>v1.4.13</version.multiaddr>
@@ -70,10 +73,6 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.14.1</version>
-				<configuration>
-					<source>11</source>
-					<target>11</target>
-				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
