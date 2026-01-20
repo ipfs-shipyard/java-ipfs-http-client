@@ -4,13 +4,13 @@ on:
   schedule:
     - cron: '42 0 * * 4'
   push:
-    branches:
-      - master
   pull_request:
 
 jobs:
   build:
+
     runs-on: ubuntu-latest
+
     steps:
     - uses: actions/checkout@v6
     - name: Set up JDK 11
@@ -22,8 +22,3 @@ jobs:
       run: ./install-run-ipfs.sh
     - name: Build & run tests with Maven
       run: mvn test
-    - name: Build with Ant
-      run: ant -noinput -buildfile build.xml dist
-    - name: Run tests
-      timeout-minutes: 10
-      run: ant -noinput -buildfile build.xml test
