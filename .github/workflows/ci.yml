@@ -37,3 +37,6 @@ jobs:
         KUBO_TAG: ${{matrix.kubo}}
     - name: Build & run tests with Maven
       run: ./mvnw -V verify
+    - if: ${{always()}}
+      name: Kubo logs
+      run: docker compose logs
