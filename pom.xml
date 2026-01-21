@@ -36,7 +36,7 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <maven.compiler.release>11</maven.compiler.release>
     <version.junit>4.13.2</version.junit>
-    <version.hamcrest>2.2</version.hamcrest>
+    <version.hamcrest>3.0</version.hamcrest>
     <version.multiaddr>v1.4.13</version.multiaddr>
   </properties>
 
