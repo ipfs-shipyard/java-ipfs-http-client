@@ -13,6 +13,16 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    strategy:
+      fail-fast: false
+      matrix:
+        kubo:                   # https://github.com/ipfs/kubo#docker
+          - v0.39.0             # specific release tag
+          - release             # latest stable release
+          - master-latest       # developer preview, HEAD of master branch
+
+    name: With Kubo tag ${{matrix.kubo}}
+
     steps:
     - uses: actions/checkout@v6
     - name: Set up JDK 21
@@ -21,7 +31,9 @@ jobs:
         distribution: temurin
         java-version: 21
         cache: 'maven'
-    - name: Install and run IPFS
+    - name: Run Kubo ${{matrix.kubo}} IPFS daemon
       uses: hoverkraft-tech/compose-action@v2.4.3
+      env:
+        KUBO_TAG: ${{matrix.kubo}}
     - name: Build & run tests with Maven
       run: ./mvnw -V verify
