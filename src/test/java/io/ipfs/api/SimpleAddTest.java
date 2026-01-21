@@ -1,5 +1,7 @@
 package io.ipfs.api;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import io.ipfs.api.NamedStreamable.FileWrapper;
 import io.ipfs.multiaddr.MultiAddress;
 import java.nio.file.Path;
@@ -7,8 +9,7 @@ import java.nio.file.Paths;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * ipfs daemon --enable-pubsub-experiment &
@@ -34,9 +35,9 @@ public class SimpleAddTest {
     NamedStreamable file = new FileWrapper(path.toFile());
     List<MerkleNode> tree = ipfs.add(file);
 
-    Assert.assertEquals(1, tree.size());
-    Assert.assertEquals("index.html", tree.get(0).name.get());
-    Assert.assertEquals(cids.get("index.html"), tree.get(0).hash.toBase58());
+    assertEquals(1, tree.size());
+    assertEquals("index.html", tree.get(0).name.get());
+    assertEquals(cids.get("index.html"), tree.get(0).hash.toBase58());
   }
 
   @Test
@@ -46,8 +47,8 @@ public class SimpleAddTest {
     AddArgs args = AddArgs.Builder.newInstance().setInline().setCidVersion(1).build();
     List<MerkleNode> tree = ipfs.add(file, args);
 
-    Assert.assertEquals(1, tree.size());
-    Assert.assertEquals("index.html", tree.get(0).name.get());
+    assertEquals(1, tree.size());
+    assertEquals("index.html", tree.get(0).name.get());
   }
 
   @Test
@@ -56,8 +57,8 @@ public class SimpleAddTest {
     NamedStreamable file = new FileWrapper(path.toFile());
     List<MerkleNode> tree = ipfs.add(file);
 
-    Assert.assertEquals(1, tree.size());
-    Assert.assertEquals("你好.html", tree.get(0).name.get());
+    assertEquals(1, tree.size());
+    assertEquals("你好.html", tree.get(0).name.get());
   }
 
   @Test
@@ -67,9 +68,9 @@ public class SimpleAddTest {
     NamedStreamable file = new FileWrapper(path.toFile());
     List<MerkleNode> tree = ipfs.add(file, true);
 
-    Assert.assertEquals(2, tree.size());
-    Assert.assertEquals("index.html", tree.get(0).name.get());
-    Assert.assertEquals(cids.get("index.html"), tree.get(0).hash.toBase58());
+    assertEquals(2, tree.size());
+    assertEquals("index.html", tree.get(0).name.get());
+    assertEquals(cids.get("index.html"), tree.get(0).hash.toBase58());
   }
 
   @Test
@@ -79,9 +80,9 @@ public class SimpleAddTest {
     NamedStreamable file = new FileWrapper(path.toFile());
     List<MerkleNode> tree = ipfs.add(file, false, true);
 
-    Assert.assertEquals(1, tree.size());
-    Assert.assertEquals("index.html", tree.get(0).name.get());
-    Assert.assertEquals(cids.get("index.html"), tree.get(0).hash.toBase58());
+    assertEquals(1, tree.size());
+    assertEquals("index.html", tree.get(0).name.get());
+    assertEquals(cids.get("index.html"), tree.get(0).hash.toBase58());
   }
 
   @Test
@@ -91,9 +92,9 @@ public class SimpleAddTest {
     NamedStreamable file = new FileWrapper(path.toFile());
     List<MerkleNode> tree = ipfs.add(file);
 
-    Assert.assertEquals(8, tree.size());
-    Assert.assertEquals("html", tree.get(7).name.get());
-    Assert.assertEquals(cids.get("html"), tree.get(7).hash.toBase58());
+    assertEquals(8, tree.size());
+    assertEquals("html", tree.get(7).name.get());
+    assertEquals(cids.get("html"), tree.get(7).hash.toBase58());
   }
 
   @Test
@@ -103,8 +104,8 @@ public class SimpleAddTest {
     NamedStreamable file = new FileWrapper(path.toFile());
     List<MerkleNode> tree = ipfs.add(file, false, true);
 
-    Assert.assertEquals(8, tree.size());
-    Assert.assertEquals("html", tree.get(7).name.get());
-    Assert.assertEquals(cids.get("html"), tree.get(7).hash.toBase58());
+    assertEquals(8, tree.size());
+    assertEquals("html", tree.get(7).name.get());
+    assertEquals(cids.get("html"), tree.get(7).hash.toBase58());
   }
 }

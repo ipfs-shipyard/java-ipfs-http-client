@@ -35,8 +35,6 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <maven.compiler.release>11</maven.compiler.release>
-    <version.junit>4.13.2</version.junit>
-    <version.hamcrest>2.2</version.hamcrest>
     <version.multiaddr>v1.4.13</version.multiaddr>
   </properties>
 
@@ -47,15 +45,9 @@
       <version>${version.multiaddr}</version>
     </dependency>
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>${version.junit}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.hamcrest</groupId>
-      <artifactId>hamcrest</artifactId>
-      <version>${version.hamcrest}</version>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <version>6.0.2</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
