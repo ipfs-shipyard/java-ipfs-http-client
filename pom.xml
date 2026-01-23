@@ -35,7 +35,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <maven.compiler.release>11</maven.compiler.release>
-    <version.multiaddr>v1.4.13</version.multiaddr>
+    <version.multiaddr>1.5.0</version.multiaddr>
   </properties>
 
   <dependencies>
