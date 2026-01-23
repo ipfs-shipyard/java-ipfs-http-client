@@ -10,7 +10,27 @@ on:
 
 jobs:
   build:
+    runs-on: ubuntu-latest
+    name: Build w/o tests
+    steps:
+    - uses: actions/checkout@v6
+    - name: Set up JDK 21
+      uses: actions/setup-java@v5
+      with:
+        distribution: temurin
+        java-version: 21
+        cache: 'maven'
+    - name: Build with Maven
+      run: ./mvnw -V -DskipTests --no-transfer-progress package
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v6
+      with:
+        name: maven-build-artifacts
+        path: target/
+        retention-days: 1
 
+  test:
+    needs: build
     runs-on: ubuntu-latest
 
     strategy:
@@ -21,7 +41,7 @@ jobs:
           - release             # latest stable release
           - master-latest       # developer preview, HEAD of master branch
 
-    name: With Kubo tag ${{matrix.kubo}}
+    name: Test with Kubo tag ${{matrix.kubo}}
 
     steps:
     - uses: actions/checkout@v6
@@ -31,12 +51,17 @@ jobs:
         distribution: temurin
         java-version: 21
         cache: 'maven'
+    - name: Download compiled artifacts
+      uses: actions/download-artifact@v5
+      with:
+        name: maven-build-artifacts
+        path: target/
     - name: Run Kubo ${{matrix.kubo}} IPFS daemon
       uses: hoverkraft-tech/compose-action@v2.4.3
       env:
         KUBO_TAG: ${{matrix.kubo}}
     - name: Build & run tests with Maven
-      run: ./mvnw -V verify
+      run: ./mvnw -V --no-transfer-progress -Dmaven.compiler.skip=true verify
     - if: ${{always()}}
       name: Kubo logs
       run: docker compose logs
