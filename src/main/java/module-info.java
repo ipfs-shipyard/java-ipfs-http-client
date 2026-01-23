@@ -1,4 +1,4 @@
-module io.ipfs.http.client {
+module io.ipfs.api {
   requires io.ipfs.multibase;
   requires io.ipfs.multihash;
   requires io.ipfs.multiaddr;
