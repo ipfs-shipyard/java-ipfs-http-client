@@ -1,0 +1,4 @@
+before_install:
+  - sdk install java 21-tem
+  - sdk use java 21-tem
+
