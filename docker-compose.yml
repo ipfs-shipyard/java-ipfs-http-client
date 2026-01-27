@@ -1,4 +1,3 @@
-version: '2'
 services:
   ipfs-daemon:
     image: ipfs/kubo:${KUBO_TAG-release} # default is latest release, see https://github.com/ipfs/kubo#docker

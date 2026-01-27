@@ -56,12 +56,17 @@ jobs:
       with:
         name: maven-build-artifacts
         path: target/
+    - name: Set up Docker Compose
+      run: sudo apt-get install docker-compose
     - name: Run Kubo ${{matrix.kubo}} IPFS daemon
-      uses: hoverkraft-tech/compose-action@v2.4.3
       env:
         KUBO_TAG: ${{matrix.kubo}}
+      run: docker compose up -d
     - name: Build & run tests with Maven
       run: ./mvnw -V --no-transfer-progress -Dmaven.compiler.skip=true verify
-    - if: ${{always()}}
-      name: Kubo logs
+    - name: Kubo logs
+      if: ${{always()}}
       run: docker compose logs
+    - name: Shut down Docker Compose
+      if: always()
+      run: docker compose down
