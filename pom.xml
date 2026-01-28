@@ -107,6 +107,11 @@
               <quiet>true</quiet>
             </sortPom>
           </pom>
+          <yaml>
+            <includes>
+              <include>docker-compose.yml</include>
+            </includes>
+          </yaml>
           <upToDateChecking>
             <enabled>true</enabled>
           </upToDateChecking>

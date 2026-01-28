@@ -10,8 +10,38 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
+    name: Build w/o tests
+    steps:
+    - uses: actions/checkout@v6
+    - name: Set up JDK 21
+      uses: actions/setup-java@v5
+      with:
+        distribution: temurin
+        java-version: 21
+        cache: 'maven'
+    - name: Build with Maven
+      run: ./mvnw -V -DskipTests --no-transfer-progress package
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v6
+      with:
+        name: maven-build-artifacts
+        path: target/
+        retention-days: 1
+
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        kubo:                   # https://github.com/ipfs/kubo#docker
+          - v0.39.0             # specific release tag
+          - release             # latest stable release
+          - master-latest       # developer preview, HEAD of master branch
+
+    name: Test with Kubo tag ${{matrix.kubo}}
 
     steps:
     - uses: actions/checkout@v6
@@ -21,7 +51,22 @@ jobs:
         distribution: temurin
         java-version: 21
         cache: 'maven'
-    - name: Install and run IPFS
-      run: ./install-run-ipfs.sh
+    - name: Download compiled artifacts
+      uses: actions/download-artifact@v5
+      with:
+        name: maven-build-artifacts
+        path: target/
+    - name: Set up Docker Compose
+      run: sudo apt-get install docker-compose
+    - name: Run Kubo ${{matrix.kubo}} IPFS daemon
+      env:
+        KUBO_TAG: ${{matrix.kubo}}
+      run: docker compose up -d
     - name: Build & run tests with Maven
-      run: ./mvnw -V verify
+      run: ./mvnw -V --no-transfer-progress -Dmaven.compiler.skip=true verify
+    - name: Kubo logs
+      if: ${{always()}}
+      run: docker compose logs
+    - name: Shut down Docker Compose
+      if: always()
+      run: docker compose down
