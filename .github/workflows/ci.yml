@@ -52,7 +52,7 @@ jobs:
         java-version: 21
         cache: 'maven'
     - name: Download compiled artifacts
-      uses: actions/download-artifact@v5
+      uses: actions/download-artifact@v7
       with:
         name: maven-build-artifacts
         path: target/
